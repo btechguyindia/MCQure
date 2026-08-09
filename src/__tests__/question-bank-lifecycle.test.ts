@@ -131,10 +131,11 @@ describe("Large question bank", () => {
     const source = { type: "USER_CREATED" as const, name: "Pagination test" };
 
     try {
+      const prefix = `paginationfixture${marker}xq `;
       const paginationTexts = [
-        `What does a semaphore value of zero indicate about a counting semaphore in an operating system? (marker ${marker})`,
-        `Which data structure is most commonly used to implement a priority queue inside a CPU scheduler? (marker ${marker})`,
-        `In paging, what is the name of the phenomenon where program references cluster on a small set of pages? (marker ${marker})`,
+        `${prefix}What does a semaphore value of zero indicate about a counting semaphore in an operating system? (marker ${marker})`,
+        `${prefix}Which data structure is most commonly used to implement a priority queue inside a CPU scheduler? (marker ${marker})`,
+        `${prefix}In paging, what is the name of the phenomenon where program references cluster on a small set of pages? (marker ${marker})`,
       ];
       for (const text of paginationTexts) {
         const res = await createQuestion({

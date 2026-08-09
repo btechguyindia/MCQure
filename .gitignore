@@ -43,3 +43,5 @@ next-env.d.ts
 
 # local embedded postgres data
 /.data/
+
+dev.log

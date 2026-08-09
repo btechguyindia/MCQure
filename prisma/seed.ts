@@ -5,6 +5,7 @@
 // is never labelled or implied to be a real previous-year question.
 
 import { PrismaClient, QuestionSourceType } from "@prisma/client";
+import { hash } from "bcryptjs";
 import { DSSSB_EXAM, DSSSB_SCORING, SUBJECTS } from "./seed-data/syllabus";
 import { QUESTIONS } from "./seed-data/questions";
 import { STUDY_NOTES } from "./seed-data/study";
@@ -27,6 +28,22 @@ async function main() {
       description: DSSSB_EXAM.description,
     },
   });
+
+  // 0b. Default user (created once; existing account is left untouched)
+  const DEFAULT_EMAIL = "prathmesh@gmail.com";
+  const existingUser = await prisma.user.findUnique({
+    where: { email: DEFAULT_EMAIL },
+  });
+  if (!existingUser) {
+    await prisma.user.create({
+      data: {
+        email: DEFAULT_EMAIL,
+        name: "Prathmesh",
+        passwordHash: await hash("admin@123", 12),
+      },
+    });
+    console.log(`  ✓ created default user ${DEFAULT_EMAIL}`);
+  }
 
   // 2. Scoring configuration (never hard-coded in application code)
   await prisma.scoringConfig.upsert({
