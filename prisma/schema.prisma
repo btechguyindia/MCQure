@@ -1,0 +1,603 @@
+// MCQure data model.
+// The schema is designed so exams/syllabus/scoring are configuration data
+// (never hard-coded), and the core practice engine is exam-agnostic.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  VERY_HARD
+}
+
+// Honest provenance: never label AI-generated content as a real PYQ.
+// Every question in the bank is classified exactly one of these ways.
+enum QuestionSourceType {
+  PYQ // verified/authentic previous-year question
+  PYQ_VARIANT // original question derived from a PYQ concept
+  AI_GENERATED // generated from syllabus/concept
+  WEB_SOURCED // sourced from the web (verified status tracked separately)
+  OFFICIAL // from an official exam/government source
+  LICENSED // legally licensed question content
+  WEB_DERIVED_ORIGINAL // original question created from web-research concepts
+  USER_CREATED // added by a user or admin
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  CONFLICT
+}
+
+// Error categories used for mistake-book analysis (Phase 2+).
+enum ErrorType {
+  CONCEPTUAL
+  MEMORY
+  CARELESS
+  CALCULATION
+  MISREAD
+  CONFUSED_CONCEPTS
+  GUESS
+  TIME_PRESSURE
+  UNKNOWN_CONCEPT
+}
+
+enum PracticeSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// Study material kinds delivered by the Phase 3 Study module.
+enum StudyNoteKind {
+  CONCEPT_NOTES // concise bullet-point concept notes
+  MNEMONICS // memory aids / acronyms
+  EXAM_TRAPS // common traps, misconceptions, what NOT to do
+  COMPARISON // side-by-side comparison tables
+  QUICK_SUMMARY // one-page exam revision summary
+}
+
+// Where did the user engage with a topic (drives "last studied" / revision).
+enum VisitSource {
+  STUDY // opened study material
+  REVISION // targeted revision practice / revision page
+}
+
+// Exam blueprint: how heavily the exam tests a topic.
+enum WeightClass {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// Honest provenance for blueprint weights: never present an estimate as fact.
+enum WeightBasis {
+  OFFICIAL // from the official syllabus / blueprint
+  ESTIMATED // estimated from previous-year question counts
+  UNKNOWN // no reliable data — do not fabricate
+}
+
+// Quality-pipeline state for questions entering the pool.
+enum QuestionQualityStatus {
+  PENDING // not yet evaluated
+  APPROVED // passed the quality gate
+  QUARANTINED // flagged for review (ambiguous/wrong/unclear)
+  REJECTED // failed quality — excluded from active practice
+}
+
+// How two questions were found to be duplicates.
+enum DuplicateMethod {
+  EXACT // identical normalized text
+  NEAR // high n-gram similarity (paraphrase)
+  SEMANTIC // same meaning, different wording (embedding-based)
+}
+
+// What a question-ingestion batch is doing.
+enum IngestionJobKind {
+  PYQ_IMPORT // importing genuine PYQs from a source
+  ORIGINAL_GENERATION // generating original questions from syllabus
+  VARIANT_GENERATION // generating PYQ-concept variants
+  DEDUP_SCAN // re-scanning the pool for duplicates
+}
+
+enum IngestionJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attempts          Attempt[]
+  practiceSessions  PracticeSession[]
+  goals             Goal[]
+  userAchievements  UserAchievement[]
+  questionReports   QuestionReport[]
+  conceptMastery    ConceptMastery[]
+  preparation       UserPreparation?
+  studyVisits       StudyVisit[]
+  ingestionJobs     IngestionJob[]
+}
+
+model Exam {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  scoringConfig ScoringConfig?
+  subjects      Subject[]
+  questions     Question[]
+  pyqs          Pyq[]
+  papers        Paper[]
+  blueprintTopicWeights BlueprintTopicWeight[]
+  userPreparations UserPreparation[]
+  ingestionJobs IngestionJob[]
+}
+
+// Scoring is exam configuration, never hard-coded in application code.
+// incorrectPenalty is stored as a negative value (e.g. -0.25).
+model ScoringConfig {
+  id               String @id @default(cuid())
+  examId           String @unique
+  exam             Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  totalMarks       Int    @default(200)
+  correctMarks     Float  @default(1)
+  incorrectPenalty Float  @default(-0.25)
+  unattemptedMarks Float  @default(0)
+  timeLimitMinutes Int    @default(120)
+}
+
+model Subject {
+  id     String  @id @default(cuid())
+  examId String
+  exam   Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  name   String
+  order  Int     @default(0)
+
+  topics    Topic[]
+  questions Question[]
+  sectionSubjects SectionSubject[]
+
+  @@unique([examId, name])
+  @@index([examId])
+}
+
+model Topic {
+  id        String  @id @default(cuid())
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int     @default(0)
+
+  subtopics  Subtopic[]
+  questions  Question[]
+  conceptMastery ConceptMastery[]
+  studyNotes StudyNote[]
+  studyVisits StudyVisit[]
+  blueprintTopicWeights BlueprintTopicWeight[]
+
+  @@unique([subjectId, name])
+  @@index([subjectId])
+}
+
+model Subtopic {
+  id      String @id @default(cuid())
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  name    String
+  order   Int    @default(0)
+
+  questions Question[]
+  concepts  Concept[]
+
+  @@unique([topicId, name])
+  @@index([topicId])
+}
+
+// The finest level of the exam hierarchy. Questions link to a concept so the
+// engine can say "Round Robin is weak", not just "Operating System is weak".
+model Concept {
+  id         String   @id @default(cuid())
+  subtopicId String
+  subtopic   Subtopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+  name       String
+  order      Int      @default(0)
+
+  questions Question[]
+
+  @@unique([subtopicId, name])
+  @@index([subtopicId])
+}
+
+// Provenance of a question. AI-generated content points at a QuestionSource of
+// type AI_GENERATED so it can never be confused with a verified PYQ.
+model QuestionSource {
+  id       String             @id @default(cuid())
+  type     QuestionSourceType
+  name     String
+  examName String?
+  year     Int?
+  paper    String?
+  url      String?
+  verified Boolean            @default(false)
+
+  questions Question[]
+
+  @@index([type])
+}
+
+model Question {
+  id             String             @id @default(cuid())
+  examId         String
+  exam           Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topicId        String
+  topic          Topic              @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  subtopicId     String?
+  subtopic       Subtopic?          @relation(fields: [subtopicId], references: [id], onDelete: SetNull)
+  conceptId      String?
+  concept        Concept?           @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  sourceType     QuestionSourceType @default(AI_GENERATED)
+  sourceId       String?
+  source         QuestionSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  text           String
+  options        Json               // [{ "label": "A", "text": "..." }, ...]
+  correctIndex   Int
+  explanation    String
+  difficulty     Difficulty         @default(MEDIUM)
+  // 0-100 evidence-based exam relevance (filled in by the prediction engine).
+  examRelevance  Int                @default(50)
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+
+  attempts        Attempt[]
+  pyqs            Pyq[]
+  questionReports QuestionReport[]
+  questionDuplicatesA QuestionDuplicate[] @relation("duplicateA")
+  questionDuplicatesB QuestionDuplicate[] @relation("duplicateB")
+
+  // ── Large question bank: quality pipeline ──────────────────────────────
+  qualityStatus QuestionQualityStatus @default(PENDING)
+  qualityNote   String?
+
+  // ── Denormalized performance counters (feed analytics + adaptive engine) ─
+  timesAttempted    Int      @default(0)
+  timesCorrect      Int      @default(0)
+  timesIncorrect    Int      @default(0)
+  timesSkipped      Int      @default(0)
+  answeredCount     Int      @default(0) // bookkeeping for the running mean
+  avgResponseTimeMs Int      @default(0)
+  reportCount       Int      @default(0)
+  lastAttemptedAt   DateTime?
+
+  // ── Duplicate prevention ────────────────────────────────────────────────
+  normalizedText   String?
+  fingerprint      String? // sha256 of normalized text (exact duplicates)
+  duplicateGroupId String? // groups a set of near/semantic duplicates
+
+  // Lowercased question+explanation text searched by the question-bank explorer.
+  searchText String @default("")
+
+  @@index([examId, topicId])
+  @@index([subjectId])
+  @@index([difficulty])
+  @@index([sourceType])
+  @@index([subtopicId])
+  @@index([conceptId])
+  @@index([qualityStatus])
+  @@index([examRelevance])
+  @@index([fingerprint])
+  @@index([duplicateGroupId])
+  @@index([sourceId])
+}
+
+// One run of practice questions (quick, standard, deep, marathon, custom...).
+model PracticeSession {
+  id            String                @id @default(cuid())
+  userId        String
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode          String                // quick | standard | deep | marathon | custom | ...
+  config        Json?                 // filters: subject/topic/difficulty/source/count/timeLimit
+  status        PracticeSessionStatus @default(IN_PROGRESS)
+  questionCount Int                   @default(0)
+  startedAt     DateTime              @default(now())
+  endedAt       DateTime?
+
+  attempts Attempt[]
+
+  @@index([userId, startedAt])
+}
+
+// Every attempt is immutable: each (user, question, session) is unique and a
+// re-answer within the same session is rejected rather than overwriting.
+model Attempt {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  sessionId      String
+  session        PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  selectedIndex  Int?
+  isCorrect      Boolean?
+  score          Float
+  responseTimeMs Int
+  confidence     Int? // 1-3
+  errorType      ErrorType?
+  createdAt      DateTime  @default(now())
+
+  @@unique([userId, questionId, sessionId])
+  @@index([userId, createdAt])
+  @@index([questionId])
+  @@index([sessionId])
+}
+
+// User flag for a question they believe is broken or wrong.
+model QuestionReport {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  issue      String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, questionId])
+}
+
+model Pyq {
+  id                 String             @id @default(cuid())
+  questionId         String?            @unique
+  question           Question?          @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  examId             String
+  exam               Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examName           String
+  year               Int
+  paper              String?
+  questionText       String
+  options            Json
+  correctIndex       Int
+  explanation        String
+  source             String?
+  sourceUrl          String?
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+
+  @@index([examId, year])
+  @@index([verificationStatus])
+}
+
+// Foundation for future phases (goals/achievements/concept mastery tables).
+model Goal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // daily_questions | exam_date | ...
+  target    Float
+  current   Float    @default(0)
+  period    String   @default("day") // day | week
+  examDate  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Achievement {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  icon        String?
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+// Rolling mastery per topic (populated by Phase 5 adaptive engine).
+model ConceptMastery {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId    String
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  mastery    Float    @default(0)
+  attempts   Int      @default(0)
+  correct    Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, topicId])
+  @@index([userId])
+}
+
+// Phase 3 Study module: concise, exam-focused material per topic.
+// Kind categories render differently (notes, mnemonics, traps, tables, summary).
+model StudyNote {
+  id        String        @id @default(cuid())
+  topicId   String
+  topic     Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  kind      StudyNoteKind
+  title     String
+  body      String // newline-separated bullet lines; "||" separates table cells
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+
+  @@index([topicId])
+}
+
+// ── Exam blueprint & preparation tracking (Phase "Foundation") ──────────────
+
+// A specific paper of an exam (e.g. "DSSSB TGT CS 2026"). An exam can have
+// multiple papers (years); one is marked active for current preparation.
+model Paper {
+  id        String   @id @default(cuid())
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  name      String
+  year      Int
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  sections Section[]
+
+  @@unique([examId, name])
+  @@index([examId])
+}
+
+// A section of a paper (DSSSB: Section A General, Section B Computer Science).
+// Marks/negative-marking/time are configuration — a section can override the
+// exam-level scoring config, so the app stays exam-agnostic.
+model Section {
+  id               String @id @default(cuid())
+  paperId          String
+  paper            Paper  @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  name             String
+  order            Int    @default(0)
+  questionCount    Int
+  marksPerQuestion Float  @default(1)
+  negativeMarks    Float  @default(-0.25)
+  timeLimitMinutes Int? // null = inherit exam-level time
+  weight           Float  @default(1) // relative emphasis of this section
+
+  sectionSubjects SectionSubject[]
+
+  @@index([paperId])
+}
+
+// Expected question distribution of a section across subjects (the blueprint).
+// `questionShare` is how many of the section's questions come from a subject.
+model SectionSubject {
+  id            String  @id @default(cuid())
+  sectionId     String
+  section       Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questionShare Int     @default(0)
+  order         Int     @default(0)
+
+  @@unique([sectionId, subjectId])
+  @@index([subjectId])
+}
+
+// Exam importance of each topic. Basis is always recorded: OFFICIAL blueprint,
+// ESTIMATED from previous-year counts, or UNKNOWN — never fabricated.
+model BlueprintTopicWeight {
+  id                  String      @id @default(cuid())
+  examId              String
+  exam                Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  topicId             String
+  topic               Topic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  weight              WeightClass
+  estimatedQuestions  Float? // expected questions per paper when known
+  basis               WeightBasis
+  basisNote           String?
+
+  @@unique([examId, topicId])
+  @@index([examId])
+}
+
+// Persistent preparation profile per user ("My Target Exam" + goals).
+model UserPreparation {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examId          String?
+  exam            Exam?    @relation(fields: [examId], references: [id], onDelete: SetNull)
+  examAttemptYear Int?
+  prepStartDate   DateTime @default(now())
+  targetExamDate  DateTime?
+  targetScore     Float?
+  dailyTarget     Int      @default(25)
+  weeklyTarget    Int      @default(175)
+  stage           String   @default("starting") // not_started|starting|early_prep|mid_prep|intensive|revision|mock_testing|exam_ready
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// One engagement with a topic's study material or a targeted revision.
+// Timestamps are append-only, so "last studied"/"last revised" stay truthful.
+model StudyVisit {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String
+  topic     Topic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  source    VisitSource @default(STUDY)
+  createdAt DateTime    @default(now())
+
+  @@index([userId, topicId])
+  @@index([userId, createdAt])
+}
+
+// ── Large question bank ─────────────────────────────────────────────────────
+
+// A detected duplicate pair (exact / near / semantic). Detected duplicates are
+// never silently deleted; they are recorded so reviewers can reconcile them.
+model QuestionDuplicate {
+  id          String          @id @default(cuid())
+  questionAId String
+  questionA   Question        @relation("duplicateA", fields: [questionAId], references: [id], onDelete: Cascade)
+  questionBId String
+  questionB   Question        @relation("duplicateB", fields: [questionBId], references: [id], onDelete: Cascade)
+  method      DuplicateMethod
+  similarity  Float
+  createdAt   DateTime        @default(now())
+
+  @@unique([questionAId, questionBId])
+  @@index([questionAId])
+  @@index([questionBId])
+  @@index([similarity])
+}
+
+// A batch unit for progressively importing/generating questions. Large pools
+// are built by many small jobs (imports, generation runs, dedup scans), not
+// one giant operation.
+model IngestionJob {
+  id          String             @id @default(cuid())
+  kind        IngestionJobKind
+  status      IngestionJobStatus @default(QUEUED)
+  userId      String?
+  user        User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  examId      String?
+  exam        Exam?              @relation(fields: [examId], references: [id], onDelete: SetNull)
+  params      Json?
+  requested   Int                @default(0)
+  processed   Int                @default(0)
+  accepted    Int                @default(0)
+  rejected    Int                @default(0)
+  error       String?
+  createdAt   DateTime           @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
