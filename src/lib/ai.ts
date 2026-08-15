@@ -111,6 +111,15 @@ export async function generateWithGemini(
 
   if (!res.ok) {
     const detail = await res.text();
+    if (res.status === 429 && isConfiguredKey(process.env[AI_ENV_KEYS.openRouter])) {
+      const fallbackModel = process.env.OPENROUTER_FALLBACK_MODEL ?? "openai/gpt-4o-mini";
+      const fb = await chatWithOpenRouter({
+        model: fallbackModel,
+        messages: [{ role: "user", content: input.prompt }],
+        temperature: input.temperature ?? 0.7,
+      });
+      return { text: fb.text, model: fb.model, raw: fb.raw };
+    }
     throw new Error(`Gemini request failed (${res.status}): ${detail.slice(0, 300)}`);
   }
 
