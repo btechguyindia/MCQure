@@ -9,6 +9,7 @@ export { MODE_DEFAULTS, resolveCount } from "@/lib/modes";
 
 export interface QuestionFilters {
   subjectId?: string;
+  subjectIds?: string[];
   topicId?: string;
   subtopicId?: string;
   conceptId?: string;
@@ -31,6 +32,7 @@ export async function selectQuestions(
     isActive: true,
     qualityStatus: { not: "REJECTED" as const },
     ...(filters.subjectId ? { subjectId: filters.subjectId } : {}),
+    ...(filters.subjectIds ? { subjectId: { in: filters.subjectIds } } : {}),
     ...(filters.topicId ? { topicId: filters.topicId } : {}),
     ...(filters.subtopicId ? { subtopicId: filters.subtopicId } : {}),
     ...(filters.conceptId ? { conceptId: filters.conceptId } : {}),

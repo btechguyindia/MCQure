@@ -24,12 +24,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <head>
         <ThemeScript />
       </head>
-      <body className="flex min-h-dvh flex-col">
+      <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <NavBar />
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-20 pt-6">
           {children}

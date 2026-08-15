@@ -69,6 +69,11 @@ export default async function StudyPage() {
                     <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
                       {topic.noteCount} notes
                     </span>
+                    {topic.sourceCount > 0 ? (
+                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
+                        {topic.sourceCount} sources
+                      </span>
+                    ) : null}
                     {topic.attempts > 0 ? (
                       <span
                         className={`rounded-full px-2 py-0.5 ${

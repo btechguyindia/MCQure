@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { practiceCompleteSchema } from "@/lib/validation";
 import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
 import { summarizeAttempts } from "@/lib/analytics";
+import { completeMock } from "@/lib/mock";
+import { evaluateAchievements } from "@/lib/motivation";
 
 // Marks a session as completed and returns a summary. Scores are deterministic
 // and derived from the session's recorded attempts.
@@ -53,5 +55,18 @@ export async function POST(request: Request) {
     unattemptedMarks: config.unattemptedMarks ?? 0,
   });
 
-  return NextResponse.json({ ok: true, summary });
+  // Mock sessions additionally produce a MockRun + may unlock achievements.
+  let run: unknown = null;
+  let achievements: unknown = null;
+  if (session.mode.startsWith("mock_")) {
+    try {
+      const finalized = await completeMock(user.id, session.id);
+      run = finalized.run;
+    } catch {
+      // never fail the summary because the mock record could not be written
+    }
+    achievements = await evaluateAchievements(user.id);
+  }
+
+  return NextResponse.json({ ok: true, summary, run, achievements });
 }

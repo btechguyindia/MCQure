@@ -7,6 +7,7 @@ export const MODE_DEFAULTS: Record<string, { count: number }> = {
   marathon: { count: 100 },
   custom: { count: 25 },
   review: { count: 20 },
+  smart: { count: 20 },
 };
 
 export function resolveCount(mode: string, requested?: number): number {

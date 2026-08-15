@@ -19,10 +19,11 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/practice", label: "Practice" },
-  { href: "/analytics", label: "Analytics" },
+  { href: "/mock", label: "Mock" },
   { href: "/study", label: "Study" },
-  { href: "/pyq", label: "PYQs" },
-  { href: "/questions", label: "Bank" },
+  { href: "/motivation", label: "Motivation" },
+  { href: "/analytics", label: "Analytics" },
+  { href: "/reports", label: "Reports" },
   { href: "/preparation", label: "Progress", accent: true },
 ];
 

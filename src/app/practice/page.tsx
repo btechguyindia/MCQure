@@ -29,6 +29,12 @@ const MODES = [
     description: "100+ questions. Full-length endurance run.",
     count: 100,
   },
+  {
+    key: "smart",
+    title: "Smart Practice",
+    description: "20 questions. Prioritizes your weak topics automatically.",
+    count: 20,
+  },
 ] as const;
 
 export default function PracticePage() {

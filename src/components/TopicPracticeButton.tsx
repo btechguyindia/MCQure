@@ -3,10 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function TopicPracticeButton({ topicId, label = "Practice this topic" }: { topicId: string; label?: string }) {
+export function TopicPracticeButton({
+  topicId,
+  label = "Practice this topic",
+  questionCount,
+}: {
+  topicId: string;
+  label?: string;
+  questionCount?: number;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const empty = typeof questionCount === "number" && questionCount === 0;
 
   async function start() {
     setBusy(true);
@@ -39,10 +48,17 @@ export function TopicPracticeButton({ topicId, label = "Practice this topic" }: 
       <button
         type="button"
         onClick={start}
-        disabled={busy}
-        className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+        disabled={busy || empty}
+        title={empty ? "No questions available for this topic yet" : undefined}
+        className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {busy ? "Starting…" : label}
+        {busy
+          ? "Starting…"
+          : empty
+            ? "No questions yet"
+            : questionCount
+              ? `${label} (${questionCount})`
+              : label}
       </button>
       {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
     </div>

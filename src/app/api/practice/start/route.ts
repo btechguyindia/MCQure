@@ -11,6 +11,7 @@ import {
   selectQuestions,
   toPublicQuestion,
 } from "@/lib/practice";
+import { selectAdaptiveQuestions } from "@/lib/adaptive";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -39,19 +40,41 @@ export async function POST(request: Request) {
   const selected =
     mode === "review"
       ? await selectMistakes(user.id, exam.id, requestedCount)
-      : await selectQuestions(exam.id, {
-          count: requestedCount,
-          subjectId,
-          topicId,
-          subtopicId,
-          conceptId,
-          difficulty,
-          sourceType,
-          verifiedOnly,
-        });
+      : mode === "smart"
+        ? await selectAdaptiveQuestions(user.id, exam.id, {
+            count: requestedCount,
+            topicId,
+          })
+        : await selectQuestions(exam.id, {
+            count: requestedCount,
+            subjectId,
+            topicId,
+            subtopicId,
+            conceptId,
+            difficulty,
+            sourceType,
+            verifiedOnly,
+          });
 
   if (selected.length === 0) {
-    return jsonError("No questions match the selected filters", 404);
+    const available = await prisma.question.count({
+      where: {
+        examId: exam.id,
+        isActive: true,
+        qualityStatus: { not: "REJECTED" },
+        ...(subjectId ? { subjectId } : {}),
+        ...(topicId ? { topicId } : {}),
+        ...(subtopicId ? { subtopicId } : {}),
+        ...(conceptId ? { conceptId } : {}),
+        ...(difficulty ? { difficulty } : {}),
+        ...(sourceType ? { sourceType } : {}),
+        ...(verifiedOnly ? { source: { is: { verified: true } } } : {}),
+      },
+    });
+    const hint = available === 0
+      ? "No questions are available for these filters yet."
+      : `Only ${available} question${available === 1 ? "" : "s"} available for these filters — the requested count (${requestedCount}) is larger.`;
+    return jsonError(`${hint} New questions are being added continuously, so check back soon.`, 404);
   }
 
   const config = await getScoringConfig(exam.id);

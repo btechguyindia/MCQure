@@ -49,6 +49,7 @@ export interface CreateQuestionInput {
     url?: string;
     verified?: boolean;
   };
+  sourceId?: string; // reuse an existing QuestionSource instead of creating one
   text: string;
   options: QuestionOption[];
   correctIndex: number;
@@ -153,21 +154,22 @@ export async function createQuestion(
     };
   }
 
-  const sourceId = input.source
-    ? (
-        await prisma.questionSource.create({
-          data: {
-            type: input.source.type,
-            name: input.source.name,
-            examName: input.source.examName ?? null,
-            year: input.source.year ?? null,
-            paper: input.source.paper ?? null,
-            url: input.source.url ?? null,
-            verified: input.source.verified ?? false,
-          },
-        })
-      ).id
-    : null;
+  const sourceId = input.sourceId ??
+    (input.source
+      ? (
+          await prisma.questionSource.create({
+            data: {
+              type: input.source.type,
+              name: input.source.name,
+              examName: input.source.examName ?? null,
+              year: input.source.year ?? null,
+              paper: input.source.paper ?? null,
+              url: input.source.url ?? null,
+              verified: input.source.verified ?? false,
+            },
+          })
+        ).id
+      : null);
 
   const question = await prisma.question.create({
     data: {

@@ -1,5 +1,5 @@
 // Phase 3 Study module: browser + per-topic study material.
-import type { StudyNote, StudyNoteKind } from "@prisma/client";
+import type { StudyNote, StudyNoteKind, TopicSource } from "@prisma/client";
 import { prisma } from "./db";
 import { summarizeByGroup } from "./analytics";
 
@@ -62,6 +62,7 @@ export interface StudyTopicOverview {
   name: string;
   order: number;
   noteCount: number;
+  sourceCount: number;
   attempts: number;
   accuracy: number | null;
   weak: boolean;
@@ -84,7 +85,7 @@ export async function getStudyOverview(userId: string): Promise<StudySubjectOver
     include: {
       topics: {
         orderBy: { order: "asc" },
-        include: { _count: { select: { studyNotes: true } } },
+        include: { _count: { select: { studyNotes: true, topicSources: true } } },
       },
     },
   });
@@ -119,6 +120,7 @@ export async function getStudyOverview(userId: string): Promise<StudySubjectOver
         name: t.name,
         order: t.order,
         noteCount: t._count.studyNotes,
+        sourceCount: t._count.topicSources,
         attempts: attemptsCount,
         accuracy,
         weak: isWeakTopic(accuracy, attemptsCount),
@@ -130,6 +132,8 @@ export async function getStudyOverview(userId: string): Promise<StudySubjectOver
 export interface TopicStudy {
   topic: { id: string; name: string; order: number; subjectName: string };
   notes: StudyNote[];
+  sources: TopicSource[];
+  questionCount: number;
 }
 
 export async function getTopicStudy(topicId: string): Promise<TopicStudy | null> {
@@ -138,11 +142,17 @@ export async function getTopicStudy(topicId: string): Promise<TopicStudy | null>
     include: {
       subject: { select: { name: true } },
       studyNotes: { orderBy: { order: "asc" } },
+      topicSources: { orderBy: { order: "asc" } },
     },
   });
   if (!topic) return null;
+  const questionCount = await prisma.question.count({
+    where: { topicId: topic.id, isActive: true },
+  });
   return {
     topic: { id: topic.id, name: topic.name, order: topic.order, subjectName: topic.subject.name },
     notes: topic.studyNotes,
+    sources: topic.topicSources,
+    questionCount,
   };
 }

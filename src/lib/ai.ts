@@ -92,7 +92,7 @@ export async function generateWithGemini(
   input: GeminiGenerationInput
 ): Promise<GeminiResult> {
   const apiKey = requireKey("gemini");
-  const model = input.model ?? "gemini-2.0-flash";
+  const model = input.model ?? "gemini-3.1-flash-lite";
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,

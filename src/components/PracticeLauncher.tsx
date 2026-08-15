@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface PracticeLauncherProps {
-  mode: "quick" | "standard" | "deep" | "marathon" | "review";
+  mode: "quick" | "standard" | "deep" | "marathon" | "review" | "smart";
   title: string;
   description: string;
 }

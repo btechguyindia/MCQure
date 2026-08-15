@@ -14,7 +14,7 @@ export const loginSchema = z.object({
 });
 
 export const practiceStartSchema = z.object({
-  mode: z.enum(["quick", "standard", "deep", "marathon", "custom", "review"]),
+  mode: z.enum(["quick", "standard", "deep", "marathon", "custom", "review", "smart"]),
   count: z.number().int().min(1).max(200).optional(),
   subjectId: z.string().min(1).optional(),
   topicId: z.string().min(1).optional(),
@@ -155,6 +155,23 @@ export const questionReviewSchema = z.object({
   questionId: z.string().min(1),
   status: z.enum(["APPROVED", "QUARANTINED", "REJECTED"]),
   note: z.string().trim().max(500).optional(),
+});
+
+export const mockStartSchema = z.object({
+  scope: z.enum(["full", "section", "topic"]),
+  sectionId: z.string().min(1).optional(),
+  topicId: z.string().min(1).optional(),
+  count: z.number().int().min(1).max(200).optional(),
+});
+
+export const notebookSchema = z.object({
+  topicId: z.string().min(1),
+  message: z.string().trim().min(1, "Ask something").max(2000),
+});
+
+export const goalsSchema = z.object({
+  dailyTarget: z.number().int().min(1).max(500).optional(),
+  weeklyTarget: z.number().int().min(1).max(3500).optional(),
 });
 
 export const questionBankQuerySchema = z.object({

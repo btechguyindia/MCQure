@@ -10,6 +10,7 @@ import {
   parseComparisonTable,
 } from "@/lib/study";
 import { TopicPracticeButton } from "@/components/TopicPracticeButton";
+import { NotebookChat } from "@/components/NotebookChat";
 import { recordStudyVisit } from "@/lib/study-visit";
 
 export async function generateMetadata({ params }: { params: Promise<{ topicId: string }> }): Promise<Metadata> {
@@ -44,7 +45,7 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
           <h1 className="mt-1 text-2xl font-bold">{study.topic.name}</h1>
           <p className="text-sm text-zinc-500">{study.topic.subjectName}</p>
         </div>
-        <TopicPracticeButton topicId={study.topic.id} />
+        <TopicPracticeButton topicId={study.topic.id} questionCount={study.questionCount} />
       </div>
 
       {groups.length === 0 ? (
@@ -95,6 +96,57 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
           );
         })
       )}
+
+      {study.sources.length > 0 ? (
+        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+            🔗 Net sources ({study.sources.length})
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Curated references to go deeper. The Notebook answers only from the notes
+            above, not from these links.
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {study.sources.map((source) => (
+              <li key={source.id}>
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-zinc-700 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                >
+                  <span>
+                    <span className="block text-sm font-medium text-indigo-600 group-hover:underline dark:text-indigo-400">
+                      {source.title}
+                    </span>
+                    {source.description ? (
+                      <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                        {source.description}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="text-xs text-zinc-400" title="Open in new tab">
+                    ↗
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          🤖 Notebook
+        </h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Chat with your study material. Grounded — it stays strictly inside this
+          topic&apos;s notes.
+        </p>
+        <div className="mt-3">
+          <NotebookChat topicId={study.topic.id} />
+        </div>
+      </section>
     </div>
   );
 }

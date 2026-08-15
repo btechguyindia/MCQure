@@ -5,6 +5,7 @@ import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
 import { attemptScore, roundMarks } from "@/lib/scoring";
 import { getScoringConfig } from "@/lib/practice";
 import { nextAttemptCounters } from "@/lib/question-stats";
+import { evaluateAchievements } from "@/lib/motivation";
 
 // Records one answer. Attempts are immutable: (user, question, session) is
 // unique, so re-answering the same question in the same session is rejected
@@ -99,8 +100,11 @@ export async function POST(request: Request) {
     }),
   ]);
 
+  const achievements = await evaluateAchievements(user.id);
+
   return NextResponse.json({
     ok: true,
+    achievements,
     attempt: {
       id: attempt.id,
       isCorrect,

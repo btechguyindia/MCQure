@@ -9,11 +9,9 @@ import { hash } from "bcryptjs";
 import { DSSSB_EXAM, DSSSB_SCORING, SUBJECTS } from "./seed-data/syllabus";
 import { QUESTIONS } from "./seed-data/questions";
 import { STUDY_NOTES } from "./seed-data/study";
-import {
-  BLUEPRINT,
-  BLUEPRINT_ONLY_SUBJECTS,
-  SUBJECT_WEIGHTS,
-} from "./seed-data/blueprint";
+import { BLUEPRINT, SUBJECT_WEIGHTS } from "./seed-data/blueprint";
+import { TOPIC_SOURCES } from "./seed-data/sources";
+import { ACHIEVEMENTS } from "./seed-data/achievements";
 
 const prisma = new PrismaClient();
 
@@ -65,7 +63,7 @@ async function main() {
   });
 
   // 4. Subjects / topics / subtopics
-  let questionTopicMap = new Map<
+  const questionTopicMap = new Map<
     string,
     { subjectId: string; topicId: string; subtopicId: string | null }
   >();
@@ -157,8 +155,8 @@ async function main() {
   // 6. Study notes (Phase 3) — keyed by subject -> topic -> notes
   let noteCreated = 0;
   let noteUpdated = 0;
-  let noteWarned: string[] = [];
-  for (const [subjectName, topics] of Object.entries(STUDY_NOTES)) {
+  const noteWarned: string[] = [];
+  for (const [, topics] of Object.entries(STUDY_NOTES)) {
     for (const [topicName, notes] of Object.entries(topics)) {
       const link = questionTopicMap.get(topicName);
       if (!link) {
@@ -197,28 +195,50 @@ async function main() {
 
   const noteCount = await prisma.studyNote.count();
 
+  // 6b. Topic sources ("net article sources") — curated external reading links.
+  let sourceCreated = 0;
+  let sourceUpdated = 0;
+  for (const [topicName, sources] of Object.entries(TOPIC_SOURCES)) {
+    const link = questionTopicMap.get(topicName);
+    if (!link) {
+      noteWarned.push(`sources:${topicName}`);
+      continue;
+    }
+    for (let i = 0; i < sources.length; i += 1) {
+      const s = sources[i];
+      const existing = await prisma.topicSource.findFirst({
+        where: { topicId: link.topicId, url: s.url },
+      });
+      if (existing) {
+        await prisma.topicSource.update({
+          where: { id: existing.id },
+          data: { title: s.title, author: s.author ?? null, description: s.description ?? null, order: i },
+        });
+        sourceUpdated += 1;
+      } else {
+        await prisma.topicSource.create({
+          data: {
+            topicId: link.topicId,
+            title: s.title,
+            url: s.url,
+            author: s.author ?? null,
+            description: s.description ?? null,
+            order: i,
+          },
+        });
+        sourceCreated += 1;
+      }
+    }
+  }
+  const sourceCount = await prisma.topicSource.count();
+
   // 7. Exam blueprint (Phase "Foundation"): paper, sections, distribution,
   //    topic weights — all configuration data, never hard-coded.
   const subjectByName = new Map(
     (await prisma.subject.findMany({ where: { examId: exam.id } })).map((s) => [s.name, s])
   );
 
-  // 7a. Blueprint-only subjects (Section A + non-CS Section B categories).
-  for (const subj of BLUEPRINT_ONLY_SUBJECTS) {
-    await prisma.subject.upsert({
-      where: { examId_name: { examId: exam.id, name: subj.name } },
-      update: { order: subj.order },
-      create: { examId: exam.id, name: subj.name, order: subj.order },
-    });
-    subjectByName.set(
-      subj.name,
-      (await prisma.subject.findUnique({
-        where: { examId_name: { examId: exam.id, name: subj.name } },
-      }))!
-    );
-  }
-
-  // 7b. Paper + sections + subject distribution.
+  // 7a. Paper + sections + subject distribution.
   const paper = await prisma.paper.upsert({
     where: { examId_name: { examId: exam.id, name: BLUEPRINT.paper.name } },
     update: { year: BLUEPRINT.paper.year, order: BLUEPRINT.paper.order, isActive: true },
@@ -307,12 +327,37 @@ async function main() {
 
   const sectionCount = await prisma.section.count({ where: { paperId: paper.id } });
 
+  // 8. Achievement catalog (Phase 8 Motivation) — idempotent upsert by code.
+  let achievementCreated = 0;
+  let achievementUpdated = 0;
+  for (const a of ACHIEVEMENTS) {
+    const existing = await prisma.achievement.findUnique({ where: { code: a.code } });
+    if (existing) {
+      await prisma.achievement.update({
+        where: { code: a.code },
+        data: { name: a.name, description: a.description, icon: a.icon },
+      });
+      achievementUpdated += 1;
+    } else {
+      await prisma.achievement.create({
+        data: { code: a.code, name: a.name, description: a.description, icon: a.icon },
+      });
+      achievementCreated += 1;
+    }
+  }
+
   console.log(`[seed] exam: ${exam.name}`);
   console.log(`[seed] subjects: ${subjectCount}`);
   console.log(`[seed] questions: ${counts} (created ${created}, updated ${updated})`);
   console.log(`[seed] study notes: ${noteCount} (created ${noteCreated}, updated ${noteUpdated})`);
   console.log(
+    `[seed] topic sources: ${sourceCount} (created ${sourceCreated}, updated ${sourceUpdated})`
+  );
+  console.log(
     `[seed] blueprint: paper "${paper.name}", sections ${sectionCount}, topic weights ${weightCreated} created / ${weightUpdated} updated`
+  );
+  console.log(
+    `[seed] achievements: ${achievementCreated} created / ${achievementUpdated} updated`
   );
   console.log(
     `[seed] all questions are AI_GENERATED original content (no PYQs fabricated)`

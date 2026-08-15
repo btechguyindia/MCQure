@@ -16,7 +16,10 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/study") ||
     pathname.startsWith("/pyq") ||
     pathname.startsWith("/preparation") ||
-    pathname.startsWith("/questions");
+    pathname.startsWith("/questions") ||
+    pathname.startsWith("/mock") ||
+    pathname.startsWith("/motivation") ||
+    pathname.startsWith("/reports");
 
   if (isProtected && !session) {
     const url = request.nextUrl.clone();
@@ -36,5 +39,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/practice/:path*", "/analytics", "/study/:path*", "/pyq", "/preparation/:path*", "/questions", "/login", "/register"],
+  matcher: ["/practice/:path*", "/analytics", "/study/:path*", "/pyq", "/preparation/:path*", "/questions", "/mock", "/motivation", "/reports", "/login", "/register"],
 };

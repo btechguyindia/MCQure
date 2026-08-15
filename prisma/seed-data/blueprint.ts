@@ -4,9 +4,11 @@
 //
 // HONESTY: per-section shares and topic weights are marked ESTIMATED and carry
 // a basis note. They are derived from user-provided previous-year (2021–2023)
-// question counts, mapped onto MCQure's subject taxonomy — NOT an official
-// blueprint. Any topic without reliable data must be marked UNKNOWN, never
-// fabricated.
+// question counts, mapped onto the official subject list in syllabus.ts — NOT
+// an official blueprint. Where the official syllabus splits one older
+// aggregate into several subjects, the aggregate count is distributed across
+// those subjects and the note says so. Any subject with no reliable data has
+// no share and no weights (the app reports that honestly as "no data").
 
 import type { WeightBasis, WeightClass } from "@prisma/client";
 
@@ -70,58 +72,126 @@ export const BLUEPRINT = {
       timeLimitMinutes: null,
       weight: 1,
       subjects: [
-        // Estimated from 2021–2023 previous-year counts, mapped onto MCQure's
-        // subject taxonomy. Sums to 100 (Computer Science section).
-        { name: "Computer Networks", share: 12 },
-        { name: "Computer Fundamentals & Architecture", share: 13 },
-        { name: "Operating Systems", share: 8 },
-        { name: "Data Structures & Algorithms", share: 9 },
+        // Estimated from 2021–2023 previous-year counts, mapped onto the
+        // official subject list (syllabus.ts). Sums to 100. Where one old
+        // aggregate splits into several official subjects the total for the
+        // group is preserved and the split is noted in the basis note.
+        { name: "Computer Networks, TCP/IP & Network Security", share: 8 },
+        { name: "TCP/Protocols", share: 1 },
+        { name: "Computer Network Security", share: 3 },
+        { name: "Computer Basics and P.C. Software", share: 4 },
+        { name: "Digital Electronics / Boolean Logic", share: 5 },
+        { name: "Computer Architecture", share: 4 },
+        { name: "Operating Systems & Linux", share: 6 },
+        { name: "Linux Environment", share: 2 },
+        { name: "Programming with C, Data Structures using C, C++ Programming", share: 12 },
+        { name: "Design and Analysis of Algorithms", share: 3 },
+        { name: "Problem Solving & Programming", share: 2 },
         { name: "Database Management Systems", share: 7 },
-        { name: "Programming in C & C++", share: 10 },
+        { name: "Object/Computer Oriented Programming / Numerical Techniques", share: 2 },
         { name: "Software Engineering", share: 7 },
-        { name: "Internet & Web Technologies", share: 8 },
-        { name: "Teaching Methodology & Pedagogy", share: 10 },
-        { name: "Mathematics & Statistics", share: 6 },
+        { name: "Java Programming and Website Design", share: 3 },
+        { name: "Front End Designed Tools", share: 1 },
+        { name: ".NET Programming", share: 1 },
+        { name: "Internet Programming — Web Server, CSS, Event Model, Data Binding, XML", share: 2 },
+        { name: "Mobile Computing", share: 1 },
+        { name: "Teaching Methodology / Pedagogy", share: 10 },
+        { name: "Mathematics", share: 3 },
+        { name: "Statistical Techniques", share: 2 },
+        { name: "Interpolation", share: 1 },
         { name: "Computer Graphics & Multimedia", share: 4 },
-        { name: "Business, Economics & E-Commerce", share: 4 },
-        { name: "MIS & Decision Support", share: 2 },
+        { name: "Business Economics", share: 1 },
+        { name: "Business Communication, Business Organization & Management, Writing", share: 1 },
+        { name: "Financial Accounting", share: 1 },
+        { name: "E-Commerce", share: 1 },
+        { name: "MIS / DSS / Expert Systems", share: 1 },
+        { name: "Knowledge Management & New Economy", share: 1 },
       ],
     },
   ] as SeedSection[],
 };
 
 export const SUBJECT_WEIGHTS: Record<string, SeedSubjectWeights> = {
-  "Computer Networks": {
+  "Computer Networks, TCP/IP & Network Security": {
     weight: "HIGH",
-    estimatedQuestions: 12,
-    basis: "ESTIMATED",
-    basisNote: "2021–2023 average of ~10.5 questions/paper (rank #1 in weightage).",
-  },
-  "Computer Fundamentals & Architecture": {
-    weight: "HIGH",
-    estimatedQuestions: 13,
+    estimatedQuestions: 8,
     basis: "ESTIMATED",
     basisNote:
-      "Combines Digital Electronics/Boolean Logic (~10 avg) with Computer Fundamentals & Architecture (~8 avg); overlap accounted for.",
+      "2021–2023 'Computer Networks' average of ~10.5 questions/paper, distributed across the official network subjects (TCP/Protocols 1, Network Security 3).",
+  },
+  "TCP/Protocols": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Split of the 2021–2023 Computer Networks average (~10.5).",
+  },
+  "Computer Network Security": {
+    weight: "MEDIUM",
+    estimatedQuestions: 3,
+    basis: "ESTIMATED",
+    basisNote: "Split of the 2021–2023 Computer Networks average (~10.5).",
+  },
+  "Computer Basics and P.C. Software": {
+    weight: "MEDIUM",
+    estimatedQuestions: 4,
+    basis: "ESTIMATED",
+    basisNote:
+      "Split of Computer Fundamentals & Architecture (~8 avg) onto the official subject list.",
     topics: {
       "Computer Basics": { weight: "MEDIUM", basis: "ESTIMATED" },
+    },
+  },
+  "Digital Electronics / Boolean Logic": {
+    weight: "HIGH",
+    estimatedQuestions: 5,
+    basis: "ESTIMATED",
+    basisNote: "Digital Electronics/Boolean Logic ~10 avg, overlap accounted for.",
+    topics: {
       "Number Systems & Codes": { weight: "HIGH", basis: "ESTIMATED" },
       "Boolean Algebra & Logic Gates": { weight: "HIGH", basis: "ESTIMATED" },
+    },
+  },
+  "Computer Architecture": {
+    weight: "MEDIUM",
+    estimatedQuestions: 4,
+    basis: "ESTIMATED",
+    basisNote:
+      "Computer Fundamentals & Architecture ~8 avg, split onto the official subject list.",
+    topics: {
       "Computer Organization": { weight: "MEDIUM", basis: "ESTIMATED" },
       "Memory & Storage": { weight: "MEDIUM", basis: "ESTIMATED" },
     },
   },
-  "Operating Systems": {
+  "Operating Systems & Linux": {
     weight: "HIGH",
-    estimatedQuestions: 8,
+    estimatedQuestions: 6,
     basis: "ESTIMATED",
-    basisNote: "2021–2023 average of ~6.2 questions/paper; OS & Linux listed as high priority.",
+    basisNote: "2021–2023 average of ~6.2 questions/paper; OS & Linux high priority.",
   },
-  "Data Structures & Algorithms": {
-    weight: "HIGH",
-    estimatedQuestions: 9,
+  "Linux Environment": {
+    weight: "LOW",
+    estimatedQuestions: 2,
     basis: "ESTIMATED",
-    basisNote: "Part of Programming/DS/OOP category (~8.5 avg).",
+    basisNote: "Split of the OS & Linux estimate onto the official subject list.",
+  },
+  "Programming with C, Data Structures using C, C++ Programming": {
+    weight: "HIGH",
+    estimatedQuestions: 12,
+    basis: "ESTIMATED",
+    basisNote:
+      "Programming/DS/OOP category ~8.5 avg plus C & C++ programming coverage, combined into one official subject.",
+  },
+  "Design and Analysis of Algorithms": {
+    weight: "MEDIUM",
+    estimatedQuestions: 3,
+    basis: "ESTIMATED",
+    basisNote: "Split of the Programming/DS/OOP category estimate.",
+  },
+  "Problem Solving & Programming": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Split of the Programming/DS/OOP category estimate.",
   },
   "Database Management Systems": {
     weight: "HIGH",
@@ -129,11 +199,11 @@ export const SUBJECT_WEIGHTS: Record<string, SeedSubjectWeights> = {
     basis: "ESTIMATED",
     basisNote: "2021–2023 average of ~5.8 questions/paper; high priority per analysis.",
   },
-  "Programming in C & C++": {
-    weight: "HIGH",
-    estimatedQuestions: 10,
+  "Object/Computer Oriented Programming / Numerical Techniques": {
+    weight: "LOW",
+    estimatedQuestions: 2,
     basis: "ESTIMATED",
-    basisNote: "Part of Programming/DS/OOP category (~8.5 avg).",
+    basisNote: "Split of the Programming/DS/OOP category estimate.",
   },
   "Software Engineering": {
     weight: "MEDIUM",
@@ -141,23 +211,59 @@ export const SUBJECT_WEIGHTS: Record<string, SeedSubjectWeights> = {
     basis: "ESTIMATED",
     basisNote: "2021–2023 average of ~5.4 questions/paper.",
   },
-  "Internet & Web Technologies": {
+  "Java Programming and Website Design": {
     weight: "MEDIUM",
-    estimatedQuestions: 8,
+    estimatedQuestions: 3,
     basis: "ESTIMATED",
-    basisNote: "Covers Web/Front-end/Internet/.NET category (~5.8 avg).",
+    basisNote: "Web/Front-end/Internet/.NET category ~5.8 avg, distributed.",
   },
-  "Teaching Methodology & Pedagogy": {
+  "Front End Designed Tools": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Web/Front-end/Internet/.NET category ~5.8 avg, distributed.",
+  },
+  ".NET Programming": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Web/Front-end/Internet/.NET category ~5.8 avg, distributed.",
+  },
+  "Internet Programming — Web Server, CSS, Event Model, Data Binding, XML": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Web/Front-end/Internet/.NET category ~5.8 avg, distributed.",
+  },
+  "Mobile Computing": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Web/Front-end/Internet/.NET category ~5.8 avg, distributed.",
+  },
+  "Teaching Methodology / Pedagogy": {
     weight: "HIGH",
     estimatedQuestions: 10,
     basis: "ESTIMATED",
     basisNote: "2021–2023 average of ~9.8 questions/paper.",
   },
-  "Mathematics & Statistics": {
+  Mathematics: {
     weight: "MEDIUM",
-    estimatedQuestions: 6,
+    estimatedQuestions: 3,
     basis: "ESTIMATED",
-    basisNote: "2021–2023 average of ~5.8 questions/paper.",
+    basisNote: "Mathematics & Statistics ~5.8 avg, split onto official subjects.",
+  },
+  "Statistical Techniques": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Mathematics & Statistics ~5.8 avg, split onto official subjects.",
+  },
+  Interpolation: {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Mathematics & Statistics ~5.8 avg, split onto official subjects.",
   },
   "Computer Graphics & Multimedia": {
     weight: "LOW",
@@ -165,32 +271,88 @@ export const SUBJECT_WEIGHTS: Record<string, SeedSubjectWeights> = {
     basis: "ESTIMATED",
     basisNote: "2021–2023 average of ~6.8 questions/paper (varies widely by year).",
   },
-  "Business, Economics & E-Commerce": {
+  "Business Economics": {
     weight: "LOW",
-    estimatedQuestions: 4,
+    estimatedQuestions: 1,
     basis: "ESTIMATED",
-    basisNote: "Business/Accounting/Economics/E-Commerce group (~9 avg across group).",
+    basisNote: "Business/Accounting/Economics/E-Commerce group ~9 avg, distributed.",
   },
-  "MIS & Decision Support": {
+  "Business Communication, Business Organization & Management, Writing": {
     weight: "LOW",
-    estimatedQuestions: 2,
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Business/Accounting/Economics/E-Commerce group ~9 avg, distributed.",
+  },
+  "Financial Accounting": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Business/Accounting/Economics/E-Commerce group ~9 avg, distributed.",
+  },
+  "E-Commerce": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Business/Accounting/Economics/E-Commerce group ~9 avg, distributed.",
+  },
+  "MIS / DSS / Expert Systems": {
+    weight: "LOW",
+    estimatedQuestions: 1,
     basis: "ESTIMATED",
     basisNote: "2021–2023 average of ~1.8 questions/paper.",
   },
+  "Knowledge Management & New Economy": {
+    weight: "LOW",
+    estimatedQuestions: 1,
+    basis: "ESTIMATED",
+    basisNote: "Grouped with MIS/Knowledge systems estimates.",
+  },
+  "General Awareness": {
+    weight: "HIGH",
+    estimatedQuestions: 20,
+    basis: "ESTIMATED",
+    basisNote: "Section A fixed share: 20 questions per the paper pattern.",
+  },
+  "General Intelligence & Reasoning": {
+    weight: "HIGH",
+    estimatedQuestions: 20,
+    basis: "ESTIMATED",
+    basisNote: "Section A fixed share: 20 questions per the paper pattern.",
+  },
+  "Arithmetical & Numerical Ability": {
+    weight: "HIGH",
+    estimatedQuestions: 20,
+    basis: "ESTIMATED",
+    basisNote: "Section A fixed share: 20 questions per the paper pattern.",
+  },
+  "English Language & Comprehension": {
+    weight: "HIGH",
+    estimatedQuestions: 20,
+    basis: "ESTIMATED",
+    basisNote: "Section A fixed share: 20 questions per the paper pattern.",
+  },
+  "Hindi Language & Comprehension": {
+    weight: "HIGH",
+    estimatedQuestions: 20,
+    basis: "ESTIMATED",
+    basisNote: "Section A fixed share: 20 questions per the paper pattern.",
+  },
+  "Fundamentals of Information Technology": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Split of the Computer Fundamentals & Architecture estimate onto the official subject list.",
+  },
+  "Basis of Physics": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Split of the Computer Fundamentals & Architecture estimate onto the official subject list.",
+  },
+  "Foundation Course in English": {
+    weight: "LOW",
+    estimatedQuestions: 2,
+    basis: "ESTIMATED",
+    basisNote: "Grouped with the English/Communication category estimates.",
+  },
 };
-
-// Subjects in the blueprint that are not part of the core CS seed; created so
-// the blueprint/distribution is complete. They start with no questions — the
-// app reports 0 coverage honestly.
-export const BLUEPRINT_ONLY_SUBJECTS: { name: string; order: number }[] = [
-  { name: "General Awareness", order: 10 },
-  { name: "General Intelligence & Reasoning", order: 11 },
-  { name: "Arithmetical & Numerical Ability", order: 12 },
-  { name: "English Language & Comprehension", order: 13 },
-  { name: "Hindi Language & Comprehension", order: 14 },
-  { name: "Teaching Methodology & Pedagogy", order: 15 },
-  { name: "Mathematics & Statistics", order: 16 },
-  { name: "Computer Graphics & Multimedia", order: 17 },
-  { name: "Business, Economics & E-Commerce", order: 18 },
-  { name: "MIS & Decision Support", order: 19 },
-];

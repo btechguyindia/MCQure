@@ -8,14 +8,25 @@ export async function GET() {
     return Response.json({ ok: false, message: "No active exam configured" }, { status: 500 });
   }
 
-  const [scoring, subjects] = await Promise.all([
+  const [scoring, subjects, counts] = await Promise.all([
     getScoringConfig(exam.id),
     prisma.subject.findMany({
       where: { examId: exam.id },
       orderBy: { order: "asc" },
       include: { topics: { orderBy: { order: "asc" }, include: { subtopics: { orderBy: { order: "asc" } } } } },
     }),
+    prisma.question.groupBy({
+      by: ["topicId", "subtopicId"],
+      where: { examId: exam.id, isActive: true },
+      _count: true,
+    }),
   ]);
+
+  const countBy = new Map<string, number>();
+  for (const c of counts) {
+    const key = c.subtopicId ? `s:${c.subtopicId}` : `t:${c.topicId}`;
+    countBy.set(key, (countBy.get(key) ?? 0) + c._count);
+  }
 
   return Response.json({
     ok: true,
@@ -36,7 +47,12 @@ export async function GET() {
         topics: s.topics.map((t) => ({
           id: t.id,
           name: t.name,
-          subtopics: t.subtopics.map((st) => ({ id: st.id, name: st.name })),
+          questionCount: countBy.get(`t:${t.id}`) ?? 0,
+          subtopics: t.subtopics.map((st) => ({
+            id: st.id,
+            name: st.name,
+            questionCount: countBy.get(`s:${st.id}`) ?? 0,
+          })),
         })),
       })),
     },

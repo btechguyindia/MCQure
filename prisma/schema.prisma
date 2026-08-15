@@ -134,6 +134,7 @@ model User {
   preparation       UserPreparation?
   studyVisits       StudyVisit[]
   ingestionJobs     IngestionJob[]
+  mockRuns          MockRun[]
 }
 
 model Exam {
@@ -193,8 +194,10 @@ model Topic {
   questions  Question[]
   conceptMastery ConceptMastery[]
   studyNotes StudyNote[]
+  topicSources TopicSource[]
   studyVisits StudyVisit[]
   blueprintTopicWeights BlueprintTopicWeight[]
+  mockRuns    MockRun[]
 
   @@unique([subjectId, name])
   @@index([subjectId])
@@ -325,6 +328,7 @@ model PracticeSession {
   endedAt       DateTime?
 
   attempts Attempt[]
+  mockRun  MockRun?
 
   @@index([userId, startedAt])
 }
@@ -453,6 +457,53 @@ model StudyNote {
   @@index([topicId])
 }
 
+// Curated external reading for a topic ("net article sources"). Links are
+// hand-picked, well-known references — never guessed URLs. Broken links can be
+// reported like a question issue.
+model TopicSource {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  title       String
+  url         String
+  description String?
+  author      String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([topicId])
+}
+
+// A completed mock test run (Phase 6). Linked to the underlying practice
+// session so attempts stay immutable and inspectable.
+model MockRun {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId     String          @unique
+  session       PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  scope         String // full | section | topic
+  label         String
+  paperId       String?
+  paper         Paper?          @relation(fields: [paperId], references: [id], onDelete: SetNull)
+  sectionId     String?
+  section       Section?        @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  topicId       String?
+  topic         Topic?          @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  questionCount Int
+  answered      Int             @default(0)
+  correct       Int             @default(0)
+  incorrect     Int             @default(0)
+  skipped       Int             @default(0)
+  score         Float
+  maxScore      Float
+  accuracy      Float
+  timeSpentMs   Int             @default(0)
+  createdAt     DateTime        @default(now())
+
+  @@index([userId, createdAt])
+}
+
 // ── Exam blueprint & preparation tracking (Phase "Foundation") ──────────────
 
 // A specific paper of an exam (e.g. "DSSSB TGT CS 2026"). An exam can have
@@ -468,6 +519,7 @@ model Paper {
   createdAt DateTime @default(now())
 
   sections Section[]
+  mockRuns MockRun[]
 
   @@unique([examId, name])
   @@index([examId])
@@ -489,6 +541,7 @@ model Section {
   weight           Float  @default(1) // relative emphasis of this section
 
   sectionSubjects SectionSubject[]
+  mockRuns        MockRun[]
 
   @@index([paperId])
 }

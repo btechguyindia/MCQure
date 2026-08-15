@@ -1,8 +1,9 @@
 # MCQure
 
-An AI-powered competitive-exam prep platform. Phase 1 (foundation): exam-agnostic
-MCQ practice with database-driven scoring, authenticated sessions, honest question
-provenance, and a Practice → Analytics → Study → Motivation loop as the roadmap.
+An AI-powered competitive-exam prep platform: database-driven MCQ practice with
+authenticated sessions, honest question provenance, study material, a PYQ bank,
+blueprint-driven preparation tracking, mocks, an adaptive engine, motivation and
+reports — a Practice → Study → Prepare → Mock loop.
 
 Target exam (configurable, not hard-coded): **DSSSB TGT Computer Science**.
 
@@ -27,7 +28,10 @@ npm run dev         # http://localhost:3000
 Environment (see `.env.example`):
 
 ```
+# Local development (embedded postgres):
 DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5433/mcqure"
+# Production (e.g. Neon serverless): set DATABASE_URL + DIRECT_URL to the real
+# connection strings, and AUTH_SECRET to a strong random value.
 AUTH_SECRET="<random 32+ char string>"
 
 # Optional AI providers — leave as placeholders until you have real keys.
@@ -153,7 +157,9 @@ src/app/                  pages (home, practice, analytics, study, pyq, preparat
 src/components/           NavBar, ThemeScript, PracticeRunner, forms, status, dashboards
 ```
 
-## Roadmap (future phases)
+## Roadmap
+
+All phases through 9 are implemented:
 
 1. **Foundation** (done) — auth, syllabus, question bank, MCQ practice, scoring.
 2. **Analytics & Mistake Book** (done) — per-topic breakdown, error-type tagging,
@@ -165,9 +171,22 @@ src/components/           NavBar, ThemeScript, PracticeRunner, forms, status, da
 5. **Preparation & tracking** (done) — data-driven exam blueprint, subject/topic/
    concept performance, mastery & completion states, strengths/weaknesses, revision
    queue, daily plan, syllabus coverage, alignment score, "My Target Exam" profile.
-6. **Mock system** — sectional/topic/full mocks driven by the blueprint, mock history
-   and mock-vs-practice comparison (foundation models already support mock sessions).
-7. **Adaptive engine** — concept-level question selection from the large bank
+6. **Mock system** (done) — sectional/topic/full mocks driven by the blueprint, mock
+   history and mock-vs-practice comparison.
+7. **Adaptive engine** (done) — concept-level question selection from the large bank
    (verified PYQs + variants + originals by mastery/difficulty/exposure/relevance).
-8. **Motivation** — goals, streaks, achievements, daily targets.
-9. **Reports & export** — weekly/monthly aggregates, CSV/JSON export.
+8. **Motivation** (done) — goals, streaks, achievements, daily targets.
+9. **Reports & export** (done) — weekly/monthly aggregates, CSV/JSON export.
+
+## Bulk content generation
+
+The bank is filled to target with two resumable background scripts:
+
+- `scripts/generate-bank.ts` — drives every leaf unit (subtopic, or topic without
+  subtopics) to 1,000+ questions (cap 5,000) via Gemini, through the same dedup +
+  quality gates as any insertion. Resumable from `.data/generation-state.json`;
+  run with `npx tsx scripts/generate-bank.ts --workers 3`.
+- `scripts/generate-study-notes.ts` — generates exam-focused study notes for every
+  topic, resumable from `.data/study-notes-state.json`.
+
+Both respect Gemini quota by backing off on 429s.

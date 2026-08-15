@@ -16,7 +16,12 @@ interface ExamPayload {
     subjects: Array<{
       id: string;
       name: string;
-      topics: Array<{ id: string; name: string; subtopics: Array<{ id: string; name: string }> }>;
+      topics: Array<{
+        id: string;
+        name: string;
+        questionCount: number;
+        subtopics: Array<{ id: string; name: string; questionCount: number }>;
+      }>;
     }>;
   };
   message?: string;
@@ -46,6 +51,15 @@ export function CustomPracticeForm() {
   }, []);
 
   const selectedSubject = exam?.subjects.find((s) => s.id === subjectId);
+  const selectedTopic = selectedSubject?.topics.find((t) => t.id === topicId);
+  const totalSubjectQuestions = selectedSubject?.topics.reduce((sum, t) => sum + t.questionCount, 0) ?? 0;
+  const filteredCount =
+    subjectId && !topicId
+      ? totalSubjectQuestions
+      : topicId
+        ? selectedTopic?.questionCount ?? 0
+        : null;
+  const noneAvailable = filteredCount !== null && filteredCount === 0;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,6 +103,10 @@ export function CustomPracticeForm() {
         <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/60 dark:text-red-300">
           {error}
         </p>
+      ) : noneAvailable ? (
+        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+          This selection has no questions yet — pick a topic that shows a count above zero.
+        </p>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -103,11 +121,14 @@ export function CustomPracticeForm() {
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
           >
             <option value="">All subjects</option>
-            {exam?.subjects.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+            {exam?.subjects.map((s) => {
+              const count = s.topics.reduce((sum, t) => sum + t.questionCount, 0);
+              return (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({count})
+                </option>
+              );
+            })}
           </select>
         </label>
 
@@ -122,7 +143,7 @@ export function CustomPracticeForm() {
             <option value="">All topics</option>
             {selectedSubject?.topics.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.name}
+                {t.name} ({t.questionCount})
               </option>
             ))}
           </select>
