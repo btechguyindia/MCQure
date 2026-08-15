@@ -44,16 +44,20 @@ export async function GET() {
       subjects: subjects.map((s) => ({
         id: s.id,
         name: s.name,
-        topics: s.topics.map((t) => ({
-          id: t.id,
-          name: t.name,
-          questionCount: countBy.get(`t:${t.id}`) ?? 0,
-          subtopics: t.subtopics.map((st) => ({
-            id: st.id,
-            name: st.name,
-            questionCount: countBy.get(`s:${st.id}`) ?? 0,
-          })),
-        })),
+        topics: s.topics.map((t) => {
+          const topicCount = countBy.get(`t:${t.id}`) ?? 0;
+          const subtopicTotal = t.subtopics.reduce((sum, st) => sum + (countBy.get(`s:${st.id}`) ?? 0), 0);
+          return {
+            id: t.id,
+            name: t.name,
+            questionCount: topicCount + subtopicTotal,
+            subtopics: t.subtopics.map((st) => ({
+              id: st.id,
+              name: st.name,
+              questionCount: countBy.get(`s:${st.id}`) ?? 0,
+            })),
+          };
+        }),
       })),
     },
   });
