@@ -169,7 +169,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
     [question, sessionId, submitting, confidence]
   );
 
-  async function nextQuestion() {
+  const nextQuestion = useCallback(async function nextQuestion() {
     setFeedback(null);
     setSelected(null);
     setConfidence(null);
@@ -199,7 +199,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
     } catch {
       setError("Network error. Please try again.");
     }
-  }
+  }, [questions, currentIndex, sessionId]);
 
   async function sendReport() {
     if (!question || !reportIssue.trim()) return;
@@ -219,6 +219,44 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
       setError("Network error. Please try again.");
     }
   }
+
+  // Keyboard shortcuts: 1-4 / A-D select an option, Enter submits or advances,
+  // S skips. Disabled while typing in inputs (e.g. the report modal).
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!question) return;
+
+      const key = e.key.toLowerCase();
+      const optionIndex =
+        ["1", "2", "3", "4"].indexOf(key) >= 0
+          ? Number(key) - 1
+          : ["a", "b", "c", "d"].indexOf(key);
+
+      if (feedback) {
+        if (e.key === "Enter" || key === "n") {
+          e.preventDefault();
+          void nextQuestion();
+        }
+        return;
+      }
+
+      if (optionIndex >= 0 && optionIndex < question.options.length) {
+        e.preventDefault();
+        setSelected(optionIndex);
+      } else if (e.key === "Enter" && selected !== null) {
+        e.preventDefault();
+        void submit(selected);
+      } else if (key === "s") {
+        e.preventDefault();
+        void submit(null);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [question, feedback, selected, submit, nextQuestion]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -354,6 +392,9 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
                 {label}
               </button>
             ))}
+            <span className="ml-auto hidden text-xs text-zinc-400 xl:block">
+              <Kbd>A</Kbd>–<Kbd>D</Kbd> select · <Kbd>⏎</Kbd> submit · <Kbd>S</Kbd> skip
+            </span>
           </div>
 
           <div className="sticky bottom-3 flex items-center gap-2">
@@ -518,6 +559,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <dt className="text-zinc-500 dark:text-zinc-400">{label}</dt>
       <dd className="font-medium">{value}</dd>
     </div>
+  );
+}
+
+function Kbd({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+      {children}
+    </kbd>
   );
 }
 

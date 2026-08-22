@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface MeResponse {
   ok: boolean;
@@ -13,7 +13,6 @@ interface MeResponse {
 interface NavLink {
   href: string;
   label: string;
-  accent?: boolean;
 }
 
 const NAV_LINKS: NavLink[] = [
@@ -21,14 +20,23 @@ const NAV_LINKS: NavLink[] = [
   { href: "/practice", label: "Practice" },
   { href: "/mock", label: "Mock" },
   { href: "/study", label: "Study" },
-  { href: "/motivation", label: "Motivation" },
+  { href: "/questions", label: "Bank" },
+  { href: "/bookmarks", label: "Saved" },
+  { href: "/pyq", label: "PYQ" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/motivation", label: "Motivation" },
   { href: "/reports", label: "Reports" },
-  { href: "/preparation", label: "Progress", accent: true },
+  { href: "/preparation", label: "Progress" },
 ];
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function NavBar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<MeResponse["user"] | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -50,6 +58,9 @@ export function NavBar() {
     );
   }, []);
 
+  // Mobile/tablet menu links close the menu via onClick, so no route-change
+  // effect is needed here.
+
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
@@ -62,98 +73,111 @@ export function NavBar() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     router.push("/");
+    router.refresh();
   }
 
-  const linkClass =
-    "rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800";
-  const accentClass =
-    "rounded-lg px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40";
+  const linkClass = (active: boolean) =>
+    `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      active
+        ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+        : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+    }`;
 
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-background/80 backdrop-blur dark:border-zinc-800">
-      <nav className="mx-auto flex h-14 w-full max-w-3xl items-center justify-between px-4">
-        <Link href="/" className="flex items-baseline gap-1 font-bold tracking-tight">
+      <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-4">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 font-bold tracking-tight"
+          aria-label="MCQure home"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-black text-white shadow-sm">
+            M
+          </span>
           <span className="text-lg">MCQure</span>
-          <span className="hidden text-xs font-medium text-zinc-500 sm:inline dark:text-zinc-400">
+          <span className="hidden text-xs font-medium text-zinc-500 lg:inline dark:text-zinc-400">
             exam command center
           </span>
         </Link>
 
         {/* Desktop navigation */}
-        <div className="hidden items-center gap-1 sm:flex sm:gap-2">
+        <div className="hidden items-center gap-0.5 lg:flex">
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={link.accent ? accentClass : linkClass}
-            >
+            <Link key={link.href} href={link.href} className={linkClass(isActive(pathname, link.href))}>
               {link.label}
             </Link>
           ))}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="rounded-lg px-2.5 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            {theme === "dark" ? "☀" : "☾"}
-          </button>
-
-          {loaded && user ? (
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              Sign out
-            </button>
-          ) : loaded ? (
-            <Link
-              href="/login"
-              className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-            >
-              Sign in
-            </Link>
-          ) : null}
         </div>
 
-        {/* Mobile controls */}
-        <div className="flex items-center gap-1 sm:hidden">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="rounded-lg px-2.5 py-2 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="rounded-lg px-2.5 py-2 text-base transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
-            {theme === "dark" ? "☀" : "☾"}
+            {theme === "dark" ? "☀️" : "🌙"}
           </button>
+
+          {/* Tablet overflow menu trigger */}
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="rounded-lg px-2.5 py-2 text-lg leading-none text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="hidden rounded-lg px-2.5 py-2 text-lg leading-none text-zinc-600 transition-colors hover:bg-zinc-100 sm:flex lg:hidden dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             {open ? "✕" : "☰"}
           </button>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            className="rounded-lg px-2.5 py-2 text-lg leading-none text-zinc-600 transition-colors hover:bg-zinc-100 sm:hidden dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            {open ? "✕" : "☰"}
+          </button>
+
+          <div className="hidden items-center lg:flex">
+            {loaded && user ? (
+              <>
+                <span
+                  className="max-w-[10rem] truncate px-2 text-xs font-medium text-zinc-500 dark:text-zinc-400"
+                  title={user.name ?? user.email}
+                >
+                  {user.name ?? user.email}
+                </span>
+                <button type="button" onClick={logout} className="btn btn-ghost !px-3 !py-2 text-sm">
+                  Sign out
+                </button>
+              </>
+            ) : loaded ? (
+              <Link href="/login" className="btn btn-primary !px-4 !py-2 text-sm">
+                Sign in
+              </Link>
+            ) : null}
+          </div>
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Dropdown menu (tablet + mobile) */}
       {open ? (
-        <div className="border-t border-zinc-200 bg-background sm:hidden dark:border-zinc-800">
-          <nav className="mx-auto flex w-full max-w-3xl flex-col px-4 py-3">
+        <div className="border-t border-zinc-200 bg-background lg:hidden dark:border-zinc-800">
+          <nav className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-1 px-4 py-3 sm:grid-cols-3">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={link.accent ? accentClass : linkClass}
+                className={linkClass(isActive(pathname, link.href))}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+            <div className="col-span-2 mt-2 border-t border-zinc-100 pt-2 sm:col-span-3 dark:border-zinc-800">
               {loaded && user ? (
                 <button
                   type="button"
@@ -166,7 +190,7 @@ export function NavBar() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-500"
+                  className="block rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-500"
                 >
                   Sign in
                 </Link>
