@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRightIcon,
+  BookmarkIcon,
+  CheckIcon,
+  ClockIcon,
+  FlagIcon,
+  SparklesIcon,
+  XIcon,
+} from "@/components/icons";
 
 interface PublicQuestion {
   id: string;
@@ -42,6 +51,13 @@ interface SessionSummary {
 
 const BOOKMARK_KEY = "mcqure-bookmarks";
 const CONFIDENCE_LABELS = ["Not sure", "Fairly", "Confident"] as const;
+
+const DIFFICULTY_BADGE_CLASS: Record<string, string> = {
+  EASY: "badge badge-ok",
+  MEDIUM: "badge badge-warn",
+  HARD: "badge badge-bad",
+  VERY_HARD: "badge badge-bad",
+};
 
 function loadBookmarks(): Set<string> {
   try {
@@ -262,9 +278,9 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
 
   if (error && !questions && !summary) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        <Link href="/practice" className="mt-3 inline-block text-sm font-semibold text-indigo-600">
+      <div className="card p-6 text-center">
+        <p className="field-error">{error}</p>
+        <Link href="/practice" className="link mt-3 inline-block text-sm">
           Back to practice
         </Link>
       </div>
@@ -277,9 +293,9 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
 
   if (!question) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="h-6 w-1/3 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800" />
-        <div className="mt-4 h-24 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800" />
+      <div className="card p-5 sm:p-6">
+        <div className="skeleton h-6 w-1/3" />
+        <div className="skeleton mt-4 h-24" />
       </div>
     );
   }
@@ -297,36 +313,25 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
         <span className="font-semibold">
           Question {currentIndex + 1} / {questions?.length}
         </span>
-        <span className="tabular-nums text-zinc-500 dark:text-zinc-400">
-          ⏱ {formatTime(elapsed)}
+        <span className="inline-flex items-center gap-1.5 text-muted-fg tabular-nums">
+          <ClockIcon className="h-4 w-4" />
+          {formatTime(elapsed)}
         </span>
       </div>
 
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+      <div className="progress">
         <div
-          className="h-full bg-indigo-600 transition-all"
+          className="progress-bar"
           style={{ width: `${((currentIndex + (feedback ? 1 : 0)) / (questions?.length || 1)) * 100}%` }}
         />
       </div>
 
       {/* Question */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <section className="card rise-in p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-            {question.subject}
-          </span>
-          <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-            {question.topic}
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-1 font-medium ${
-              question.difficulty === "EASY"
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
-                : question.difficulty === "MEDIUM"
-                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                  : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-            }`}
-          >
+          <span className="chip">{question.subject}</span>
+          <span className="chip">{question.topic}</span>
+          <span className={DIFFICULTY_BADGE_CLASS[question.difficulty] ?? "badge badge-neutral"}>
             {question.difficulty}
           </span>
         </div>
@@ -344,17 +349,17 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
                 key={opt.label}
                 type="button"
                 onClick={() => setSelected(question.options.indexOf(opt))}
-                className={`mcq-option flex items-center gap-3 rounded-xl border-2 px-4 py-3.5 text-left text-base transition-colors ${
+                className={`mcq-option flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-base transition-colors ${
                   isSelected
-                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
-                    : "border-zinc-200 bg-white hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                    ? "border-brand bg-brand-soft ring-4 ring-brand/15"
+                    : "border-line bg-card hover:border-line-strong"
                 }`}
               >
                 <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm font-bold ${
                     isSelected
-                      ? "bg-indigo-600 text-white"
-                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                      ? "border-brand bg-brand text-on-brand"
+                      : "border-line bg-canvas text-muted-fg"
                   }`}
                 >
                   {opt.label}
@@ -377,7 +382,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
       {!feedback ? (
         <>
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-zinc-500 dark:text-zinc-400">Confidence:</span>
+            <span className="text-muted-fg">Confidence:</span>
             {CONFIDENCE_LABELS.map((label, i) => (
               <button
                 key={label}
@@ -385,36 +390,36 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
                 onClick={() => setConfidence(i + 1)}
                 className={`rounded-full px-3 py-1.5 font-medium transition-colors ${
                   confidence === i + 1
-                    ? "bg-indigo-600 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+                    ? "bg-brand text-on-brand"
+                    : "border border-line text-muted-fg hover:border-brand"
                 }`}
               >
                 {label}
               </button>
             ))}
-            <span className="ml-auto hidden text-xs text-zinc-400 xl:block">
-              <Kbd>A</Kbd>–<Kbd>D</Kbd> select · <Kbd>⏎</Kbd> submit · <Kbd>S</Kbd> skip
+            <span className="ml-auto hidden items-center gap-1 text-xs text-subtle-fg xl:flex">
+              <Kbd>A</Kbd>–<Kbd>D</Kbd> select · <Kbd>Enter</Kbd> submit · <Kbd>S</Kbd> skip
             </span>
           </div>
 
-          <div className="sticky bottom-3 flex items-center gap-2">
+          <div className="sticky bottom-3 z-10 flex items-center gap-2 rounded-2xl glass p-2 shadow-soft">
             <button
               type="button"
               onClick={toggleBookmark}
               aria-label="Bookmark question"
-              className={`rounded-xl border px-4 py-3 text-lg transition-colors ${
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors ${
                 bookmarked
-                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
-                  : "border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  ? "border-brand bg-brand-soft text-brand"
+                  : "border-line text-muted-fg hover:border-brand hover:text-brand"
               }`}
             >
-              {bookmarked ? "🔖" : "▢"}
+              <BookmarkIcon className={`h-5 w-5 ${bookmarked ? "fill-current" : ""}`} />
             </button>
             <button
               type="button"
               onClick={() => submit(null)}
               disabled={submitting}
-              className="flex-1 rounded-xl border border-zinc-300 px-4 py-3 text-sm font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              className="btn btn-secondary flex-1"
             >
               Skip
             </button>
@@ -422,7 +427,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
               type="button"
               onClick={() => submit(selected)}
               disabled={selected === null || submitting}
-              className="flex-1 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+              className="btn btn-primary flex-1"
             >
               {submitting ? "Saving…" : "Submit"}
             </button>
@@ -430,9 +435,10 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
               type="button"
               onClick={() => setReportOpen(true)}
               aria-label="Report question"
-              className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+              title="Report this question"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-fg transition-colors hover:bg-brand-soft hover:text-brand"
             >
-              ⚑
+              <FlagIcon className="h-5 w-5" />
             </button>
           </div>
         </>
@@ -440,13 +446,11 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
 
       {/* Report modal */}
       {reportOpen ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 dark:bg-zinc-900">
-            <h3 className="text-base font-bold">Report question</h3>
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/50 p-4 backdrop-blur-sm sm:items-center">
+          <div className="panel rise-in w-full max-w-md p-5">
+            <h3 className="text-base font-bold tracking-tight">Report question</h3>
             {reportSent ? (
-              <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">
-                Thanks — your report has been submitted.
-              </p>
+              <p className="field-ok mt-3">Thanks — your report has been submitted.</p>
             ) : (
               <>
                 <textarea
@@ -454,21 +458,17 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
                   onChange={(e) => setReportIssue(e.target.value)}
                   placeholder="What's wrong? Wrong answer key, unclear wording…"
                   rows={3}
-                  className="mt-3 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+                  className="input mt-3"
                 />
                 <div className="mt-3 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setReportOpen(false)}
-                    className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
-                  >
+                  <button type="button" onClick={() => setReportOpen(false)} className="btn btn-secondary">
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={sendReport}
                     disabled={!reportIssue.trim()}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="btn btn-primary"
                   >
                     Submit
                   </button>
@@ -495,36 +495,45 @@ function FeedbackPanel({
 }) {
   const correct = feedback.isCorrect === true;
   const skipped = feedback.isCorrect === null;
+  const tone = correct
+    ? { border: "border-ok/40", bg: "bg-ok-soft", text: "text-ok" }
+    : skipped
+      ? { border: "border-warn/40", bg: "bg-warn-soft", text: "text-warn" }
+      : { border: "border-bad/40", bg: "bg-bad-soft", text: "text-bad" };
 
   return (
-    <section
-      className={`rounded-2xl border p-5 ${
-        correct
-          ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
-          : skipped
-            ? "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30"
-            : "border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
-      }`}
-    >
+    <section className={`rise-in rounded-2xl border p-5 ${tone.border} ${tone.bg}`}>
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold">
-          {correct ? "✓ Correct" : skipped ? "— Skipped" : "✗ Incorrect"}
+        <h3 className={`flex items-center gap-2 text-base font-bold ${tone.text}`}>
+          {correct ? (
+            <>
+              <CheckIcon className="h-4 w-4" /> Correct
+            </>
+          ) : skipped ? (
+            <>
+              <span aria-hidden className="inline-block h-0.5 w-4 rounded-full bg-current" /> Skipped
+            </>
+          ) : (
+            <>
+              <XIcon className="h-4 w-4" /> Incorrect
+            </>
+          )}
         </h3>
-        <span className="text-sm font-semibold tabular-nums">
+        <span className={`stat-num text-sm ${tone.text}`}>
           {feedback.score > 0 ? `+${feedback.score}` : feedback.score}
         </span>
       </div>
 
-      <div className="mt-3 rounded-xl bg-white p-4 dark:bg-zinc-900">
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="mt-3 rounded-xl border border-line bg-card p-4">
+        <p className="text-sm font-medium text-muted-fg">
           Correct answer:{" "}
-          <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+          <span className="font-semibold text-ok">
             {options[feedback.correctIndex].label}. {options[feedback.correctIndex].text}
           </span>
         </p>
         <p className="mt-3 text-sm leading-relaxed">{feedback.explanation}</p>
 
-        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-zinc-200 pt-3 text-xs dark:border-zinc-800">
+        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-line pt-3 text-xs">
           <DetailRow label="Concept" value={feedback.topic} />
           <DetailRow label="Subject" value={feedback.subject} />
           <DetailRow
@@ -542,12 +551,15 @@ function FeedbackPanel({
         </dl>
       </div>
 
-      <button
-        type="button"
-        onClick={onNext}
-        className="mt-4 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500"
-      >
-        {isLast ? "Finish" : "Next question →"}
+      <button type="button" onClick={onNext} className="btn btn-primary mt-4 w-full">
+        {isLast ? (
+          "Finish"
+        ) : (
+          <>
+            Next question
+            <ArrowRightIcon className="h-4 w-4" />
+          </>
+        )}
       </button>
     </section>
   );
@@ -556,33 +568,32 @@ function FeedbackPanel({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-zinc-500 dark:text-zinc-400">{label}</dt>
+      <dt className="text-muted-fg">{label}</dt>
       <dd className="font-medium">{value}</dd>
     </div>
   );
 }
 
 function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-      {children}
-    </kbd>
-  );
+  return <kbd className="kbd">{children}</kbd>;
 }
 
 function SummaryScreen({ summary }: { summary: SessionSummary }) {
   const accuracy = summary.accuracy == null ? "—" : `${summary.accuracy.toFixed(1)}%`;
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-lg font-bold">Session complete 🎉</h2>
-        <p className="mt-1 text-4xl font-black tracking-tight text-indigo-600 dark:text-indigo-400">
+      <section className="card rise-in p-6 text-center">
+        <h2 className="inline-flex items-center gap-2 text-lg font-bold tracking-tight">
+          <SparklesIcon className="h-5 w-5 text-brand" />
+          Session complete
+        </h2>
+        <p className="stat-num text-gradient mt-3 text-5xl">
           {summary.netScore > 0 ? `+${summary.netScore}` : summary.netScore}
         </p>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">net score</p>
+        <p className="text-sm text-muted-fg">net score</p>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <section className="stagger grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat label="Questions" value={String(summary.total)} />
         <Stat label="Correct" value={String(summary.correct)} />
         <Stat label="Incorrect" value={String(summary.incorrect)} />
@@ -592,16 +603,10 @@ function SummaryScreen({ summary }: { summary: SessionSummary }) {
       </section>
 
       <div className="flex flex-col gap-2">
-        <Link
-          href="/practice"
-          className="rounded-xl bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500"
-        >
+        <Link href="/practice" className="btn btn-primary w-full">
           Back to practice
         </Link>
-        <Link
-          href="/"
-          className="rounded-xl border border-zinc-300 px-4 py-3 text-center text-sm font-semibold hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-        >
+        <Link href="/" className="btn btn-secondary w-full">
           Home
         </Link>
       </div>
@@ -611,9 +616,9 @@ function SummaryScreen({ summary }: { summary: SessionSummary }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xl font-bold">{value}</p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+    <div className="card p-4 text-center">
+      <p className="stat-num text-xl">{value}</p>
+      <p className="mt-0.5 text-xs text-muted-fg">{label}</p>
     </div>
   );
 }

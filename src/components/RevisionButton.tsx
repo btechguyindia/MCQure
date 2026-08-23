@@ -54,11 +54,11 @@ export function RevisionButton({ topicId, label = "Revise now" }: { topicId: str
         type="button"
         onClick={start}
         disabled={busy}
-        className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+        className="btn btn-primary btn-sm"
       >
         {busy ? "Starting…" : label}
       </button>
-      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="field-error mt-1">{error}</p> : null}
     </div>
   );
 }

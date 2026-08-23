@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/api";
 import { MockStudio } from "@/components/MockStudio";
+import { MockIcon } from "@/components/icons";
 
 export const metadata = { title: "Mock Tests — MCQure" };
 
@@ -25,13 +26,19 @@ export default async function MockPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-bold">📝 Mock tests</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Blueprint-driven mock exams. Same scoring as real practice, but tracked
-          separately so you can compare mock performance against casual practice.
-        </p>
-      </header>
+      <section className="card relative overflow-hidden p-5 sm:p-6">
+        <div className="aurora" aria-hidden />
+        <div className="relative">
+          <p className="kicker">
+            <MockIcon /> Exam simulation
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Mock tests</h1>
+          <p className="mt-2 max-w-3xl text-sm text-muted-fg">
+            Blueprint-driven mock exams. Same scoring as real practice, but tracked
+            separately so you can compare mock performance against casual practice.
+          </p>
+        </div>
+      </section>
 
       <MockStudio
         subjects={subjects.map((s) => ({

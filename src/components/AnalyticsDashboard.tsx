@@ -15,6 +15,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  ArrowRightIcon,
+  FlagIcon,
+  ProgressIcon,
+  SparklesIcon,
+  StudyIcon,
+  TargetIcon,
+  XIcon,
+} from "@/components/icons";
 
 interface AnalyticsResponse {
   ok: boolean;
@@ -57,7 +66,15 @@ interface AnalyticsResponse {
   message?: string;
 }
 
-const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
+const TICK_STYLE = { fill: "var(--mcq-subtle)", fontSize: 11 };
+const TOOLTIP_CONTENT_STYLE = {
+  background: "var(--mcq-card)",
+  border: "1px solid var(--mcq-line)",
+  borderRadius: 12,
+  color: "var(--mcq-fg)",
+  boxShadow: "var(--shadow-lift)",
+  fontSize: 12,
+};
 
 export function AnalyticsDashboard() {
   const router = useRouter();
@@ -95,17 +112,32 @@ export function AnalyticsDashboard() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      <div className="card p-6 text-center" role="alert">
+        <p className="inline-flex items-center gap-2 text-sm font-medium text-bad">
+          <XIcon />
+          {error}
+        </p>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex flex-col gap-4">
-        <div className="h-24 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800" />
-        <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800" />
+      <div className="flex flex-col gap-6" role="status" aria-label="Loading analytics">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="card p-4">
+              <div className="skeleton mx-auto h-7 w-14" />
+              <div className="skeleton mx-auto mt-2 h-2.5 w-20" />
+            </div>
+          ))}
+        </div>
+        {[0, 1].map((i) => (
+          <div key={i} className="card p-5">
+            <div className="skeleton h-3 w-44" />
+            <div className="skeleton mt-4 h-56" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -119,37 +151,56 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="stagger grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatCard label="Attempts" value={String(summary.total)} />
         <StatCard label="Accuracy" value={accuracy} />
-        <StatCard
-          label="Net score"
-          value={summary.netScore > 0 ? `+${summary.netScore}` : String(summary.netScore)}
-        />
+        <div className="card card-hover p-4 text-center">
+          <p
+            className={`stat-num text-xl ${
+              summary.netScore > 0 ? "text-ok" : summary.netScore < 0 ? "text-bad" : "text-ink"
+            }`}
+          >
+            {summary.netScore > 0 ? `+${summary.netScore}` : String(summary.netScore)}
+          </p>
+          <p className="kicker mt-1.5 justify-center">Net score</p>
+        </div>
         <StatCard label="Streak" value={`${streak.current} day${streak.current === 1 ? "" : "s"}`} />
         <StatCard label="Avg time" value={`${(summary.averageTimeMs / 1000).toFixed(0)}s`} />
         <StatCard label="Missed" value={String(summary.incorrect + summary.unattempted)} />
       </div>
 
       {/* Trend */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section className="card p-5">
+        <h2 className="section-title flex items-center gap-2">
+          <ProgressIcon className="h-3.5 w-3.5 text-brand" />
           Net score — last 14 days
         </h2>
         <div className="mt-4 h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={trend} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="day" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <ReferenceLine y={0} stroke="var(--border)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--mcq-line)" />
+              <XAxis
+                dataKey="day"
+                tick={TICK_STYLE}
+                tickLine={false}
+                axisLine={{ stroke: "var(--mcq-line)" }}
+                interval="preserveStartEnd"
+              />
+              <YAxis tick={TICK_STYLE} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={TOOLTIP_CONTENT_STYLE}
+                labelStyle={{ color: "var(--mcq-muted)", fontSize: 12, fontWeight: 600 }}
+                itemStyle={{ color: "var(--mcq-fg)", fontSize: 12 }}
+                cursor={{ stroke: "var(--mcq-line-strong)" }}
+              />
+              <ReferenceLine y={0} stroke="var(--mcq-line-strong)" />
               <Line
                 type="monotone"
                 dataKey="netScore"
-                stroke="#6366f1"
+                stroke="var(--mcq-brand)"
                 strokeWidth={2}
-                dot={{ r: 2 }}
+                dot={{ r: 2, fill: "var(--mcq-brand)", strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: "var(--mcq-brand)" }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -158,20 +209,44 @@ export function AnalyticsDashboard() {
 
       {/* Subject accuracy */}
       {subjectChart.length > 0 ? (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        <section className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <TargetIcon className="h-3.5 w-3.5 text-brand" />
             Accuracy by subject
           </h2>
           <div className="mt-4 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={subjectChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} angle={-25} textAnchor="end" height={60} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--mcq-line)" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "var(--mcq-subtle)", fontSize: 11 }}
+                  tickLine={false}
+                  axisLine={{ stroke: "var(--mcq-line)" }}
+                  interval={0}
+                  angle={-25}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis domain={[0, 100]} tick={TICK_STYLE} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={TOOLTIP_CONTENT_STYLE}
+                  labelStyle={{ color: "var(--mcq-muted)", fontSize: 12, fontWeight: 600 }}
+                  itemStyle={{ color: "var(--mcq-fg)", fontSize: 12 }}
+                  cursor={{ fill: "var(--mcq-brand-soft)" }}
+                />
                 <Bar dataKey="accuracy" radius={[4, 4, 0, 0]}>
-                  {subjectChart.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  {subjectChart.map((d, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        d.accuracy >= 70
+                          ? "var(--mcq-brand)"
+                          : d.accuracy >= 50
+                            ? "var(--mcq-warn)"
+                            : "var(--mcq-bad)"
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -182,29 +257,35 @@ export function AnalyticsDashboard() {
 
       {/* Topic breakdown */}
       {byTopic.length > 0 ? (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        <section className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <StudyIcon className="h-3.5 w-3.5 text-brand" />
             Topic strength (weakest first)
           </h2>
-          <ul className="mt-3 flex flex-col gap-3">
+          <ul className="mt-4 flex flex-col gap-4">
             {byTopic.map((t) => (
               <li key={t.group}>
-                <div className="flex items-baseline justify-between text-sm">
-                  <span className="font-medium">{t.group}</span>
-                  <span className="tabular-nums text-zinc-500">
-                    {t.accuracy == null ? "—" : `${t.accuracy.toFixed(0)}%`} · {t.attempts} attempts
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="truncate font-medium text-ink">{t.group}</span>
+                  <span className="shrink-0 tabular-nums text-subtle-fg">
+                    <span className="stat-num text-sm text-ink">
+                      {t.accuracy == null ? "—" : `${t.accuracy.toFixed(0)}%`}
+                    </span>{" "}
+                    · {t.attempts} attempts
                   </span>
                 </div>
-                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                <div className="progress mt-2">
                   <div
-                    className={`h-full rounded-full ${
-                      (t.accuracy ?? 0) >= 70
-                        ? "bg-emerald-500"
-                        : (t.accuracy ?? 0) >= 50
-                          ? "bg-amber-500"
-                          : "bg-red-500"
-                    }`}
-                    style={{ width: `${t.accuracy ?? 0}%` }}
+                    className="progress-bar"
+                    style={{
+                      width: `${t.accuracy ?? 0}%`,
+                      background:
+                        (t.accuracy ?? 0) >= 70
+                          ? "var(--mcq-brand)"
+                          : (t.accuracy ?? 0) >= 50
+                            ? "var(--mcq-warn)"
+                            : "var(--mcq-bad)",
+                    }}
                   />
                 </div>
               </li>
@@ -216,37 +297,47 @@ export function AnalyticsDashboard() {
       {/* Error types + confidence */}
       <div className="grid gap-4 sm:grid-cols-2">
         {errorTypes.length > 0 ? (
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          <section className="card p-5">
+            <h2 className="section-title flex items-center gap-2">
+              <XIcon className="h-3.5 w-3.5 text-brand" />
               Why you&apos;re missing questions
             </h2>
-            <ul className="mt-3 flex flex-col gap-2">
+            <ul className="mt-4 flex flex-wrap gap-2">
               {errorTypes.map((e) => (
-                <li key={e.type} className="flex items-center justify-between text-sm">
-                  <span className="capitalize">{e.type.replace(/_/g, " ").toLowerCase()}</span>
-                  <span className="tabular-nums font-medium">{e.count}</span>
+                <li key={e.type} className="chip">
+                  {e.type.replace(/_/g, " ").toLowerCase()}
+                  <span className="stat-num text-sm text-bad">{e.count}</span>
                 </li>
               ))}
             </ul>
           </section>
         ) : null}
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        <section className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <SparklesIcon className="h-3.5 w-3.5 text-brand" />
             Confidence vs accuracy
           </h2>
-          <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <dt className="text-zinc-500">Confident</dt>
-              <dd className="text-lg font-bold">{confidence.highCorrect} correct · {confidence.highWrong} wrong</dd>
-              <dd className="text-xs text-zinc-500">
+          <dl className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-line bg-canvas p-3">
+              <dt>
+                <span className="badge badge-brand">Confident</span>
+              </dt>
+              <dd className="stat-num mt-2 text-base leading-snug">
+                {confidence.highCorrect} correct · {confidence.highWrong} wrong
+              </dd>
+              <dd className="mt-1 text-xs text-subtle-fg">
                 {confidence.highAccuracy == null ? "—" : `${confidence.highAccuracy.toFixed(0)}% accurate`}
               </dd>
             </div>
-            <div>
-              <dt className="text-zinc-500">Not sure</dt>
-              <dd className="text-lg font-bold">{confidence.lowCorrect} correct · {confidence.lowWrong} wrong</dd>
-              <dd className="text-xs text-zinc-500">
+            <div className="rounded-xl border border-line bg-canvas p-3">
+              <dt>
+                <span className="badge badge-warn">Not sure</span>
+              </dt>
+              <dd className="stat-num mt-2 text-base leading-snug">
+                {confidence.lowCorrect} correct · {confidence.lowWrong} wrong
+              </dd>
+              <dd className="mt-1 text-xs text-subtle-fg">
                 {confidence.lowAccuracy == null ? "—" : `${confidence.lowAccuracy.toFixed(0)}% accurate`}
               </dd>
             </div>
@@ -256,35 +347,33 @@ export function AnalyticsDashboard() {
 
       {/* Mistake book */}
       {mistakes.length > 0 ? (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        <section className="card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="section-title flex items-center gap-2">
+              <FlagIcon className="h-3.5 w-3.5 text-brand" />
               Mistake book · {mistakes.length}
             </h2>
             <button
               type="button"
               onClick={startReview}
               disabled={reviewBusy}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+              className="btn btn-primary btn-sm shadow-glow"
             >
-              {reviewBusy ? "Starting…" : "Review mistakes →"}
+              {reviewBusy ? "Starting…" : "Review mistakes"}
+              {!reviewBusy && <ArrowRightIcon className="h-3.5 w-3.5" />}
             </button>
           </div>
-          <ul className="mt-3 flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+          <ul className="mt-2 flex flex-col divide-y divide-line">
             {mistakes.slice(0, 10).map((m) => (
-              <li key={m.id} className="flex flex-col gap-1 py-3">
-                <p className="text-sm leading-snug">{m.text}</p>
-                <div className="flex flex-wrap gap-1.5 text-xs text-zinc-500">
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{m.subject}</span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{m.topic}</span>
+              <li key={m.id} className="flex flex-col gap-1.5 py-3">
+                <p className="text-sm leading-snug text-ink">{m.text}</p>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="chip">{m.subject}</span>
+                  <span className="chip">{m.topic}</span>
                   {m.isCorrect === null ? (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-                      skipped
-                    </span>
+                    <span className="badge badge-warn">skipped</span>
                   ) : (
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-red-700 dark:bg-red-900/50 dark:text-red-300">
-                      wrong
-                    </span>
+                    <span className="badge badge-bad">wrong</span>
                   )}
                 </div>
               </li>
@@ -292,8 +381,11 @@ export function AnalyticsDashboard() {
           </ul>
         </section>
       ) : (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">
+        <section className="card p-8 text-center">
+          <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-soft">
+            <SparklesIcon className="h-5 w-5 text-brand" />
+          </span>
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-fg">
             No mistakes yet — keep practicing and your mistake book will build itself.
           </p>
         </section>
@@ -304,9 +396,9 @@ export function AnalyticsDashboard() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xl font-bold tabular-nums">{value}</p>
-      <p className="text-xs text-zinc-500">{label}</p>
+    <div className="card card-hover p-4 text-center">
+      <p className="stat-num text-xl text-ink">{value}</p>
+      <p className="kicker mt-1.5 justify-center">{label}</p>
     </div>
   );
 }

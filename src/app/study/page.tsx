@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/api";
 import { getStudyOverview } from "@/lib/study";
+import { ArrowRightIcon, FlagIcon, StudyIcon } from "@/components/icons";
 
 export const metadata = { title: "Study — MCQure" };
 
@@ -18,18 +19,23 @@ export default async function StudyPage() {
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h1 className="text-2xl font-bold">📚 Study</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="kicker">Library</p>
+        <h1 className="mt-2 flex items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
+          <StudyIcon className="h-6 w-6 text-brand" />
+          Study
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-fg">
           Concise, exam-focused notes per topic — driven by your performance.
         </p>
       </header>
 
       {weak.length > 0 ? (
-        <section className="rounded-2xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-900/60 dark:bg-amber-950/40">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
-            ⚡ Priority revision
+        <section className="rounded-xl border-l-2 border-warn bg-warn-soft/40 py-4 pl-4 pr-5">
+          <h2 className="section-title flex items-center gap-2 text-warn!">
+            <FlagIcon className="h-4 w-4" />
+            Priority revision
           </h2>
-          <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+          <p className="mt-1 text-sm text-muted-fg">
             Weakest topics first — read the notes, then hit the topic test.
           </p>
           <ul className="mt-3 flex flex-col gap-2">
@@ -37,12 +43,12 @@ export default async function StudyPage() {
               <li key={t.id}>
                 <Link
                   href={`/study/${t.id}`}
-                  className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm hover:bg-amber-100 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-line bg-card px-3 py-2 text-sm transition-colors hover:border-warn"
                 >
-                  <span className="font-medium">
+                  <span className="font-medium text-ink">
                     {t.subject} · {t.name}
                   </span>
-                  <span className="tabular-nums text-amber-700 dark:text-amber-300">
+                  <span className="stat-num shrink-0 text-xs text-warn">
                     {t.accuracy == null ? "—" : `${Math.round(t.accuracy)}%`} · {t.attempts} attempts
                   </span>
                 </Link>
@@ -54,46 +60,37 @@ export default async function StudyPage() {
 
       {subjects.map((subject) => (
         <section key={subject.id}>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            {subject.name}
-          </h2>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <h2 className="section-title mb-3">{subject.name}</h2>
+          <ul className="stagger grid gap-3 sm:grid-cols-2">
             {subject.topics.map((topic) => (
-              <li key={topic.id}>
+              <li key={topic.id} className="h-full">
                 <Link
                   href={`/study/${topic.id}`}
-                  className="flex h-full flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-4 transition-colors hover:border-indigo-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500"
+                  className="card card-hover group flex h-full flex-col gap-3 p-4"
                 >
-                  <span className="font-semibold">{topic.name}</span>
-                  <span className="flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                      {topic.noteCount} notes
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                      <StudyIcon />
                     </span>
+                    <span className="flex translate-x-1 items-center gap-1 text-xs font-semibold text-brand opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+                      Open
+                      <ArrowRightIcon className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                  <span className="font-semibold leading-snug text-ink">{topic.name}</span>
+                  <span className="mt-auto flex flex-wrap items-center gap-1.5">
+                    <span className="badge badge-neutral">{topic.noteCount} notes</span>
                     {topic.sourceCount > 0 ? (
-                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
-                        {topic.sourceCount} sources
-                      </span>
+                      <span className="badge badge-accent">{topic.sourceCount} sources</span>
                     ) : null}
                     {topic.attempts > 0 ? (
-                      <span
-                        className={`rounded-full px-2 py-0.5 ${
-                          topic.weak
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
-                        }`}
-                      >
+                      <span className={`badge ${topic.weak ? "badge-warn" : "badge-ok"}`}>
                         {topic.accuracy == null ? "—" : `${Math.round(topic.accuracy)}%`} accuracy
                       </span>
                     ) : (
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500">
-                        not practiced
-                      </span>
+                      <span className="badge badge-neutral">not practiced</span>
                     )}
-                    {topic.weak ? (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
-                        weak
-                      </span>
-                    ) : null}
+                    {topic.weak ? <span className="badge badge-warn font-bold">weak</span> : null}
                   </span>
                 </Link>
               </li>

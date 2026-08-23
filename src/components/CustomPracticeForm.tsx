@@ -93,32 +93,30 @@ export function CustomPracticeForm() {
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-      <h2 className="text-lg font-bold">Custom Practice</h2>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+    <section className="card p-5 sm:p-6">
+      <h2 className="text-lg font-bold tracking-tight">Custom Practice</h2>
+      <p className="mt-1 text-sm text-muted-fg">
         Pick your own subject, topic, difficulty and length.
       </p>
 
       {error ? (
-        <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/60 dark:text-red-300">
-          {error}
-        </p>
+        <p className="field-error mt-3">{error}</p>
       ) : noneAvailable ? (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+        <p className="mt-3 rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn">
           This selection has no questions yet — pick a topic that shows a count above zero.
         </p>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Subject
+        <label className="block">
+          <span className="label">Subject</span>
           <select
             value={subjectId}
             onChange={(e) => {
               setSubjectId(e.target.value);
               setTopicId("");
             }}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           >
             <option value="">All subjects</option>
             {exam?.subjects.map((s) => {
@@ -132,13 +130,13 @@ export function CustomPracticeForm() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Topic
+        <label className="block">
+          <span className="label">Topic</span>
           <select
             value={topicId}
             onChange={(e) => setTopicId(e.target.value)}
             disabled={!selectedSubject}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           >
             <option value="">All topics</option>
             {selectedSubject?.topics.map((t) => (
@@ -149,12 +147,12 @@ export function CustomPracticeForm() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Difficulty
+        <label className="block">
+          <span className="label">Difficulty</span>
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           >
             <option value="">Any difficulty</option>
             <option value="EASY">Easy</option>
@@ -164,32 +162,32 @@ export function CustomPracticeForm() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Question source
+        <label className="block">
+          <span className="label">Question source</span>
           <select
             value={sourceType}
             onChange={(e) => setSourceType(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           >
             <option value="">Any source</option>
             <option value="AI_GENERATED">AI generated</option>
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Question count
+        <label className="block">
+          <span className="label">Question count</span>
           <input
             type="number"
             min={1}
             max={200}
             value={count}
             onChange={(e) => setCount(Math.max(1, Math.min(200, Number(e.target.value) || 1)))}
-            className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Time limit (minutes, optional)
+        <label className="block">
+          <span className="label">Time limit (minutes, optional)</span>
           <input
             type="number"
             min={1}
@@ -197,16 +195,12 @@ export function CustomPracticeForm() {
             value={timeLimit}
             onChange={(e) => setTimeLimit(e.target.value)}
             placeholder={exam ? `${exam.scoring.timeLimitMinutes} for the full exam` : "No limit"}
-            className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+            className="input"
           />
         </label>
 
         <div className="sm:col-span-2">
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
-          >
+          <button type="submit" disabled={busy} className="btn btn-primary w-full sm:w-auto">
             {busy ? "Starting…" : "Start Custom Practice"}
           </button>
         </div>

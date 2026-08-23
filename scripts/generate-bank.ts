@@ -6,6 +6,10 @@
 // gates as any other insertion (createQuestion), so duplicates are never
 // stored twice.
 //
+// Scheduling is coverage-first: leaves are processed fewest-questions-first,
+// so every zero-question topic gets seeded before any single leaf is
+// deep-filled.
+//
 // Resumability: progress is tracked per leaf unit in a JSON state file
 // (.data/generation-state.json). Re-running the script skips leaves that are
 // already at/above the target, so it can be stopped and continued across many
@@ -245,6 +249,24 @@ async function main() {
     }
   }
 
+  // Coverage-first ordering: one groupBy gives current counts for every leaf;
+  // sorting ascending (stable) means zero-question topics are seeded first
+  // while ties keep the syllabus order.
+  const countRows = await prisma.question.groupBy({
+    by: ["topicId", "subtopicId"],
+    where: { examId: exam.id },
+    _count: { id: true },
+  });
+  const counts = new Map<string, number>();
+  for (const row of countRows) {
+    counts.set(`${row.topicId}::${row.subtopicId ?? ""}`, row._count.id);
+  }
+  leaves.sort(
+    (a, b) =>
+      (counts.get(`${a.topicId}::${a.subtopicId ?? ""}`) ?? 0) -
+      (counts.get(`${b.topicId}::${b.subtopicId ?? ""}`) ?? 0)
+  );
+
   const state = loadState();
   console.log(
     `[gen] exam=${exam.name} leaves=${leaves.length} min=${min} max=${max} batch=${batch} workers=${workers}`
@@ -255,7 +277,7 @@ async function main() {
   let totalQualityRejected = 0;
   let totalErrors = 0;
 
-  // Pending leaves to process, in original order.
+  // Pending leaves to process, ordered fewest-questions-first.
   const pending: LeafUnit[] = leaves.slice();
   let nextIndex = 0;
 

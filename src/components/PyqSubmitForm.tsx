@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { CloseIcon, PyqIcon } from "@/components/icons";
 
 const empty = () => ["", "", "", ""];
 
@@ -78,29 +79,26 @@ export function PyqSubmitForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+        className="btn btn-primary"
       >
-        + Add a question from a paper
+        <PyqIcon /> Add a question from a paper
       </button>
     );
   }
 
-  const input =
-    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900";
-  const label = "text-xs font-semibold text-zinc-500";
+  const input = "input";
+  const label = "label";
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Transcribe a genuine PYQ
-        </h2>
-        <button type="button" onClick={() => setOpen(false)} className="text-sm text-zinc-400 hover:text-zinc-600">
-          Close
+    <form onSubmit={submit} className="card flex w-full flex-col gap-4 p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="section-title">Transcribe a genuine PYQ</h2>
+        <button type="button" onClick={() => setOpen(false)} className="btn btn-ghost btn-sm">
+          <CloseIcon /> Close
         </button>
       </div>
 
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-muted-fg">
         Only questions copied verbatim from an authentic DSSSB paper belong here. You must
         disclose the source — entries start <span className="font-semibold">Unverified</span> and
         are never presented as authoritative until checked against the paper copy.
@@ -144,7 +142,7 @@ export function PyqSubmitForm() {
       <div className="grid gap-3 sm:grid-cols-2">
         {form.options.map((opt, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span className="text-sm font-bold text-zinc-500">{String.fromCharCode(65 + i)}</span>
+            <span className="text-sm font-bold text-subtle-fg">{String.fromCharCode(65 + i)}</span>
             <input
               type="text"
               value={opt}
@@ -206,9 +204,9 @@ export function PyqSubmitForm() {
         </div>
       </div>
 
-      {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="field-error">{error}</p> : null}
       {success ? (
-        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+        <p className="field-ok">
           Added as Unverified. It will show up below once the paper is checked.
         </p>
       ) : null}
@@ -216,7 +214,7 @@ export function PyqSubmitForm() {
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+        className="btn btn-primary justify-center"
       >
         {busy ? "Submitting…" : "Add question"}
       </button>

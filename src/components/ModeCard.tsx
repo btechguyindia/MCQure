@@ -1,47 +1,51 @@
 import Link from "next/link";
+import type { ComponentType, SVGProps } from "react";
+import {
+  AnalyticsIcon,
+  ArrowRightIcon,
+  BankIcon,
+  MockIcon,
+  MotivationIcon,
+  PracticeIcon,
+  ProgressIcon,
+  PyqIcon,
+  ReportsIcon,
+  StudyIcon,
+} from "@/components/icons";
 
 interface ModeCardProps {
-  emoji: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
   href: string;
   badge?: string;
-  tint?: string;
+  tone?: "brand" | "accent";
 }
 
-const TINTS: Record<string, string> = {
-  indigo:
-    "group-hover:border-indigo-300 group-hover:bg-indigo-50/60 dark:group-hover:border-indigo-700 dark:group-hover:bg-indigo-950/30",
-  violet:
-    "group-hover:border-violet-300 group-hover:bg-violet-50/60 dark:group-hover:border-violet-700 dark:group-hover:bg-violet-950/30",
-  emerald:
-    "group-hover:border-emerald-300 group-hover:bg-emerald-50/60 dark:group-hover:border-emerald-700 dark:group-hover:bg-emerald-950/30",
-  amber:
-    "group-hover:border-amber-300 group-hover:bg-amber-50/60 dark:group-hover:border-amber-700 dark:group-hover:bg-amber-950/30",
-  sky: "group-hover:border-sky-300 group-hover:bg-sky-50/60 dark:group-hover:border-sky-700 dark:group-hover:bg-sky-950/30",
-  rose: "group-hover:border-rose-300 group-hover:bg-rose-50/60 dark:group-hover:border-rose-700 dark:group-hover:bg-rose-950/30",
+const TONES: Record<"brand" | "accent", string> = {
+  brand: "bg-brand-soft text-brand",
+  accent: "bg-accent-soft text-accent",
 };
 
-export function ModeCard({ emoji, title, description, href, badge, tint = "indigo" }: ModeCardProps) {
+export function ModeCard({ icon: Icon, title, description, href, badge, tone = "brand" }: ModeCardProps) {
   return (
     <Link
       href={href}
-      className={`card group flex flex-col gap-2 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-zinc-200/60 dark:hover:shadow-black/20 ${TINTS[tint] ?? TINTS.indigo}`}
+      className="card card-hover group relative flex flex-col gap-3 p-5"
     >
-      <div className="flex items-center justify-between">
-        <span className="text-3xl transition-transform duration-200 group-hover:scale-110" aria-hidden>
-          {emoji}
+      <div className="flex items-start justify-between">
+        <span
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105 ${TONES[tone]}`}
+        >
+          <Icon className="h-5 w-5" />
         </span>
-        {badge ? (
-          <span className="badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
-            {badge}
-          </span>
-        ) : null}
+        {badge ? <span className="badge badge-brand">{badge}</span> : null}
       </div>
-      <h2 className="text-lg font-bold">{title}</h2>
-      <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{description}</p>
-      <span className="mt-auto pt-1 text-sm font-semibold text-indigo-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-indigo-400">
-        Open →
+      <h2 className="text-base font-bold tracking-tight">{title}</h2>
+      <p className="text-sm leading-relaxed text-muted-fg">{description}</p>
+      <span className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-semibold text-brand opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        Open
+        <ArrowRightIcon className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
       </span>
     </Link>
   );
@@ -50,74 +54,74 @@ export function ModeCard({ emoji, title, description, href, badge, tint = "indig
 export function ModeCardGrid() {
   const cards: ModeCardProps[] = [
     {
-      emoji: "🎯",
+      icon: PracticeIcon,
       title: "Practice",
       description: "Adaptive MCQ sessions — quick drills to 100-question marathons, instant feedback on every answer.",
       href: "/practice",
-      tint: "indigo",
+      tone: "brand",
       badge: "Core",
     },
     {
-      emoji: "📝",
+      icon: MockIcon,
       title: "Mock tests",
       description: "Blueprint-driven sectional and full mocks under real exam timing, with mock-vs-practice comparison.",
       href: "/mock",
-      tint: "violet",
+      tone: "accent",
     },
     {
-      emoji: "📚",
+      icon: StudyIcon,
       title: "Study notes",
       description: "Concise exam-focused concepts, mnemonics, traps and one-page revisions for every topic.",
       href: "/study",
-      tint: "emerald",
+      tone: "brand",
     },
     {
-      emoji: "📊",
+      icon: AnalyticsIcon,
       title: "Analytics",
       description: "Accuracy trends, per-subject strength, error types, confidence analysis and your mistake book.",
       href: "/analytics",
-      tint: "sky",
+      tone: "accent",
     },
     {
-      emoji: "🚀",
+      icon: ProgressIcon,
       title: "Progress",
       description: "Mastery tracking across the syllabus — completion states, revision queue and a daily plan.",
       href: "/preparation",
-      tint: "amber",
+      tone: "brand",
       badge: "Live",
     },
     {
-      emoji: "🗂",
+      icon: BankIcon,
       title: "Question bank",
       description: "Browse every question by subject, topic, difficulty and provenance with full-text search.",
       href: "/questions",
-      tint: "rose",
+      tone: "accent",
     },
     {
-      emoji: "🏛",
+      icon: PyqIcon,
       title: "PYQ bank",
       description: "Genuine previous-year questions with mandatory source disclosure and a verification workflow.",
       href: "/pyq",
-      tint: "indigo",
+      tone: "brand",
     },
     {
-      emoji: "⚡",
+      icon: MotivationIcon,
       title: "Motivation",
       description: "Goals, streaks, achievements and daily targets that keep the preparation loop alive.",
       href: "/motivation",
-      tint: "violet",
+      tone: "accent",
     },
     {
-      emoji: "📤",
+      icon: ReportsIcon,
       title: "Reports",
       description: "Weekly and monthly aggregates with CSV/JSON export for offline review.",
       href: "/reports",
-      tint: "emerald",
+      tone: "brand",
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((c) => (
         <ModeCard key={c.href} {...c} />
       ))}

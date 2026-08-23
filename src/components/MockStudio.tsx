@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRightIcon, ReportsIcon, TargetIcon } from "@/components/icons";
 
 interface SubjectOption {
   id: string;
@@ -110,35 +111,38 @@ export function MockStudio({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Configure a mock
-        </h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+      <section className="card p-5 sm:p-6">
+        <div className="flex items-center gap-2">
+          <TargetIcon className="text-brand" />
+          <h2 className="section-title">Configure a mock</h2>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {(Object.keys(SCOPE_META) as Scope[]).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => pickScope(s)}
-              className={`rounded-xl border-2 p-4 text-left transition-colors ${
+              className={`rounded-xl border p-4 text-left transition-colors ${
                 scope === s
-                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
-                  : "border-zinc-200 bg-white hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900"
+                  ? "border-brand bg-brand-soft ring-4 ring-brand/15"
+                  : "border-line bg-card hover:border-line-strong"
               }`}
             >
-              <h3 className="font-bold">{SCOPE_META[s].title}</h3>
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{SCOPE_META[s].desc}</p>
+              <h3 className={`font-bold ${scope === s ? "text-brand" : "text-ink"}`}>
+                {SCOPE_META[s].title}
+              </h3>
+              <p className="mt-1 text-xs text-muted-fg">{SCOPE_META[s].desc}</p>
             </button>
           ))}
         </div>
 
         {scope === "section" ? (
           <label className="mt-4 block">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Section</span>
+            <span className="label">Section</span>
             <select
               value={sectionId}
               onChange={(e) => setSectionId(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              className="input"
             >
               {sections.map((sec) => (
                 <option key={sec.id} value={sec.id}>
@@ -152,11 +156,11 @@ export function MockStudio({
         {scope === "topic" ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label>
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Subject</span>
+              <span className="label">Subject</span>
               <select
                 value={topicId}
                 onChange={(e) => setTopicId(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                className="input"
               >
                 {subjects.map((s) => (
                   <option key={s.id} value={s.topics[0]?.id ?? ""} disabled={s.topics.length === 0}>
@@ -166,11 +170,11 @@ export function MockStudio({
               </select>
             </label>
             <label>
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Topic</span>
+              <span className="label">Topic</span>
               <select
                 value={topicId}
                 onChange={(e) => setTopicId(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                className="input"
               >
                 {subjects.flatMap((s) =>
                   s.topics.map((t) => (
@@ -185,20 +189,14 @@ export function MockStudio({
         ) : null}
 
         <label className="mt-4 block">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Questions ({count})
-          </span>
-          <div className="mt-1.5 flex gap-2">
+          <span className="label">Questions ({count})</span>
+          <div className="flex gap-2">
             {countOptions.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setCount(c)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                  count === c
-                    ? "bg-indigo-600 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
-                }`}
+                className={`btn btn-sm ${count === c ? "btn-primary" : "btn-secondary"}`}
               >
                 {c}
               </button>
@@ -206,55 +204,68 @@ export function MockStudio({
           </div>
         </label>
 
-        {error ? <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+        {error ? <p className="field-error mt-4">{error}</p> : null}
 
         <button
           type="button"
           onClick={launch}
           disabled={busy || (scope === "section" && !sectionId) || (scope === "topic" && !topicId)}
-          className="mt-4 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="btn btn-primary btn-lg mt-5 w-full"
         >
-          {busy ? "Building mock…" : "Start mock"}
+          {busy ? (
+            "Building mock…"
+          ) : (
+            <>
+              Start mock <ArrowRightIcon />
+            </>
+          )}
         </button>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          History
-        </h2>
+      <section className="card p-5 sm:p-6">
+        <div className="flex items-center gap-2">
+          <ReportsIcon className="text-brand" />
+          <h2 className="section-title">History</h2>
+        </div>
         {history === null ? (
-          <p className="mt-3 text-sm text-zinc-500">Loading…</p>
+          <div className="mt-4 flex flex-col gap-2" aria-hidden>
+            <div className="skeleton h-10 w-full" />
+            <div className="skeleton h-10 w-full" />
+            <div className="skeleton h-10 w-2/3" />
+          </div>
         ) : history.runs.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No mock runs yet. Finish your first mock to see results here.</p>
+          <p className="mt-4 rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted-fg">
+            No mock runs yet. Finish your first mock to see results here.
+          </p>
         ) : (
           <>
             {history.comparison.mockAverage !== null ? (
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-4 text-sm text-muted-fg">
                 Avg mock accuracy{" "}
-                <span className="font-semibold">{history.comparison.mockAverage.toFixed(1)}%</span>
+                <span className="stat-num text-ink">{history.comparison.mockAverage.toFixed(1)}%</span>
                 {history.comparison.practiceAverage !== null ? (
                   <>
                     {" "}
                     vs practice{" "}
-                    <span className="font-semibold">{history.comparison.practiceAverage.toFixed(1)}%</span>
+                    <span className="stat-num text-ink">{history.comparison.practiceAverage.toFixed(1)}%</span>
                     {" "}— mock-performance gap for calibrating difficulty.
                   </>
                 ) : null}
               </p>
             ) : null}
-            <ul className="mt-3 flex flex-col gap-2">
+            <ul className="stagger mt-3 flex flex-col gap-2">
               {history.runs.map((r) => (
                 <li
                   key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl border border-line bg-card px-3 py-2.5 text-sm"
                 >
-                  <span className="font-medium">
+                  <span className="flex flex-wrap items-center gap-2 font-medium text-ink">
                     {r.label}
-                    <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    <span className="badge badge-neutral">
                       {r.scope} · {r.questionCount} Q
                     </span>
                   </span>
-                  <span className="tabular-nums text-zinc-600 dark:text-zinc-300">
+                  <span className="stat-num font-semibold text-muted-fg">
                     {r.score}/{r.maxScore} · {r.accuracy.toFixed(0)}% ·{" "}
                     {new Date(r.createdAt).toLocaleDateString()}
                   </span>

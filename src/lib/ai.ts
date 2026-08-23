@@ -117,6 +117,7 @@ export async function generateWithGemini(
         model: fallbackModel,
         messages: [{ role: "user", content: input.prompt }],
         temperature: input.temperature ?? 0.7,
+        maxOutputTokens: input.maxOutputTokens,
       });
       return { text: fb.text, model: fb.model, raw: fb.raw };
     }
@@ -192,6 +193,8 @@ export interface OpenRouterChatInput {
   model: string;
   messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
   temperature?: number;
+  /** Completion token cap; omit to let OpenRouter use its default. */
+  maxOutputTokens?: number;
 }
 
 export interface OpenRouterResult {
@@ -221,6 +224,9 @@ export async function chatWithOpenRouter(
       model: input.model,
       messages: input.messages,
       temperature: input.temperature ?? 0.7,
+      // Without an explicit cap OpenRouter defaults to the model's full
+      // context, which low-credit accounts cannot afford (402).
+      ...(input.maxOutputTokens ? { max_tokens: input.maxOutputTokens } : {}),
     }),
   });
 

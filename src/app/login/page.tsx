@@ -8,8 +8,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto mt-8 w-full max-w-sm">
-          <div className="h-64 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900" />
+        <div className="mx-auto mt-8 w-full max-w-sm sm:mt-10">
+          <div className="skeleton h-72 w-full rounded-2xl" />
         </div>
       }
     >

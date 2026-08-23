@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PracticeLauncher } from "@/components/PracticeLauncher";
 import { CustomPracticeForm } from "@/components/CustomPracticeForm";
+import { TargetIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Practice — MCQure" };
 
@@ -41,14 +42,18 @@ export default function PracticePage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-bold">🎯 Practice</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="kicker">Practice modes</p>
+        <h1 className="mt-2 flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+          <TargetIcon className="h-6 w-6 text-brand" />
+          Practice
+        </h1>
+        <p className="mt-1 text-sm text-muted-fg">
           Scoring: <strong>+1</strong> correct · <strong>-0.25</strong> incorrect ·{" "}
           <strong>0</strong> unattempted
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="stagger grid gap-4 sm:grid-cols-2">
         {MODES.map((mode) => (
           <PracticeLauncher
             key={mode.key}

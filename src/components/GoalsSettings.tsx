@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckIcon } from "@/components/icons";
 
 interface GoalsData {
   today: number;
@@ -34,7 +35,7 @@ export function GoalsSettings({ initial }: { initial: GoalsData }) {
         return;
       }
       setGoals(data.goals);
-      setMessage("Saved ✓");
+      setMessage("Saved");
     } catch {
       setMessage("Network error. Please try again.");
     } finally {
@@ -43,43 +44,68 @@ export function GoalsSettings({ initial }: { initial: GoalsData }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
-        <label>
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Daily target</span>
+        <div>
+          <label className="label">Daily target</label>
           <input
             type="number"
             min={1}
             value={daily}
             onChange={(e) => setDaily(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="input"
           />
-        </label>
-        <label>
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Weekly target</span>
+        </div>
+        <div>
+          <label className="label">Weekly target</label>
           <input
             type="number"
             min={1}
             value={weekly}
             onChange={(e) => setWeekly(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="input"
           />
-        </label>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={save}
-          disabled={busy}
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
-        >
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={save} disabled={busy} className="btn btn-primary">
           {busy ? "Saving…" : "Save goals"}
         </button>
-        {message ? <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p> : null}
+        {message ? (
+          <p
+            className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+              message === "Saved" ? "field-ok" : "field-error"
+            }`}
+          >
+            {message === "Saved" ? <CheckIcon /> : null}
+            {message}
+          </p>
+        ) : null}
       </div>
-      <p className="text-xs text-zinc-500">
-        Today: {goals.today}/{goals.dailyTarget} · Week: {goals.week}/{goals.weeklyTarget}
-      </p>
+      <div className="flex flex-col gap-2">
+        <div>
+          <p className="mb-1 text-xs text-subtle-fg">
+            Today: <span className="stat-num">{goals.today}</span>/{goals.dailyTarget}
+          </p>
+          <div className="progress">
+            <div
+              className="progress-bar"
+              style={{ width: `${Math.min(100, (goals.today / Math.max(1, goals.dailyTarget)) * 100)}%` }}
+            />
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-subtle-fg">
+            Week: <span className="stat-num">{goals.week}</span>/{goals.weeklyTarget}
+          </p>
+          <div className="progress">
+            <div
+              className="progress-bar"
+              style={{ width: `${Math.min(100, (goals.week / Math.max(1, goals.weeklyTarget)) * 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

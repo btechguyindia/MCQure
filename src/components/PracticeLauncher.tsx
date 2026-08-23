@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRightIcon } from "@/components/icons";
 
 interface PracticeLauncherProps {
   mode: "quick" | "standard" | "deep" | "marathon" | "review" | "smart";
@@ -45,13 +46,14 @@ export function PracticeLauncher({ mode, title, description }: PracticeLauncherP
       type="button"
       onClick={launch}
       disabled={busy}
-      className="flex flex-col items-start gap-1 rounded-2xl border border-zinc-200 bg-white p-5 text-left transition-colors hover:border-indigo-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500"
+      className="card card-hover flex flex-col items-start gap-1 p-5 text-left disabled:opacity-60"
     >
-      <h2 className="text-lg font-bold">{title}</h2>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
-      {error ? <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p> : null}
-      <span className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
+      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+      <p className="text-sm text-muted-fg">{description}</p>
+      {error ? <p className="field-error mt-1">{error}</p> : null}
+      <span className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-sm font-semibold text-on-brand shadow-glow">
         {busy ? "Starting…" : "Start"}
+        <ArrowRightIcon className="h-4 w-4" />
       </span>
     </button>
   );

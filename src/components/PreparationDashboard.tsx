@@ -10,11 +10,21 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { CheckIcon, FlagIcon } from "@/components/icons";
 import type { PrepReport } from "@/lib/tracking";
 
 interface Props {
   report: PrepReport;
 }
+
+const TOOLTIP_STYLE = {
+  background: "var(--mcq-card)",
+  border: "1px solid var(--mcq-line-strong)",
+  borderRadius: "0.75rem",
+  fontSize: "0.8125rem",
+  color: "var(--mcq-fg)",
+  boxShadow: "var(--shadow-soft)",
+} as const;
 
 export function PreparationDashboard({ report }: Props) {
   const { overall, coverage, subjects, strengths, weaknesses, revisionDue, dailyPlan, trend, alignment } =
@@ -38,7 +48,7 @@ export function PreparationDashboard({ report }: Props) {
     .sort((a, b) => b.mastered - a.mastered);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="stagger flex flex-col gap-6">
       {/* Scorecard */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <ScorecardTile
@@ -78,32 +88,33 @@ export function PreparationDashboard({ report }: Props) {
 
       {/* Today's priority + revision queue */}
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Today&apos;s priority
-          </h2>
+        <div className="card p-5">
+          <h2 className="section-title">Today&apos;s priority</h2>
           {dailyPlan.priorities.length === 0 ? (
-            <p className="mt-3 text-sm text-zinc-500">
+            <p className="mt-3 text-sm text-muted-fg">
               Answer more questions to build an evidence-based plan.
             </p>
           ) : (
             <ol className="mt-3 flex flex-col gap-2">
               {dailyPlan.priorities.map((p, i) => (
                 <li key={p.topicId} className="flex items-start gap-3">
-                  <span className="mt-0.5 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
                     {i + 1}
                   </span>
                   <div>
                     <Link
                       href={`/preparation/topic/${p.topicId}`}
-                      className="font-semibold hover:underline"
+                      className="font-semibold text-ink hover:underline"
                     >
                       {p.topicName}
                     </Link>
-                    <span className="ml-2 text-xs text-zinc-400">{p.subjectName}</span>
-                    <ul className="mt-0.5 flex flex-col gap-0.5 text-xs text-zinc-500">
+                    <span className="ml-2 text-xs text-subtle-fg">{p.subjectName}</span>
+                    <ul className="mt-0.5 flex flex-col gap-0.5 text-xs text-muted-fg">
                       {p.reasons.map((r) => (
-                        <li key={r}>• {r}</li>
+                        <li key={r} className="flex items-start gap-1.5">
+                          <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand" />
+                          {r}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -112,9 +123,9 @@ export function PreparationDashboard({ report }: Props) {
             </ol>
           )}
           {dailyPlan.actions.length > 0 ? (
-            <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+            <div className="mt-3 border-t border-line pt-3">
               {dailyPlan.actions.map((a, i) => (
-                <p key={i} className="text-xs text-zinc-600 dark:text-zinc-400">
+                <p key={i} className="text-xs text-muted-fg">
                   {a.note}
                 </p>
               ))}
@@ -122,28 +133,32 @@ export function PreparationDashboard({ report }: Props) {
           ) : null}
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            🔴 Revision required
+        <div className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <FlagIcon className="h-4 w-4 text-warn" />
+            Revision required
           </h2>
           {revisionDue.length === 0 ? (
-            <p className="mt-3 text-sm text-zinc-500">Nothing overdue. Nice.</p>
+            <p className="mt-3 text-sm text-muted-fg">Nothing overdue. Nice.</p>
           ) : (
             <ul className="mt-3 flex flex-col gap-3">
               {revisionDue.map((r) => (
-                <li key={r.topicId}>
+                <li
+                  key={r.topicId}
+                  className="rounded-xl border-l-2 border-warn bg-warn-soft/40 py-1 pl-3 pr-2"
+                >
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/preparation/topic/${r.topicId}`}
-                      className="font-semibold hover:underline"
+                      className="font-semibold text-ink hover:underline"
                     >
                       {r.topicName}
                     </Link>
-                    <span className="text-xs text-zinc-400">
+                    <span className="stat-num text-xs text-warn">
                       {r.mastery == null ? "—" : `${r.mastery.toFixed(0)}%`}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500">{r.reason}</p>
+                  <p className="text-xs text-muted-fg">{r.reason}</p>
                 </li>
               ))}
             </ul>
@@ -152,72 +167,77 @@ export function PreparationDashboard({ report }: Props) {
       </section>
 
       {/* Trend */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Net score — last 14 days
-        </h2>
+      <section className="card p-5">
+        <h2 className="section-title">Net score — last 14 days</h2>
         <div className="mt-3 h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trendData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200 dark:stroke-zinc-800" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="netScore" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-line" />
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 11, fill: "var(--mcq-subtle)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "var(--mcq-subtle)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip cursor={{ fill: "color-mix(in oklab, var(--mcq-brand) 6%, transparent)" }} contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="netScore" name="Net score" className="fill-brand" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </section>
 
       {/* Subject performance */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Subject performance
-        </h2>
+      <section className="card p-5">
+        <h2 className="section-title">Subject performance</h2>
         <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+          <table className="table-clean w-full min-w-[720px]">
             <thead>
-              <tr className="text-left text-xs uppercase text-zinc-400">
-                <th className="pb-2 pr-3">Subject</th>
-                <th className="pb-2 pr-3">Questions</th>
-                <th className="pb-2 pr-3">Accuracy</th>
-                <th className="pb-2 pr-3">Mastery</th>
-                <th className="pb-2 pr-3">Alignment</th>
-                <th className="pb-2 pr-3">Avg time</th>
-                <th className="pb-2 pr-3">PYQ</th>
-                <th className="pb-2 pr-3">Mock</th>
-                <th className="pb-2">Trend</th>
+              <tr>
+                <th>Subject</th>
+                <th>Questions</th>
+                <th>Accuracy</th>
+                <th>Mastery</th>
+                <th>Alignment</th>
+                <th>Avg time</th>
+                <th>PYQ</th>
+                <th>Mock</th>
+                <th>Trend</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <tbody>
               {subjects.map((s) => (
-                <tr key={s.id} className="text-zinc-700 dark:text-zinc-300">
-                  <td className="py-2 pr-3">
-                    <Link href={`/preparation/subject/${s.id}`} className="font-semibold hover:underline">
+                <tr key={s.id}>
+                  <td>
+                    <Link href={`/preparation/subject/${s.id}`} className="font-semibold text-ink hover:underline">
                       {s.name}
                     </Link>
                     {s.expectedShare != null ? (
-                      <span className="ml-1 text-xs text-zinc-400">({s.expectedShare}q)</span>
+                      <span className="ml-1 text-xs text-subtle-fg">({s.expectedShare}q)</span>
                     ) : null}
                   </td>
-                  <td className="py-2 pr-3">{s.stats.attempts}</td>
-                  <td className="py-2 pr-3">
+                  <td>{s.stats.attempts}</td>
+                  <td>
                     {s.stats.accuracy == null ? "—" : `${s.stats.accuracy.toFixed(0)}%`}
                   </td>
-                  <td className="py-2 pr-3">
+                  <td className="stat-num">
                     {s.mastery == null ? "—" : s.mastery.toFixed(0)}
                   </td>
-                  <td className="py-2 pr-3">{s.alignment}</td>
-                  <td className="py-2 pr-3">
+                  <td>{s.alignment}</td>
+                  <td>
                     {s.stats.attempts > 0 ? `${(s.stats.averageTimeMs / 1000).toFixed(0)}s` : "—"}
                   </td>
-                  <td className="py-2 pr-3">
+                  <td>
                     {s.stats.pyqAccuracy == null ? "—" : `${s.stats.pyqAccuracy.toFixed(0)}%`}
                   </td>
-                  <td className="py-2 pr-3">
+                  <td>
                     {s.stats.mockAccuracy == null ? "—" : `${s.stats.mockAccuracy.toFixed(0)}%`}
                   </td>
-                  <td className="py-2">
+                  <td>
                     <TrendBadge trend={s.trend} />
                   </td>
                 </tr>
@@ -228,20 +248,24 @@ export function PreparationDashboard({ report }: Props) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            🟢 Strong areas
+        <div className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <CheckIcon className="h-4 w-4 text-ok" />
+            Strong areas
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {strengths.length === 0 ? (
-              <p className="text-sm text-zinc-500">No reliable strengths yet — keep practicing.</p>
+              <p className="text-sm text-muted-fg">No reliable strengths yet — keep practicing.</p>
             ) : (
               strengths.map((s) => (
-                <li key={s.id} className="flex items-center justify-between text-sm">
-                  <Link href={`/preparation/topic/${s.id}`} className="font-semibold hover:underline">
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between rounded-xl px-3 py-2 text-sm transition-colors hover:bg-ok-soft/50"
+                >
+                  <Link href={`/preparation/topic/${s.id}`} className="font-semibold text-ink hover:underline">
                     {s.name}
                   </Link>
-                  <span className="text-xs text-zinc-400">
+                  <span className="text-xs text-subtle-fg">
                     {s.mastery == null ? "—" : `Mastery ${s.mastery.toFixed(0)}`}
                     {s.accuracy != null ? ` · ${s.accuracy.toFixed(0)}%` : ""}
                   </span>
@@ -251,20 +275,24 @@ export function PreparationDashboard({ report }: Props) {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            🔴 Weak areas
+        <div className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <FlagIcon className="h-4 w-4 text-bad" />
+            Weak areas
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {weaknesses.length === 0 ? (
-              <p className="text-sm text-zinc-500">No weak areas detected.</p>
+              <p className="text-sm text-muted-fg">No weak areas detected.</p>
             ) : (
               weaknesses.map((w) => (
-                <li key={w.id} className="flex items-center justify-between gap-2 text-sm">
-                  <Link href={`/preparation/topic/${w.id}`} className="font-semibold hover:underline">
+                <li
+                  key={w.id}
+                  className="flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-bad-soft/50"
+                >
+                  <Link href={`/preparation/topic/${w.id}`} className="font-semibold text-ink hover:underline">
                     {w.name}
                   </Link>
-                  <span className="text-xs text-zinc-400">priority {w.weakness.score}/100</span>
+                  <span className="stat-num text-xs text-bad">priority {w.weakness.score}/100</span>
                 </li>
               ))
             )}
@@ -273,22 +301,33 @@ export function PreparationDashboard({ report }: Props) {
       </section>
 
       {/* Coverage chart */}
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Syllabus coverage — studied vs mastery
-        </h2>
+      <section className="card p-5">
+        <h2 className="section-title">Syllabus coverage — studied vs mastery</h2>
         <div className="mt-3 h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={coverageData} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200 dark:stroke-zinc-800" />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={190} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="mastered" name="Mastery estimate" fill="#10b981" radius={[0, 4, 4, 0]} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} className="stroke-line" />
+              <XAxis
+                type="number"
+                domain={[0, 100]}
+                tick={{ fontSize: 11, fill: "var(--mcq-subtle)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={190}
+                tick={{ fontSize: 11, fill: "var(--mcq-muted)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip cursor={{ fill: "color-mix(in oklab, var(--mcq-brand) 6%, transparent)" }} contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="mastered" name="Mastery estimate" className="fill-ok" radius={[0, 4, 4, 0]} barSize={14} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-xs text-zinc-500">
+        <p className="mt-2 text-xs text-subtle-fg">
           A topic counts as studied once you open its material, but mastery only rises with real
           practice — opening a page alone never marks a topic complete.
         </p>
@@ -299,19 +338,19 @@ export function PreparationDashboard({ report }: Props) {
 
 function ScorecardTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
-      <dd className="mt-1 text-xl font-bold">{value}</dd>
-      {sub ? <dd className="text-xs text-zinc-400">{sub}</dd> : null}
+    <div className="card p-4">
+      <dt className="text-xs font-medium text-muted-fg">{label}</dt>
+      <dd className="stat-num mt-1 text-xl text-ink">{value}</dd>
+      {sub ? <dd className="mt-0.5 text-xs text-subtle-fg">{sub}</dd> : null}
     </div>
   );
 }
 
 function TrendBadge({ trend }: { trend: "improving" | "stable" | "declining" }) {
   const map = {
-    improving: { label: "↑ Improving", className: "text-emerald-600 dark:text-emerald-400" },
-    stable: { label: "→ Stable", className: "text-zinc-500" },
-    declining: { label: "↓ Declining", className: "text-red-600 dark:text-red-400" },
+    improving: { label: "↑ Improving", className: "text-ok" },
+    stable: { label: "→ Stable", className: "text-muted-fg" },
+    declining: { label: "↓ Declining", className: "text-bad" },
   } as const;
   const m = map[trend];
   return <span className={`text-xs font-semibold ${m.className}`}>{m.label}</span>;

@@ -2,6 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/api";
 import { getPrepReport } from "@/lib/tracking";
+import { CheckIcon, ChevronDownIcon, FlagIcon } from "@/components/icons";
+
+const COMPLETION_BADGE: Record<string, string> = {
+  NOT_STARTED: "badge-neutral",
+  STUDYING: "badge-brand",
+  PRACTICED: "badge-brand",
+  PROFICIENT: "badge-ok",
+  MASTERED: "badge-ok",
+};
+
+function masteryBarColor(mastery: number | null): string | undefined {
+  if (mastery != null && mastery >= 80) return "var(--mcq-ok)";
+  return undefined;
+}
 
 export default async function SubjectPage({ params }: { params: Promise<{ subjectId: string }> }) {
   const user = await getCurrentUser();
@@ -18,12 +32,17 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <Link href="/preparation" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
-          ← My Preparation
-        </Link>
-        <h1 className="mt-1 text-2xl font-bold">{subject.name}</h1>
+        <nav className="flex items-center gap-1.5">
+          <Link href="/preparation" className="chip transition-colors hover:border-brand hover:text-brand">
+            My Preparation
+          </Link>
+          <ChevronDownIcon className="h-3 w-3 -rotate-90 text-subtle-fg" />
+          <span className="chip">{subject.name}</span>
+        </nav>
+        <p className="kicker mt-4">Subject</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{subject.name}</h1>
         {subject.expectedShare != null ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-fg">
             Blueprint share: ~{subject.expectedShare} questions per paper
           </p>
         ) : null}
@@ -41,57 +60,75 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Strongest</h2>
+        <div className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <CheckIcon className="h-4 w-4 text-ok" />
+            Strongest
+          </h2>
           {subject.strongestTopic ? (
-            <p className="mt-2 text-sm font-semibold">
+            <p className="mt-2 text-sm font-semibold text-ink">
               {subject.strongestTopic.name}{" "}
-              <span className="text-xs font-normal text-zinc-400">
+              <span className="stat-num text-xs font-normal text-subtle-fg">
                 {subject.strongestTopic.accuracy == null ? "—" : `${subject.strongestTopic.accuracy.toFixed(0)}%`}
               </span>
             </p>
           ) : (
-            <p className="mt-2 text-sm text-zinc-400">No accuracy data yet.</p>
+            <p className="mt-2 text-sm text-subtle-fg">No accuracy data yet.</p>
           )}
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Weakest</h2>
+        <div className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <FlagIcon className="h-4 w-4 text-bad" />
+            Weakest
+          </h2>
           {subject.weakestTopic ? (
-            <p className="mt-2 text-sm font-semibold">
+            <p className="mt-2 text-sm font-semibold text-ink">
               {subject.weakestTopic.name}{" "}
-              <span className="text-xs font-normal text-zinc-400">
+              <span className="stat-num text-xs font-normal text-subtle-fg">
                 {subject.weakestTopic.accuracy == null ? "—" : `${subject.weakestTopic.accuracy.toFixed(0)}%`}
               </span>
             </p>
           ) : (
-            <p className="mt-2 text-sm text-zinc-400">No accuracy data yet.</p>
+            <p className="mt-2 text-sm text-subtle-fg">No accuracy data yet.</p>
           )}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Topics</h2>
-        <ul className="mt-3 flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+      <section className="card p-5">
+        <h2 className="section-title">Topics</h2>
+        <ul className="stagger mt-3 flex flex-col gap-2">
           {topics.map((t) => (
-            <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
-              <div className="flex items-center gap-2">
-                <Link href={`/preparation/topic/${t.id}`} className="font-semibold hover:underline">
-                  {t.name}
-                </Link>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${t.completionColor}`}>
-                  {t.completionLabel}
-                </span>
-                {t.revision.due ? (
-                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-900/50 dark:text-red-300">
-                    revision due
+            <li
+              key={t.id}
+              className="card-hover rounded-xl border border-line px-3 py-2.5"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link href={`/preparation/topic/${t.id}`} className="font-semibold text-ink hover:underline">
+                    {t.name}
+                  </Link>
+                  <span className={`badge ${COMPLETION_BADGE[t.completion] ?? "badge-neutral"}`}>
+                    {t.completionLabel}
                   </span>
-                ) : null}
+                  {t.revision.due ? (
+                    <span className="badge badge-warn">revision due</span>
+                  ) : null}
+                </div>
+                <span className="text-xs text-subtle-fg">
+                  {t.stats.attempts} q ·{" "}
+                  {t.stats.accuracy == null ? "—" : `${t.stats.accuracy.toFixed(0)}%`} · mastery{" "}
+                  <span className="stat-num">{t.mastery == null ? "—" : t.mastery.toFixed(0)}</span>
+                </span>
               </div>
-              <span className="text-xs text-zinc-400">
-                {t.stats.attempts} q ·{" "}
-                {t.stats.accuracy == null ? "—" : `${t.stats.accuracy.toFixed(0)}%`} · mastery{" "}
-                {t.mastery == null ? "—" : t.mastery.toFixed(0)}
-              </span>
+              <div className="progress mt-2">
+                <div
+                  className="progress-bar"
+                  style={{
+                    width: `${Math.max(4, Math.min(100, t.mastery ?? 0))}%`,
+                    background: masteryBarColor(t.mastery),
+                  }}
+                />
+              </div>
             </li>
           ))}
         </ul>
@@ -102,10 +139,10 @@ export default async function SubjectPage({ params }: { params: Promise<{ subjec
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
-      <dd className="mt-1 text-lg font-bold">{value}</dd>
-      {sub ? <dd className="text-xs text-zinc-400">{sub}</dd> : null}
+    <div className="card p-4">
+      <dt className="text-xs font-medium text-muted-fg">{label}</dt>
+      <dd className="stat-num mt-1 text-lg text-ink">{value}</dd>
+      {sub ? <dd className="mt-0.5 text-xs text-subtle-fg">{sub}</dd> : null}
     </div>
   );
 }

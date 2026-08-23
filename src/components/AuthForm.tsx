@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { ArrowRightIcon, SparklesIcon } from "@/components/icons";
 
 interface AuthFormProps {
   mode: "login" | "register";
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
 
@@ -41,8 +41,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         setSubmitting(false);
         return;
       }
-      router.push(next.startsWith("/") && !next.startsWith("//") ? next : "/");
-      router.refresh();
+      // Full navigation: guarantees the fresh session cookie is picked up by
+      // server components, even if the client router is in a bad state.
+      window.location.assign(next.startsWith("/") && !next.startsWith("//") ? next : "/");
     } catch {
       setError("Network error. Please try again.");
       setSubmitting(false);
@@ -50,12 +51,16 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="mx-auto mt-8 w-full max-w-sm">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 className="text-xl font-bold">
+    <div className="relative mx-auto mt-6 w-full max-w-sm sm:mt-10">
+      <div className="aurora opacity-70" aria-hidden />
+      <div className="card rise-in relative p-6 sm:p-8">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+          <SparklesIcon className="h-5 w-5" />
+        </span>
+        <h1 className="mt-4 text-xl font-bold tracking-tight">
           {isLogin ? "Sign in" : "Create your account"}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-fg">
           {isLogin
             ? "Welcome back. Pick up where you left off."
             : "Start your DSSSB TGT Computer Science preparation."}
@@ -63,73 +68,70 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
           {!isLogin ? (
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              Name
+            <div>
+              <label htmlFor="name" className="label">Name</label>
               <input
+                id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 autoComplete="name"
-                className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-indigo-900"
+                placeholder="Your name"
+                className="input"
               />
-            </label>
+            </div>
           ) : null}
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium">
-            Email
+          <div>
+            <label htmlFor="email" className="label">Email</label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-indigo-900"
+              placeholder="you@example.com"
+              className="input"
             />
-          </label>
+          </div>
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium">
-            Password
+          <div>
+            <label htmlFor="password" className="label">Password</label>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={isLogin ? 1 : 8}
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="rounded-lg border border-zinc-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-indigo-900"
+              placeholder={isLogin ? "Your password" : "At least 8 characters"}
+              className="input"
             />
-          </label>
+          </div>
 
           {error ? (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/60 dark:text-red-300">
-              {error}
-            </p>
+            <p role="alert" className="field-error">{error}</p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
-          >
+          <button type="submit" disabled={submitting} className="btn btn-primary mt-1 w-full">
             {submitting ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
+            {!submitting ? <ArrowRightIcon /> : null}
           </button>
         </form>
 
-        <p className="mt-5 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-5 text-center text-sm text-muted-fg">
           {isLogin ? (
             <>
               New to MCQure?{" "}
-              <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400">
-                Create an account
-              </Link>
+              <Link href="/register" className="link">Create an account</Link>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400">
-                Sign in
-              </Link>
+              <Link href="/login" className="link">Sign in</Link>
             </>
           )}
         </p>

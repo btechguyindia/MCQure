@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { BookmarkIcon, XIcon } from "@/components/icons";
 
 const BOOKMARK_KEY = "mcqure-bookmarks";
 
@@ -90,10 +91,15 @@ export function BookmarksReview() {
   if (error) {
     return (
       <div className="card p-6 text-center">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        <Link href="/practice" className="btn btn-primary mt-4">
-          Go to practice
-        </Link>
+        <p className="inline-flex items-center gap-2 text-sm font-medium text-bad">
+          <XIcon />
+          {error}
+        </p>
+        <div>
+          <Link href="/practice" className="btn btn-primary mt-4">
+            Go to practice
+          </Link>
+        </div>
       </div>
     );
   }
@@ -102,7 +108,20 @@ export function BookmarksReview() {
     return (
       <div className="flex flex-col gap-4" role="status" aria-label="Loading saved questions">
         {Array.from({ length: 3 }, (_, i) => (
-          <div key={i} className="h-32 animate-pulse rounded-2xl bg-zinc-200/70 dark:bg-zinc-800/70" />
+          <div key={i} className="card p-5">
+            <div className="flex items-start gap-3">
+              <div className="skeleton h-9 w-9" />
+              <div className="flex-1 space-y-2">
+                <div className="skeleton h-4 w-full" />
+                <div className="skeleton h-4 w-2/3" />
+              </div>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <div className="skeleton h-6 w-24" />
+              <div className="skeleton h-6 w-20" />
+              <div className="skeleton h-6 w-14" />
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -111,11 +130,11 @@ export function BookmarksReview() {
   if (questions.length === 0) {
     return (
       <div className="card flex flex-col items-center gap-3 p-10 text-center">
-        <span className="text-4xl" aria-hidden>
-          🔖
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft">
+          <BookmarkIcon className="h-6 w-6 fill-brand text-brand" />
         </span>
         <h2 className="text-lg font-bold">No saved questions yet</h2>
-        <p className="max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="max-w-md text-sm text-muted-fg">
           While practicing, tap the bookmark button on a question you want to revisit.
           Your saved questions appear here for review — with answers and explanations.
         </p>
@@ -127,13 +146,13 @@ export function BookmarksReview() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="stagger flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-fg">
           {questions.length} saved question{questions.length === 1 ? "" : "s"}
           {missingCount > 0 ? ` · ${missingCount} no longer in the bank` : ""}
         </p>
-        <button type="button" onClick={clearAll} className="btn btn-secondary !py-1.5 text-xs">
+        <button type="button" onClick={clearAll} className="btn btn-danger btn-sm">
           Clear all
         </button>
       </div>
@@ -141,58 +160,68 @@ export function BookmarksReview() {
       {questions.map((q) => {
         const isRevealed = revealed.has(q.id);
         return (
-          <article key={q.id} className="card p-5">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="badge bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{q.subject}</span>
-              <span className="badge bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{q.topic}</span>
+          <article key={q.id} className="card card-hover p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft">
+                <BookmarkIcon className="fill-brand text-brand" />
+              </span>
+              <p className="line-clamp-3 font-medium leading-relaxed text-ink">{q.text}</p>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="chip">{q.subject}</span>
+              <span className="chip">{q.topic}</span>
               <span
                 className={`badge ${
                   q.difficulty === "EASY"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                    ? "badge-ok"
                     : q.difficulty === "MEDIUM"
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                      ? "badge-warn"
+                      : "badge-bad"
                 }`}
               >
                 {q.difficulty.toLowerCase()}
               </span>
             </div>
 
-            <p className="mt-3 font-medium leading-relaxed">{q.text}</p>
-
             {!isRevealed ? (
-              <button type="button" onClick={() => toggleReveal(q.id)} className="btn btn-secondary mt-4 !py-2">
+              <button type="button" onClick={() => toggleReveal(q.id)} className="btn btn-secondary mt-4">
                 Show answer
               </button>
             ) : (
-              <div className="mt-4 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">
+              <div className="mt-4 rounded-xl border border-line bg-canvas p-4">
                 <ul className="flex flex-col gap-1.5 text-sm">
                   {q.options.map((opt, i) => (
                     <li key={opt.label} className="flex items-start gap-2">
                       <span
                         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[0.65rem] font-bold ${
                           i === q.correctIndex
-                            ? "bg-emerald-600 text-white"
-                            : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+                            ? "bg-ok-soft text-ok"
+                            : "border border-line bg-canvas text-subtle-fg"
                         }`}
                       >
                         {opt.label}
                       </span>
-                      <span className={i === q.correctIndex ? "font-semibold text-emerald-700 dark:text-emerald-400" : "text-zinc-600 dark:text-zinc-300"}>
+                      <span
+                        className={
+                          i === q.correctIndex ? "font-semibold text-ok" : "text-muted-fg"
+                        }
+                      >
                         {opt.text}
                       </span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 border-t border-zinc-200 pt-3 text-sm leading-relaxed text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+                <p className="mt-3 border-t border-line pt-3 text-sm leading-relaxed text-muted-fg">
                   {q.explanation}
                 </p>
               </div>
             )}
 
             <div className="mt-4 flex justify-end">
-              <button type="button" onClick={() => removeBookmark(q.id)} className="btn btn-ghost !py-1.5 text-xs text-zinc-500">
-                Remove 🔖
+              <button type="button" onClick={() => removeBookmark(q.id)} className="btn btn-ghost btn-sm">
+                <BookmarkIcon className="fill-brand text-brand" />
+                Remove
               </button>
             </div>
           </article>

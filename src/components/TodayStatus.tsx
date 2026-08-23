@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MotivationIcon } from "@/components/icons";
 
 interface StatusResponse {
   ok: boolean;
@@ -26,8 +27,8 @@ function GoalRing({ done, total }: { done: number; total: number }) {
 
   return (
     <div className="relative h-24 w-24 shrink-0" role="img" aria-label={`${done} of ${total} daily questions answered`}>
-      <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
-        <circle cx="40" cy="40" r={radius} fill="none" strokeWidth="8" className="stroke-zinc-200 dark:stroke-zinc-800" />
+      <svg viewBox="0 0 80 80" width={80} height={80} className="h-full w-full -rotate-90">
+        <circle cx="40" cy="40" r={radius} fill="none" strokeWidth="8" className="stroke-line" />
         <circle
           cx="40"
           cy="40"
@@ -37,13 +38,13 @@ function GoalRing({ done, total }: { done: number; total: number }) {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - pct)}
-          className={`transition-[stroke-dashoffset] duration-700 ease-out ${complete ? "stroke-emerald-500" : "stroke-indigo-600 dark:stroke-indigo-400"}`}
+          className={`transition-[stroke-dashoffset] duration-700 ease-out ${complete ? "stroke-ok" : "stroke-brand"}`}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-black tabular-nums leading-none">{Math.round(pct * 100)}%</span>
-        <span className="mt-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-zinc-400">
-          {complete ? "done 🎉" : "of goal"}
+        <span className="stat-num text-lg leading-none">{Math.round(pct * 100)}%</span>
+        <span className="mt-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-subtle-fg">
+          {complete ? "done" : "of goal"}
         </span>
       </div>
     </div>
@@ -65,7 +66,7 @@ export function TodayStatus() {
     return (
       <section className="card p-5">
         <h2 className="section-title">Today&apos;s Status</h2>
-        <p className="mt-2 text-sm text-zinc-500">Could not load today&apos;s status.</p>
+        <p className="mt-2 text-sm text-muted-fg">Could not load today&apos;s status.</p>
       </section>
     );
   }
@@ -74,7 +75,7 @@ export function TodayStatus() {
     return (
       <section className="card p-5">
         <h2 className="section-title">Today&apos;s Status</h2>
-        <div className="mt-3 h-24 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+        <div className="skeleton mt-3 h-24 w-full" />
       </section>
     );
   }
@@ -83,8 +84,8 @@ export function TodayStatus() {
 
   return (
     <section
-      className={`card relative overflow-hidden p-5 transition-shadow ${
-        data.hasActivityToday ? "" : "ring-1 ring-indigo-300/60 dark:ring-indigo-700/40"
+      className={`card relative overflow-hidden p-5 transition-shadow sm:p-6 ${
+        data.hasActivityToday ? "" : "ring-1 ring-brand/40"
       }`}
     >
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -93,8 +94,9 @@ export function TodayStatus() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="section-title">Today&apos;s Status</h2>
             {data.currentStreak > 0 ? (
-              <span className="badge bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300">
-                🔥 {data.currentStreak}-day streak
+              <span className="badge badge-warn">
+                <MotivationIcon className="h-3.5 w-3.5" />
+                {data.currentStreak}-day streak
               </span>
             ) : null}
           </div>
@@ -140,7 +142,7 @@ function StatusItem({
 }) {
   return (
     <div title={title}>
-      <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
+      <dt className="text-xs font-medium text-subtle-fg">{label}</dt>
       <dd className="mt-0.5 truncate text-base font-semibold">{value}</dd>
     </div>
   );

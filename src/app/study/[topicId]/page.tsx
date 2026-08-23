@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { getCurrentUser } from "@/lib/api";
 import {
   STUDY_KIND_META,
@@ -9,6 +10,15 @@ import {
   groupNotesByKind,
   parseComparisonTable,
 } from "@/lib/study";
+import {
+  ArrowRightIcon,
+  FlagIcon,
+  MockIcon,
+  ProgressIcon,
+  SavedIcon,
+  SparklesIcon,
+  StudyIcon,
+} from "@/components/icons";
 import { TopicPracticeButton } from "@/components/TopicPracticeButton";
 import { NotebookChat } from "@/components/NotebookChat";
 import { recordStudyVisit } from "@/lib/study-visit";
@@ -18,6 +28,39 @@ export async function generateMetadata({ params }: { params: Promise<{ topicId: 
   const study = await getTopicStudy(topicId);
   return { title: study ? `${study.topic.name} — Study` : "Study — MCQure" };
 }
+
+const KIND_STYLES: Record<string, { icon: ReactNode; wrap: string; tile: string; dot: string }> = {
+  CONCEPT_NOTES: {
+    icon: <StudyIcon />,
+    wrap: "card p-5 sm:p-6",
+    tile: "bg-brand-soft text-brand",
+    dot: "bg-brand",
+  },
+  MNEMONICS: {
+    icon: <SparklesIcon />,
+    wrap: "rounded-xl border-l-2 border-accent bg-accent-soft/40 py-5 pl-5 pr-5",
+    tile: "bg-card-strong text-accent shadow-soft",
+    dot: "bg-accent",
+  },
+  COMPARISON: {
+    icon: <MockIcon />,
+    wrap: "card p-5 sm:p-6",
+    tile: "bg-accent-soft text-accent",
+    dot: "bg-accent",
+  },
+  EXAM_TRAPS: {
+    icon: <FlagIcon />,
+    wrap: "rounded-xl border-l-2 border-accent bg-accent-soft/40 py-5 pl-5 pr-5",
+    tile: "bg-card-strong text-accent shadow-soft",
+    dot: "bg-accent",
+  },
+  QUICK_SUMMARY: {
+    icon: <ProgressIcon />,
+    wrap: "rounded-xl border-l-2 border-brand bg-brand-soft/40 p-5",
+    tile: "bg-card-strong text-brand shadow-soft",
+    dot: "bg-brand",
+  },
+};
 
 export default async function TopicStudyPage({ params }: { params: Promise<{ topicId: string }> }) {
   const user = await getCurrentUser();
@@ -33,58 +76,56 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
   const groups = groupNotesByKind(study.notes);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-prose flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link
-            href="/study"
-            className="text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-          >
-            ← All topics
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold">{study.topic.name}</h1>
-          <p className="text-sm text-zinc-500">{study.topic.subjectName}</p>
+          <nav className="flex items-center gap-1.5">
+            <Link href="/study" className="chip transition-colors hover:border-brand hover:text-brand">
+              Study
+            </Link>
+            <ArrowRightIcon className="h-3 w-3 text-subtle-fg" />
+            <span className="chip">{study.topic.subjectName}</span>
+          </nav>
+          <p className="kicker mt-4">Lesson</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{study.topic.name}</h1>
+          <p className="text-sm text-muted-fg">{study.topic.subjectName}</p>
         </div>
         <TopicPracticeButton topicId={study.topic.id} questionCount={study.questionCount} />
       </div>
 
       {groups.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500">
+        <div className="card p-6 text-center">
+          <p className="text-sm text-muted-fg">
             No study notes yet for this topic. Practice its questions to start the loop.
           </p>
         </div>
       ) : (
         groups.map((group) => {
           const meta = STUDY_KIND_META[group.kind];
-          const isSummary = group.kind === "QUICK_SUMMARY";
+          const styles = KIND_STYLES[group.kind] ?? KIND_STYLES.CONCEPT_NOTES;
           const isComparison = group.kind === "COMPARISON";
           return (
-            <section
-              key={group.kind}
-              className={`rounded-2xl border p-5 ${
-                isSummary
-                  ? "border-indigo-200 bg-indigo-50 dark:border-indigo-900/60 dark:bg-indigo-950/40"
-                  : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-              }`}
-            >
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-                {meta.icon} {meta.label}
+            <section key={group.kind} className={`rise-in ${styles.wrap}`}>
+              <h2 className="flex items-center gap-2.5 text-lg font-semibold tracking-tight text-ink">
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${styles.tile}`}>
+                  {styles.icon}
+                </span>
+                {meta.label}
               </h2>
-              <div className="mt-3 space-y-4">
+              <div className="mt-4 space-y-5">
                 {group.notes.map((note) => (
                   <article key={note.id}>
                     {note.title ? (
-                      <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{note.title}</h3>
+                      <h3 className="text-sm font-semibold text-ink">{note.title}</h3>
                     ) : null}
                     {isComparison ? (
                       <ComparisonTable body={note.body} />
                     ) : (
-                      <ul className="mt-1.5 flex flex-col gap-1.5">
+                      <ul className="mt-1.5 flex flex-col gap-2">
                         {bulletLines(note.body).map((line, i) => (
-                          <li key={i} className="flex gap-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400" />
-                            {line}
+                          <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-ink">
+                            <span aria-hidden className={`mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full ${styles.dot}`} />
+                            <span>{line}</span>
                           </li>
                         ))}
                       </ul>
@@ -98,11 +139,12 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
       )}
 
       {study.sources.length > 0 ? (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            🔗 Net sources ({study.sources.length})
+        <section className="card p-5 sm:p-6">
+          <h2 className="section-title flex items-center gap-2">
+            <SavedIcon className="h-4 w-4 text-brand" />
+            Net sources ({study.sources.length})
           </h2>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-subtle-fg">
             Curated references to go deeper. The Notebook answers only from the notes
             above, not from these links.
           </p>
@@ -113,21 +155,19 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-zinc-700 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"
+                  className="group flex items-start justify-between gap-3 rounded-xl border border-line px-3 py-2 transition-colors hover:border-brand hover:bg-brand-soft/40"
                 >
                   <span>
-                    <span className="block text-sm font-medium text-indigo-600 group-hover:underline dark:text-indigo-400">
-                      {source.title}
-                    </span>
+                    <span className="link block text-sm">{source.title}</span>
                     {source.description ? (
-                      <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="mt-0.5 block text-xs text-subtle-fg">
                         {source.description}
                       </span>
                     ) : null}
                   </span>
-                  <span className="text-xs text-zinc-400" title="Open in new tab">
-                    ↗
-                  </span>
+                  <ArrowRightIcon
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 -rotate-45 text-subtle-fg transition-colors group-hover:text-brand"
+                  />
                 </a>
               </li>
             ))}
@@ -135,11 +175,12 @@ export default async function TopicStudyPage({ params }: { params: Promise<{ top
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          🤖 Notebook
+      <section className="card p-5 sm:p-6">
+        <h2 className="section-title flex items-center gap-2">
+          <SparklesIcon className="h-4 w-4 text-brand" />
+          Notebook
         </h2>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-subtle-fg">
           Chat with your study material. Grounded — it stays strictly inside this
           topic&apos;s notes.
         </p>
@@ -155,24 +196,26 @@ function ComparisonTable({ body }: { body: string }) {
   const { header, rows } = parseComparisonTable(body);
   if (header.length === 0) return null;
   return (
-    <div className="mt-2 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div className="mt-2 overflow-x-auto rounded-xl border border-line">
       <table className="w-full min-w-[420px] text-left text-sm">
         <thead>
-          <tr className="bg-zinc-50 dark:bg-zinc-800">
+          <tr className="bg-brand-soft/60">
             {header.map((h, i) => (
-              <th key={i} className="px-3 py-2 font-semibold text-zinc-700 dark:text-zinc-200">
+              <th key={i} className="px-3 py-2 font-semibold tracking-tight text-ink">
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+        <tbody>
           {rows.map((row, i) => (
-            <tr key={i}>
+            <tr key={i} className="border-t border-line">
               {row.map((cell, j) => (
                 <td
                   key={j}
-                  className={`px-3 py-2 align-top text-zinc-700 dark:text-zinc-300 ${j === 0 ? "font-medium" : ""}`}
+                  className={`px-3 py-2 align-top ${j === 0 ? "font-medium text-ink" : "text-muted-fg"} ${
+                    i % 2 === 1 ? "bg-canvas/60" : ""
+                  }`}
                 >
                   {cell}
                 </td>

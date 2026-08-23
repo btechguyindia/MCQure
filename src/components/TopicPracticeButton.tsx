@@ -50,7 +50,7 @@ export function TopicPracticeButton({
         onClick={start}
         disabled={busy || empty}
         title={empty ? "No questions available for this topic yet" : undefined}
-        className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn btn-primary btn-sm"
       >
         {busy
           ? "Starting…"
@@ -60,7 +60,7 @@ export function TopicPracticeButton({
               ? `${label} (${questionCount})`
               : label}
       </button>
-      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="field-error mt-1">{error}</p> : null}
     </div>
   );
 }

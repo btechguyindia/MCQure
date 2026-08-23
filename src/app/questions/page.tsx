@@ -10,6 +10,13 @@ import {
   QUESTION_SOURCE_META,
   SOURCE_TYPE_ORDER,
 } from "@/lib/question-source";
+import {
+  ArrowRightIcon,
+  BankIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  XIcon,
+} from "@/components/icons";
 
 export const metadata = { title: "Question Bank — MCQure" };
 
@@ -19,32 +26,43 @@ const QUALITY_STATUSES = ["PENDING", "APPROVED", "QUARANTINED", "REJECTED"] as c
 function badgeClass(badge: string): string {
   switch (badge) {
     case "pyq":
-      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
+      return "badge badge-ok";
     case "official":
-      return "bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300";
+      return "badge badge-brand";
     case "licensed":
-      return "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300";
+      return "badge badge-accent";
     case "variant":
-      return "bg-violet-100 text-violet-800 dark:bg-violet-950/60 dark:text-violet-300";
+      return "badge badge-neutral";
     case "ai":
-      return "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300";
+      return "badge badge-brand";
     case "web":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300";
+      return "badge badge-warn";
     default:
-      return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+      return "badge badge-neutral";
   }
 }
 
 function qualityClass(badge: string): string {
   switch (badge) {
     case "ok":
-      return "text-emerald-600 dark:text-emerald-400";
+      return "text-ok";
     case "warn":
-      return "text-amber-600 dark:text-amber-400";
+      return "text-warn";
     case "bad":
-      return "text-rose-600 dark:text-rose-400";
+      return "text-bad";
     default:
-      return "text-zinc-500 dark:text-zinc-400";
+      return "text-subtle-fg";
+  }
+}
+
+function difficultyClass(difficulty: string): string {
+  switch (difficulty) {
+    case "EASY":
+      return "badge badge-ok";
+    case "MEDIUM":
+      return "badge badge-warn";
+    default:
+      return "badge badge-bad";
   }
 }
 
@@ -55,7 +73,7 @@ function accuracy(item: QuestionBankItem): string {
 }
 
 function selectClasses(): string {
-  return "rounded-lg border border-zinc-300 bg-background px-2.5 py-1.5 text-sm dark:border-zinc-700";
+  return "input";
 }
 
 interface SearchParams {
@@ -136,8 +154,11 @@ export default async function QuestionBankPage({
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-bold sm:text-3xl">🗂 Question Bank</h1>
-        <p className="mt-1 max-w-3xl text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="kicker">
+          <BankIcon /> Provenance-classified bank
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Question Bank</h1>
+        <p className="mt-2 max-w-3xl text-sm text-muted-fg">
           Every question is classified by provenance — VERIFIED PYQ, OFFICIAL, LICENSED,
           PYQ VARIANT, AI GENERATED, etc. — and linked to the same exam hierarchy used by
           Practice, Study, Analytics and Mocks. Cursor-paginated server-side, so the bank
@@ -145,18 +166,20 @@ export default async function QuestionBankPage({
         </p>
       </header>
 
-      <details open className="group rounded-xl border border-zinc-200 bg-card dark:border-zinc-800">
+      <details open className="card group overflow-hidden">
         <summary className="flex cursor-pointer select-none items-center justify-between px-4 py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-          <span>🔍 Filters {activeFilters.length > 0 ? `(${activeFilters.length} active)` : ""}</span>
-          <span className="text-zinc-400 transition-transform group-open:rotate-180">▾</span>
+          <span>
+            Filters {activeFilters.length > 0 ? `(${activeFilters.length} active)` : ""}
+          </span>
+          <ChevronDownIcon className="text-subtle-fg transition-transform group-open:rotate-180" />
         </summary>
-        <form method="get" className="grid grid-cols-1 gap-3 border-t border-zinc-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-zinc-800">
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Search
+        <form method="get" className="grid grid-cols-1 gap-4 border-t border-line p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="flex flex-col">
+            <span className="label">Search</span>
             <input name="query" className={select} defaultValue={query ?? ""} placeholder="search question text…" />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Subject
+          <label className="flex flex-col">
+            <span className="label">Subject</span>
             <select name="subjectId" className={select}>
               <option value="">All subjects</option>
               {subjects.map((s) => (
@@ -166,8 +189,8 @@ export default async function QuestionBankPage({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Topic
+          <label className="flex flex-col">
+            <span className="label">Topic</span>
             <select name="topicId" className={select}>
               <option value="">All topics</option>
               {topics.map((t) => (
@@ -177,8 +200,8 @@ export default async function QuestionBankPage({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Difficulty
+          <label className="flex flex-col">
+            <span className="label">Difficulty</span>
             <select name="difficulty" className={select}>
               <option value="">Any</option>
               {DIFFICULTIES.map((d) => (
@@ -188,8 +211,8 @@ export default async function QuestionBankPage({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Source
+          <label className="flex flex-col">
+            <span className="label">Source</span>
             <select name="sourceType" className={select}>
               <option value="">Any source</option>
               {SOURCE_TYPE_ORDER.map((s) => (
@@ -199,8 +222,8 @@ export default async function QuestionBankPage({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Quality
+          <label className="flex flex-col">
+            <span className="label">Quality</span>
             <select name="qualityStatus" className={select}>
               <option value="">Any</option>
               {QUALITY_STATUSES.map((q) => (
@@ -210,8 +233,8 @@ export default async function QuestionBankPage({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
-            Verification
+          <label className="flex flex-col">
+            <span className="label">Verification</span>
             <select name="verified" className={select}>
               <option value="">Any</option>
               <option value="true" selected={verified === "true"}>
@@ -223,8 +246,8 @@ export default async function QuestionBankPage({
             </select>
           </label>
           <div className="flex items-end gap-2">
-            <label className="flex w-full flex-col gap-1 text-xs text-zinc-500">
-              Relevance ≥
+            <label className="flex w-full flex-col">
+              <span className="label">Relevance ≥</span>
               <input
                 name="examRelevanceMin"
                 type="number"
@@ -271,51 +294,54 @@ export default async function QuestionBankPage({
               <Link
                 key={`${f.label}:${f.value}`}
                 href={qs ? `/questions?${qs}` : "/questions"}
-                className="badge bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/60 dark:text-indigo-300 dark:hover:bg-indigo-900"
+                className="badge badge-brand"
                 title={`Remove ${f.label} filter`}
               >
-                {f.label}: {f.value} ✕
+                {f.label}: {f.value} <XIcon className="h-3 w-3" />
               </Link>
             );
           })}
         </div>
       ) : null}
 
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-        {page.total.toLocaleString()} question{page.total === 1 ? "" : "s"} match
+      <p className="text-sm text-muted-fg">
+        <span className="stat-num text-ink">{page.total.toLocaleString()}</span> question
+        {page.total === 1 ? "" : "s"} match
       </p>
 
       {page.items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700">
-          No questions match these filters.
-        </p>
+        <div className="card p-8 text-center">
+          <p className="font-semibold">No questions match these filters.</p>
+          <p className="mt-1 text-sm text-muted-fg">
+            Try removing a few filters to widen the search.
+          </p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="stagger flex flex-col gap-3">
           {page.items.map((item) => {
             const src = QUESTION_SOURCE_META[item.sourceType];
             const q = QUALITY_STATUS_META[item.qualityStatus];
             return (
-              <li
-                key={item.id}
-                className="rounded-xl border border-zinc-200 bg-card p-4 dark:border-zinc-800"
-              >
+              <li key={item.id} className="card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className={`rounded-full px-2 py-0.5 font-semibold ${badgeClass(src.badge)}`}>
-                    {src.label}
-                  </span>
-                  <span className="text-zinc-500">{item.subject.name} · {item.topic.name}</span>
-                  {item.subtopic ? <span className="text-zinc-400">· {item.subtopic.name}</span> : null}
-                  {item.concept ? <span className="text-zinc-400">· {item.concept.name}</span> : null}
-                  <span className="text-zinc-400">· {item.difficulty.toLowerCase()}</span>
+                  <span className={badgeClass(src.badge)}>{src.label}</span>
+                  <span className="text-muted-fg">{item.subject.name} · {item.topic.name}</span>
+                  {item.subtopic ? <span className="text-subtle-fg">· {item.subtopic.name}</span> : null}
+                  {item.concept ? <span className="text-subtle-fg">· {item.concept.name}</span> : null}
+                  <span className={difficultyClass(item.difficulty)}>{item.difficulty.toLowerCase()}</span>
                   <span className={`font-medium ${qualityClass(q.badge)}`}>· {q.label}</span>
                 </div>
-                <p className="mt-2 text-sm font-medium">{item.text}</p>
-                <div className="mt-2 flex flex-wrap gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2.5 text-sm font-medium">{item.text}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-fg">
                   <span>relevance {item.examRelevance}</span>
                   <span>attempted {item.timesAttempted}</span>
                   <span>accuracy {accuracy(item)}</span>
                   <span>avg {item.avgResponseTimeMs ? `${Math.round(item.avgResponseTimeMs / 1000)}s` : "—"}</span>
-                  {item.source?.verified ? <span className="text-emerald-600 dark:text-emerald-400">✓ verified source</span> : null}
+                  {item.source?.verified ? (
+                    <span className="flex items-center gap-1 font-medium text-ok">
+                      <CheckIcon className="h-3 w-3" /> verified source
+                    </span>
+                  ) : null}
                   {item.source?.year ? <span>· {item.source.examName ?? ""} {item.source.year}</span> : null}
                 </div>
               </li>
@@ -326,11 +352,8 @@ export default async function QuestionBankPage({
 
       {page.nextCursor ? (
         <div className="flex justify-center">
-          <Link
-            href={buildUrl({ cursor: page.nextCursor })}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Next page →
+          <Link href={buildUrl({ cursor: page.nextCursor })} className="btn btn-secondary">
+            Next page <ArrowRightIcon />
           </Link>
         </div>
       ) : null}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/api";
 import { getReport } from "@/lib/reports";
+import { ReportsIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Reports — MCQure" };
 
@@ -26,10 +27,14 @@ export default async function ReportsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="stagger flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-bold">📊 Reports</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="kicker">Progress reports</p>
+        <h1 className="mt-2 flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+          <ReportsIcon className="h-6 w-6 text-brand" />
+          Reports
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-fg">
           Weekly and monthly aggregates derived from your permanent attempt history.
           Export as CSV or JSON for your own tracking.
         </p>
@@ -38,26 +43,28 @@ export default async function ReportsPage() {
       {sections.map(({ title, report }) => {
         const t = report.totals;
         return (
-          <section key={title} className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <section key={title} className="card p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-base font-bold">{title}</h2>
+              <span className="inline-flex items-center rounded-xl bg-brand-soft px-3.5 py-2 text-sm font-semibold text-brand">
+                {title}
+              </span>
               <div className="flex gap-2">
                 <a
                   href={`/api/reports/export?period=${t.period}&format=csv`}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                  className="btn btn-secondary btn-sm"
                 >
                   CSV
                 </a>
                 <a
                   href={`/api/reports/export?period=${t.period}&format=json`}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-semibold hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                  className="btn btn-primary btn-sm"
                 >
                   JSON
                 </a>
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <ReportStat label="Attempts" value={String(t.total)} />
               <ReportStat label="Answered" value={String(t.answered)} />
               <ReportStat label="Correct" value={String(t.correct)} />
@@ -69,34 +76,40 @@ export default async function ReportsPage() {
             </div>
 
             {report.bySubject.length > 0 ? (
-              <div className="mt-4 overflow-x-auto">
+              <div className="mt-5 overflow-x-auto">
                 <table className="w-full min-w-[420px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500 dark:border-zinc-700">
-                      <th className="py-2 pr-4">Subject</th>
-                      <th className="py-2 pr-4 text-right">Total</th>
-                      <th className="py-2 pr-4 text-right">Correct</th>
-                      <th className="py-2 pr-4 text-right">Incorrect</th>
-                      <th className="py-2 pr-4 text-right">Accuracy</th>
-                      <th className="py-2 text-right">Net score</th>
+                    <tr className="border-b border-line-strong">
+                      <th className="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-subtle-fg">Subject</th>
+                      <th className="py-2 pr-4 text-right text-xs font-semibold uppercase tracking-wide text-subtle-fg">Total</th>
+                      <th className="py-2 pr-4 text-right text-xs font-semibold uppercase tracking-wide text-subtle-fg">Correct</th>
+                      <th className="py-2 pr-4 text-right text-xs font-semibold uppercase tracking-wide text-subtle-fg">Incorrect</th>
+                      <th className="py-2 pr-4 text-right text-xs font-semibold uppercase tracking-wide text-subtle-fg">Accuracy</th>
+                      <th className="py-2 text-right text-xs font-semibold uppercase tracking-wide text-subtle-fg">Net score</th>
                     </tr>
                   </thead>
                   <tbody>
                     {report.bySubject.map((r) => (
-                      <tr key={r.subject} className="border-b border-zinc-100 dark:border-zinc-800">
-                        <td className="py-2 pr-4 font-medium">{r.subject}</td>
-                        <td className="py-2 pr-4 text-right tabular-nums">{r.total}</td>
-                        <td className="py-2 pr-4 text-right tabular-nums">{r.correct}</td>
-                        <td className="py-2 pr-4 text-right tabular-nums">{r.incorrect}</td>
-                        <td className="py-2 pr-4 text-right tabular-nums">{r.accuracy == null ? "—" : `${r.accuracy.toFixed(1)}%`}</td>
-                        <td className="py-2 text-right tabular-nums">{r.netScore > 0 ? `+${r.netScore}` : r.netScore}</td>
+                      <tr key={r.subject} className="border-b border-line transition-colors hover:bg-brand-soft/40">
+                        <td className="py-2.5 pr-4 font-medium">{r.subject}</td>
+                        <td className="stat-num py-2.5 pr-4 text-right text-sm">{r.total}</td>
+                        <td className="py-2.5 pr-4 text-right tabular-nums text-ok">{r.correct}</td>
+                        <td className="py-2.5 pr-4 text-right tabular-nums text-bad">{r.incorrect}</td>
+                        <td className="stat-num py-2.5 pr-4 text-right text-sm">{r.accuracy == null ? "—" : `${r.accuracy.toFixed(1)}%`}</td>
+                        <td
+                          className={`stat-num py-2.5 text-right text-sm ${
+                            r.netScore > 0 ? "text-ok" : r.netScore < 0 ? "text-bad" : ""
+                          }`}
+                        >
+                          {r.netScore > 0 ? `+${r.netScore}` : r.netScore}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-zinc-500">No activity in this period yet.</p>
+              <p className="mt-4 text-sm text-subtle-fg">No activity in this period yet.</p>
             )}
           </section>
         );
@@ -107,9 +120,9 @@ export default async function ReportsPage() {
 
 function ReportStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-center dark:border-zinc-700 dark:bg-zinc-800/60">
-      <p className="text-lg font-bold">{value}</p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+    <div className="rounded-xl border border-line bg-card-strong p-3 text-center">
+      <p className="stat-num text-lg text-ink">{value}</p>
+      <p className="section-title mt-1">{label}</p>
     </div>
   );
 }
