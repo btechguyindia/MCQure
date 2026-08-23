@@ -31,7 +31,12 @@ import {
 
 interface MeResponse {
   ok: boolean;
-  user?: { id: string; email: string; name: string | null } | null;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+    tier?: "FREE" | "SILVER" | "GOLD";
+  } | null;
   message?: string;
 }
 
@@ -346,11 +351,22 @@ export function NavBar() {
             {loaded && user ? (
               <>
                 <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand"
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                    user.tier === "GOLD"
+                      ? "tier-gold"
+                      : user.tier === "SILVER"
+                        ? "tier-silver"
+                        : "bg-gradient-to-br from-brand to-accent text-on-brand"
+                  }`}
                   title={user.name ?? user.email}
                 >
                   {(user.name ?? user.email).charAt(0).toUpperCase()}
                 </span>
+                {user.tier === "GOLD" ? (
+                  <span className="badge badge-gold hidden xl:inline-flex">Gold</span>
+                ) : user.tier === "SILVER" ? (
+                  <span className="badge badge-silver hidden xl:inline-flex">Silver</span>
+                ) : null}
                 <button type="button" onClick={logout} className="btn btn-ghost btn-sm">
                   Sign out
                 </button>
@@ -394,11 +410,24 @@ export function NavBar() {
             <div className="col-span-2 border-t border-line pt-3 sm:col-span-3">
               {loaded && user ? (
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand">
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      user.tier === "GOLD"
+                        ? "tier-gold"
+                        : user.tier === "SILVER"
+                          ? "tier-silver"
+                          : "bg-gradient-to-br from-brand to-accent text-on-brand"
+                    }`}
+                  >
                     {(user.name ?? user.email).charAt(0).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm text-muted-fg">
                     {user.name ?? user.email}
+                    {user.tier === "GOLD" ? (
+                      <span className="badge badge-gold ml-2">Gold</span>
+                    ) : user.tier === "SILVER" ? (
+                      <span className="badge badge-silver ml-2">Silver</span>
+                    ) : null}
                   </span>
                   <button type="button" onClick={logout} className="btn btn-secondary btn-sm">
                     Sign out

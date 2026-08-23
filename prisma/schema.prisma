@@ -117,11 +117,18 @@ enum IngestionJobStatus {
   FAILED
 }
 
+enum AccountTier {
+  FREE
+  SILVER
+  GOLD
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String?
   passwordHash String
+  tier         AccountTier @default(FREE)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

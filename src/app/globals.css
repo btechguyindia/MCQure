@@ -45,6 +45,10 @@
   --mcq-gold: #c9961a;
   --mcq-gold-soft: #faf0d7;
 
+  /* Tiers */
+  --mcq-silver: #667085;
+  --mcq-silver-soft: #eef0f4;
+
   /* Semantic */
   --mcq-ok: #15803d;
   --mcq-ok-soft: #dcfce7;
@@ -91,6 +95,9 @@ html.dark[data-theme="teal"] {
 
   --mcq-gold: #eab308;
   --mcq-gold-soft: rgb(234 179 8 / 0.13);
+
+  --mcq-silver: #aeb6c2;
+  --mcq-silver-soft: rgb(174 182 194 / 0.15);
 
   --mcq-ok: #34d399;
   --mcq-ok-soft: rgb(52 211 153 / 0.13);
@@ -168,6 +175,9 @@ html.dark[data-theme="purple"] {
 
   --mcq-gold: #eab308;
   --mcq-gold-soft: rgb(234 179 8 / 0.13);
+
+  --mcq-silver: #aeb6c2;
+  --mcq-silver-soft: rgb(174 182 194 / 0.15);
 
   --mcq-ok: #34d399;
   --mcq-ok-soft: rgb(52 211 153 / 0.13);
@@ -304,6 +314,8 @@ html.dark[data-theme="blue-gold"] {
   /* Achievement */
   --color-gold: var(--mcq-gold);
   --color-gold-soft: var(--mcq-gold-soft);
+  --color-silver: var(--mcq-silver);
+  --color-silver-soft: var(--mcq-silver-soft);
 
   /* Semantic */
   --color-ok: var(--mcq-ok);
@@ -685,6 +697,27 @@ html.dark .input {
 .badge-accent {
   background: var(--mcq-accent-soft);
   color: var(--mcq-accent);
+}
+/* Premium account tiers — literal metals, identical across themes. */
+.tier-gold {
+  background: linear-gradient(135deg, #f9e27d 0%, #eec84f 30%, #c9961a 62%, #8a6508 100%);
+  color: #2b1e00;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 243 196 / 65%),
+    inset 0 -2px 4px rgb(90 62 0 / 35%),
+    0 1px 8px rgb(201 150 26 / 45%);
+}
+.tier-silver {
+  background: linear-gradient(135deg, #f4f5f7 0%, #cfd3da 32%, #9aa0ab 68%, #6b7078 100%);
+  color: #22252b;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 60%),
+    inset 0 -2px 4px rgb(45 48 54 / 28%),
+    0 1px 8px rgb(120 126 136 / 40%);
+}
+.badge-silver {
+  background: var(--mcq-silver-soft);
+  color: var(--mcq-silver);
 }
 .badge-gold {
   background: var(--mcq-gold-soft);

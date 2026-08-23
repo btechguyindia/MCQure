@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { ArrowRightIcon, SparklesIcon } from "@/components/icons";
 
 interface AuthFormProps {
   mode: "login" | "register";
+  /** Pre-resolved ?next target from the server page. */
+  initialNext?: string;
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/";
+export function AuthForm({ mode, initialNext = "/" }: AuthFormProps) {
+  const next = initialNext.startsWith("/") && !initialNext.startsWith("//") ? initialNext : "/";
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");

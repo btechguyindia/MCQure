@@ -7,6 +7,6 @@ export async function GET() {
   }
   return Response.json({
     ok: true,
-    user: { id: user.id, email: user.email, name: user.name },
+    user: { id: user.id, email: user.email, name: user.name, tier: user.tier },
   });
 }
