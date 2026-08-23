@@ -6,6 +6,7 @@ import {
   practiceStartSchema,
   questionReportSchema,
   registerSchema,
+  timetableCreateSchema,
 } from "./validation";
 
 describe("registerSchema", () => {
@@ -154,5 +155,78 @@ describe("questionReportSchema", () => {
     expect(
       questionReportSchema.safeParse({ questionId: "q", issue: "x".repeat(501) }).success
     ).toBe(false);
+  });
+});
+
+describe("timetableCreateSchema", () => {
+  const validSlot = { day: 0, start: "06:00", end: "07:30", activity: "Practice" };
+
+  it("accepts a valid weekly timetable and defaults the cycle", () => {
+    const r = timetableCreateSchema.safeParse({
+      name: "Morning routine",
+      slots: [validSlot],
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.cycle).toBe("WEEKLY");
+  });
+
+  it("normalizes cycle aliases like bi-weekly / monthly / WEEKLY", () => {
+    for (const [input, expected] of [
+      ["bi-weekly", "BIWEEKLY"],
+      ["biweekly", "BIWEEKLY"],
+      ["monthly", "MONTHLY"],
+      ["WEEKLY", "WEEKLY"],
+      [" weekly ", "WEEKLY"],
+    ] as const) {
+      const r = timetableCreateSchema.safeParse({
+        name: "n",
+        cycle: input,
+        slots: [validSlot],
+      });
+      expect(r.success).toBe(true);
+      if (r.success) expect(r.data.cycle).toBe(expected);
+    }
+  });
+
+  it("rejects an unknown cycle", () => {
+    expect(
+      timetableCreateSchema.safeParse({ name: "n", cycle: "yearly", slots: [validSlot] }).success
+    ).toBe(false);
+  });
+
+  it("requires at least one slot", () => {
+    expect(timetableCreateSchema.safeParse({ name: "n", slots: [] }).success).toBe(false);
+  });
+
+  it("rejects a slot whose end is before its start", () => {
+    expect(
+      timetableCreateSchema.safeParse({
+        name: "n",
+        slots: [{ day: 1, start: "18:00", end: "07:00", activity: "Backwards" }],
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects malformed time strings and out-of-range days", () => {
+    expect(
+      timetableCreateSchema.safeParse({
+        name: "n",
+        slots: [{ ...validSlot, start: "7am" }],
+      }).success
+    ).toBe(false);
+    expect(
+      timetableCreateSchema.safeParse({
+        name: "n",
+        slots: [{ ...validSlot, day: 7 }],
+      }).success
+    ).toBe(false);
+  });
+
+  it("accepts an optional topicId on a slot", () => {
+    const r = timetableCreateSchema.safeParse({
+      name: "n",
+      slots: [{ ...validSlot, topicId: "topic_123" }],
+    });
+    expect(r.success).toBe(true);
   });
 });

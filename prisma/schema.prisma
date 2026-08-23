@@ -123,6 +123,13 @@ enum AccountTier {
   GOLD
 }
 
+// Repeating cycle of a study timetable.
+enum ScheduleCycle {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -142,6 +149,7 @@ model User {
   studyVisits       StudyVisit[]
   ingestionJobs     IngestionJob[]
   mockRuns          MockRun[]
+  studyTimetables   StudyTimetable[]
 }
 
 model Exam {
@@ -616,6 +624,26 @@ model StudyVisit {
 
   @@index([userId, topicId])
   @@index([userId, createdAt])
+}
+
+// A repeating study timetable authored by the user as JSON. The cycle decides
+// how often the target resets (weekly / biweekly / monthly). `slots` holds the
+// recurring blocks: [{ "day": 1, "start": "06:00", "end": "07:30", "activity": "...",
+//   "topicId": "..."? }, ...] where day 0 = Monday. Exactly one timetable is
+// active at a time; progress is measured against answered questions per cycle.
+model StudyTimetable {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  cycle           ScheduleCycle @default(WEEKLY)
+  targetQuestions Int          @default(175)
+  slots           Json
+  isActive        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
 }
 
 // ── Large question bank ─────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/api";
 import { getPrepReport } from "@/lib/tracking";
-import { ProgressIcon } from "@/components/icons";
+import { ProgressIcon, ClockIcon } from "@/components/icons";
 import { PreparationDashboard } from "@/components/PreparationDashboard";
 import { PreparationSettings } from "@/components/PreparationSettings";
 
@@ -28,10 +28,16 @@ export default async function PreparationPage() {
             computed from your full attempt, study and mock history.
           </p>
         </div>
-        <PreparationSettings
-          preparation={report.preparation}
-          examName={report.exam?.name ?? null}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/preparation/timetable" className="btn btn-secondary btn-sm">
+            <ClockIcon />
+            Timetable
+          </Link>
+          <PreparationSettings
+            preparation={report.preparation}
+            examName={report.exam?.name ?? null}
+          />
+        </div>
       </header>
 
       <PreparationDashboard report={report} />

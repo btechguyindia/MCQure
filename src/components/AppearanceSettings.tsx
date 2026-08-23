@@ -1,6 +1,6 @@
 "use client";
 
-import { APPEARANCES, THEME_COLORS, useTheme } from "@/components/theme";
+import { APPEARANCES, PICKABLE_THEMES, THEME_COLORS, useTheme } from "@/components/theme";
 import {
   CheckIcon,
   MonitorIcon,
@@ -57,6 +57,7 @@ function ColorCard({
 
 export function AppearanceSettings() {
   const { color, appearance, ready, setColor, setAppearance } = useTheme();
+  const activeTier = THEME_COLORS.find((t) => t.tierOnly && t.value === color);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
@@ -76,7 +77,7 @@ export function AppearanceSettings() {
           Color
         </h2>
         <div role="radiogroup" aria-labelledby="color-heading" className="stagger mt-3 grid gap-4 sm:grid-cols-3">
-          {THEME_COLORS.map((t) => (
+          {PICKABLE_THEMES.map((t) => (
             <ColorCard
               key={t.value}
               active={ready && color === t.value}
@@ -87,6 +88,12 @@ export function AppearanceSettings() {
             />
           ))}
         </div>
+        {ready && activeTier ? (
+          <p className="mt-3 text-sm text-muted-fg">
+            The <span className={`font-semibold ${activeTier.tier === "GOLD" ? "text-gold" : "text-silver"}`}>{activeTier.label}</span>{" "}
+            identity is active — it comes with your account.
+          </p>
+        ) : null}
       </section>
 
       {/* Appearance */}

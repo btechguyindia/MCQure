@@ -174,6 +174,51 @@ export const goalsSchema = z.object({
   weeklyTarget: z.number().int().min(1).max(3500).optional(),
 });
 
+// ── Study timetable ──────────────────────────────────────────────────────────
+
+export const TIMETABLE_CYCLES = ["WEEKLY", "BIWEEKLY", "MONTHLY"] as const;
+
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Accepts WEEKLY | weekly | bi-weekly | biweekly | monthly … and normalizes. */
+function normalizeCycle(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const flat = value.trim().toLowerCase().replace(/[^a-z]/g, "");
+  if (flat === "biweekly") return "BIWEEKLY";
+  if (flat === "monthly") return "MONTHLY";
+  if (flat === "weekly") return "WEEKLY";
+  return value.trim().toUpperCase();
+}
+
+export const timetableSlotSchema = z
+  .object({
+    day: z.number().int().min(0, "day is 0 (Mon) … 6 (Sun)").max(6, "day is 0 (Mon) … 6 (Sun)"),
+    start: z.string().regex(TIME_RE, "Time must be HH:mm (24h)"),
+    end: z.string().regex(TIME_RE, "Time must be HH:mm (24h)"),
+    activity: z.string().trim().min(1, "Activity is required").max(200),
+    topicId: z.string().trim().min(1).max(100).optional(),
+  })
+  .refine((slot) => slot.start < slot.end, {
+    message: "End must be after start",
+    path: ["end"],
+  });
+
+export const timetableCreateSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(80, "Name is too long"),
+  cycle: z.preprocess(normalizeCycle, z.enum(TIMETABLE_CYCLES)).default("WEEKLY"),
+  targetQuestions: z.number().int().min(1, "Target must be at least 1").max(5000).optional(),
+  slots: z.array(timetableSlotSchema).min(1, "Add at least one time block").max(112),
+  isActive: z.boolean().optional(),
+});
+
+export const timetableUpdateSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(80, "Name is too long").optional(),
+  cycle: z.preprocess(normalizeCycle, z.enum(TIMETABLE_CYCLES)).optional(),
+  targetQuestions: z.number().int().min(1).max(5000).optional(),
+  slots: z.array(timetableSlotSchema).min(1, "Add at least one time block").max(112).optional(),
+  isActive: z.boolean().optional(),
+});
+
 export const questionBankQuerySchema = z.object({
   examId: z.string().min(1).optional(),
   sectionId: z.string().min(1).optional(),

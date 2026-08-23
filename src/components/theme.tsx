@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type ThemeColor = "teal" | "purple" | "blue-gold";
+export type ThemeColor = "teal" | "purple" | "blue-gold" | "gold" | "silver";
+export type AccountTier = "GOLD" | "SILVER";
 export type Appearance = "system" | "light" | "dark";
 
 export const THEME_COLORS: Array<{
@@ -10,6 +11,9 @@ export const THEME_COLORS: Array<{
   label: string;
   description: string;
   swatch: [string, string, string];
+  /** Hidden from pickers; unlocked automatically by the matching account tier. */
+  tierOnly?: true;
+  tier?: AccountTier;
 }> = [
   {
     value: "teal",
@@ -29,7 +33,30 @@ export const THEME_COLORS: Array<{
     description: "Academic · elite · achievement",
     swatch: ["#2563EB", "#3B82F6", "#C9961A"],
   },
+  {
+    value: "gold",
+    label: "Gold",
+    description: "Exclusive to Gold accounts",
+    swatch: ["#B8860B", "#EAB308", "#F5C542"],
+    tierOnly: true,
+    tier: "GOLD",
+  },
+  {
+    value: "silver",
+    label: "Silver",
+    description: "Exclusive to Silver accounts",
+    swatch: ["#475569", "#94A3B8", "#CBD5E1"],
+    tierOnly: true,
+    tier: "SILVER",
+  },
 ];
+
+export const PICKABLE_THEMES = THEME_COLORS.filter((t) => !t.tierOnly);
+
+const TIER_THEME: Record<AccountTier, ThemeColor> = {
+  GOLD: "gold",
+  SILVER: "silver",
+};
 
 export const APPEARANCES: Array<{
   value: Appearance;
@@ -43,17 +70,19 @@ export const APPEARANCES: Array<{
 
 const COLOR_KEY = "mcqure-theme-color";
 const APPEARANCE_KEY = "mcqure-appearance";
+// Account-driven override; when present it wins over the personal choice.
+const TIER_KEY = "mcqure-tier-theme";
 
 function isThemeColor(v: string | null): v is ThemeColor {
-  return v === "teal" || v === "purple" || v === "blue-gold";
+  return v === "teal" || v === "purple" || v === "blue-gold" || v === "gold" || v === "silver";
 }
 
 function isAppearance(v: string | null): v is Appearance {
   return v === "system" || v === "light" || v === "dark";
 }
 
-/** Apply a theme combination to the document + persist it. */
-export function applyTheme(color: ThemeColor, appearance: Appearance) {
+/** Apply a theme combination to the document (+ optionally persist it). */
+export function applyTheme(color: ThemeColor, appearance: Appearance, persist = true) {
   const root = document.documentElement;
 
   // Smooth cross-fade of surfaces/text while tokens swap.
@@ -61,7 +90,10 @@ export function applyTheme(color: ThemeColor, appearance: Appearance) {
   window.setTimeout(() => root.classList.remove("theming"), 400);
 
   root.setAttribute("data-theme", color);
-  localStorage.setItem(COLOR_KEY, color);
+  // Tier overrides are transient: they must not overwrite the personal pick.
+  if (persist && color !== "gold" && color !== "silver") {
+    localStorage.setItem(COLOR_KEY, color);
+  }
 
   const dark =
     appearance === "dark" ||
@@ -69,6 +101,27 @@ export function applyTheme(color: ThemeColor, appearance: Appearance) {
       window.matchMedia("(prefers-color-scheme: dark)").matches);
   root.classList.toggle("dark", dark);
   localStorage.setItem(APPEARANCE_KEY, appearance);
+}
+
+/** Resolve what data-theme should be: account tier override wins over choice. */
+function effectiveColor(): ThemeColor {
+  const tier = localStorage.getItem(TIER_KEY);
+  if (tier === "gold" || tier === "silver") return tier;
+  const saved = localStorage.getItem(COLOR_KEY);
+  return isThemeColor(saved) ? saved : "teal";
+}
+
+/**
+ * Lock/unlock an account-exclusive theme. GOLD accounts get the gold identity,
+ * SILVER get silver, FREE/null restores the user's own pick. Applies instantly.
+ */
+export function applyAccountTier(tier: AccountTier | null) {
+  if (tier) localStorage.setItem(TIER_KEY, TIER_THEME[tier]);
+  else localStorage.removeItem(TIER_KEY);
+  const appearance = isAppearance(localStorage.getItem(APPEARANCE_KEY))
+    ? (localStorage.getItem(APPEARANCE_KEY) as Appearance)
+    : "system";
+  applyTheme(effectiveColor(), appearance);
 }
 
 interface ThemeState {
@@ -128,6 +181,15 @@ export function useTheme() {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  const setAccountTier = useCallback((tier: AccountTier | null) => {
+    applyAccountTier(tier);
+    setState({
+      color: effectiveColor(),
+      appearance: readCurrent().appearance,
+      resolvedDark: document.documentElement.classList.contains("dark"),
+    });
+  }, []);
+
   const setColor = useCallback(
     (color: ThemeColor) => {
       applyTheme(color, state.appearance);
@@ -152,5 +214,5 @@ export function useTheme() {
     [state.color]
   );
 
-  return { ...state, ready, setColor, setAppearance };
+  return { ...state, ready, setColor, setAppearance, setAccountTier };
 }

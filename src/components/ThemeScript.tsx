@@ -7,8 +7,9 @@ export function ThemeScript() {
     <script
       dangerouslySetInnerHTML={{
         __html: `(function(){try{
-var c=localStorage.getItem('mcqure-theme-color');
-if(c!=='teal'&&c!=='purple'&&c!=='blue-gold')c='teal';
+var t=localStorage.getItem('mcqure-tier-theme');
+var c=(t==='gold'||t==='silver')?t:localStorage.getItem('mcqure-theme-color');
+if(c!=='teal'&&c!=='purple'&&c!=='blue-gold'&&c!=='gold'&&c!=='silver')c='teal';
 document.documentElement.setAttribute('data-theme',c);
 var a=localStorage.getItem('mcqure-appearance');
 if(a!=='light'&&a!=='dark'&&a!=='system'){

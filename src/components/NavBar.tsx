@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   CloseIcon,
   CogIcon,
+  ClockIcon,
   MenuIcon,
   MockIcon,
   MonitorIcon,
@@ -61,6 +62,7 @@ const MORE_LINKS: NavLink[] = [
   { href: "/questions", label: "Question bank", icon: <BankIcon /> },
   { href: "/analytics", label: "Analytics", icon: <AnalyticsIcon /> },
   { href: "/preparation", label: "Progress", icon: <ProgressIcon /> },
+  { href: "/preparation/timetable", label: "Timetable", icon: <ClockIcon /> },
   { href: "/motivation", label: "Motivation", icon: <MotivationIcon /> },
   { href: "/reports", label: "Reports", icon: <ReportsIcon /> },
   { href: "/bookmarks", label: "Saved", icon: <BookmarkIcon /> },
@@ -71,9 +73,9 @@ const MOBILE_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   { title: "Learn", links: [PRACTICE_LINK, MOCK_LINK, STUDY_LINK] },
   {
     title: "Banks",
-    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[5]],
+    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[6]],
   },
-  { title: "Insights", links: [...MORE_LINKS.slice(1, 5), MORE_LINKS[6]] },
+  { title: "Insights", links: [...MORE_LINKS.slice(1, 6), MORE_LINKS[7]] },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -86,7 +88,7 @@ export function NavBar() {
   const pathname = usePathname();
   const [user, setUser] = useState<MeResponse["user"] | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const { color, appearance, setColor, setAppearance } = useTheme();
+  const { color, appearance, setColor, setAppearance, setAccountTier } = useTheme();
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -98,11 +100,15 @@ export function NavBar() {
     fetch("/api/auth/me")
       .then((r) => r.json() as Promise<MeResponse>)
       .then((data) => {
-        setUser(data.ok ? data.user ?? null : null);
+        const me = data.ok ? data.user ?? null : null;
+        setUser(me);
+        // Account-exclusive theme: tier unlocks its identity, anything else
+        // (logged out or FREE) clears any stale override.
+        setAccountTier(me?.tier === "GOLD" || me?.tier === "SILVER" ? me.tier : null);
       })
       .catch(() => setUser(null))
       .finally(() => setLoaded(true));
-  }, []);
+  }, [setAccountTier]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -142,6 +148,7 @@ export function NavBar() {
     setOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setAccountTier(null);
     router.push("/");
     router.refresh();
   }
@@ -351,22 +358,11 @@ export function NavBar() {
             {loaded && user ? (
               <>
                 <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                    user.tier === "GOLD"
-                      ? "tier-gold"
-                      : user.tier === "SILVER"
-                        ? "tier-silver"
-                        : "bg-gradient-to-br from-brand to-accent text-on-brand"
-                  }`}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand"
                   title={user.name ?? user.email}
                 >
                   {(user.name ?? user.email).charAt(0).toUpperCase()}
                 </span>
-                {user.tier === "GOLD" ? (
-                  <span className="badge badge-gold hidden xl:inline-flex">Gold</span>
-                ) : user.tier === "SILVER" ? (
-                  <span className="badge badge-silver hidden xl:inline-flex">Silver</span>
-                ) : null}
                 <button type="button" onClick={logout} className="btn btn-ghost btn-sm">
                   Sign out
                 </button>
@@ -411,23 +407,12 @@ export function NavBar() {
               {loaded && user ? (
                 <div className="flex items-center gap-3">
                   <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                      user.tier === "GOLD"
-                        ? "tier-gold"
-                        : user.tier === "SILVER"
-                          ? "tier-silver"
-                          : "bg-gradient-to-br from-brand to-accent text-on-brand"
-                    }`}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand"
                   >
                     {(user.name ?? user.email).charAt(0).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm text-muted-fg">
                     {user.name ?? user.email}
-                    {user.tier === "GOLD" ? (
-                      <span className="badge badge-gold ml-2">Gold</span>
-                    ) : user.tier === "SILVER" ? (
-                      <span className="badge badge-silver ml-2">Silver</span>
-                    ) : null}
                   </span>
                   <button type="button" onClick={logout} className="btn btn-secondary btn-sm">
                     Sign out

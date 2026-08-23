@@ -256,6 +256,9 @@ html.dark[data-theme="blue-gold"] {
   --mcq-gold: #eab308;
   --mcq-gold-soft: rgb(245 197 66 / 0.14);
 
+  --mcq-silver: #aeb6c2;
+  --mcq-silver-soft: rgb(174 182 194 / 0.15);
+
   --mcq-ok: #34d399;
   --mcq-ok-soft: rgb(52 211 153 / 0.13);
   --mcq-warn: #fbbf24;
@@ -271,6 +274,136 @@ html.dark[data-theme="blue-gold"] {
   --mcq-shadow-soft: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
   --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
   --mcq-shadow-glow: 0 6px 28px -10px rgb(59 130 246 / 0.38);
+}
+
+/* ── 👑 GOLD — exclusive to Gold-tier accounts ────────────────────────────── */
+html[data-theme="gold"] {
+  --mcq-canvas: #fbf6ea;
+  --mcq-raised: rgb(255 252 244 / 0.72);
+  --mcq-card: #fffdf6;
+  --mcq-card-strong: #fdf4dd;
+
+  --mcq-fg: #29200a;
+  --mcq-muted: #5c4f33;
+  --mcq-subtle: #8d8060;
+
+  --mcq-line: rgb(120 96 40 / 0.1);
+  --mcq-line-strong: rgb(120 96 40 / 0.19);
+
+  --mcq-brand: #b8860b;
+  --mcq-brand-strong: #9a6f06;
+  --mcq-brand-soft: #f7ecd0;
+  --mcq-on-brand: #2b1e00;
+
+  --mcq-accent: #a16207;
+  --mcq-accent-soft: #f8efd8;
+
+  --mcq-glow-1: rgb(184 134 11 / 0.12);
+  --mcq-glow-2: rgb(201 150 26 / 0.09);
+  --mcq-glow-3: rgb(180 83 9 / 0.05);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 2px rgb(90 66 10 / 0.05), 0 10px 28px -18px rgb(90 66 10 / 0.14);
+  --mcq-shadow-lift: 0 24px 48px -24px rgb(90 66 10 / 0.3);
+  --mcq-shadow-glow: 0 6px 24px -8px rgb(201 150 26 / 0.5);
+
+  color-scheme: light;
+}
+
+html.dark[data-theme="gold"] {
+  --mcq-canvas: #14100a;
+  --mcq-raised: rgb(30 23 14 / 0.72);
+  --mcq-card: #1c160d;
+  --mcq-card-strong: #241c10;
+
+  --mcq-fg: #faf6ec;
+  --mcq-muted: #d8cbae;
+  --mcq-subtle: #a4977a;
+
+  --mcq-line: rgb(255 240 200 / 0.08);
+  --mcq-line-strong: rgb(255 240 200 / 0.17);
+
+  --mcq-brand: #eab308;
+  --mcq-brand-strong: #f5c542;
+  --mcq-brand-soft: rgb(234 179 8 / 0.14);
+  --mcq-on-brand: #201500;
+
+  --mcq-accent: #d97706;
+  --mcq-accent-soft: rgb(217 119 6 / 0.15);
+
+  --mcq-glow-1: rgb(234 179 8 / 0.12);
+  --mcq-glow-2: rgb(217 119 6 / 0.08);
+  --mcq-glow-3: rgb(245 197 66 / 0.05);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 0 rgb(255 240 200 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
+  --mcq-shadow-glow: 0 6px 28px -10px rgb(234 179 8 / 0.4);
+}
+
+/* ── 🥈 SILVER — exclusive to Silver-tier accounts ────────────────────────── */
+html[data-theme="silver"] {
+  --mcq-canvas: #f5f6f8;
+  --mcq-raised: rgb(250 251 252 / 0.75);
+  --mcq-card: #fcfcfd;
+  --mcq-card-strong: #eef0f4;
+
+  --mcq-fg: #171a20;
+  --mcq-muted: #4d5560;
+  --mcq-subtle: #7c8593;
+
+  --mcq-line: rgb(30 41 59 / 0.09);
+  --mcq-line-strong: rgb(30 41 59 / 0.18);
+
+  --mcq-brand: #475569;
+  --mcq-brand-strong: #334155;
+  --mcq-brand-soft: #e8ebf0;
+  --mcq-on-brand: #f8fafc;
+
+  --mcq-accent: #64748b;
+  --mcq-accent-soft: #eceff4;
+
+  --mcq-glow-1: rgb(100 116 139 / 0.1);
+  --mcq-glow-2: rgb(148 163 184 / 0.08);
+  --mcq-glow-3: rgb(71 85 105 / 0.05);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 2px rgb(30 41 59 / 0.05), 0 10px 28px -18px rgb(30 41 59 / 0.13);
+  --mcq-shadow-lift: 0 24px 48px -24px rgb(30 41 59 / 0.28);
+  --mcq-shadow-glow: 0 6px 24px -8px rgb(100 116 139 / 0.45);
+
+  color-scheme: light;
+}
+
+html.dark[data-theme="silver"] {
+  --mcq-canvas: #0e1013;
+  --mcq-raised: rgb(22 25 30 / 0.72);
+  --mcq-card: #16181d;
+  --mcq-card-strong: #1c1f26;
+
+  --mcq-fg: #f4f6f8;
+  --mcq-muted: #c3c9d2;
+  --mcq-subtle: #8b93a1;
+
+  --mcq-line: rgb(255 255 255 / 0.08);
+  --mcq-line-strong: rgb(255 255 255 / 0.17);
+
+  --mcq-brand: #cbd5e1;
+  --mcq-brand-strong: #e2e8f0;
+  --mcq-brand-soft: rgb(203 213 225 / 0.13);
+  --mcq-on-brand: #10131a;
+
+  --mcq-accent: #94a3b8;
+  --mcq-accent-soft: rgb(148 163 184 / 0.14);
+
+  --mcq-glow-1: rgb(203 213 225 / 0.09);
+  --mcq-glow-2: rgb(148 163 184 / 0.07);
+  --mcq-glow-3: rgb(226 232 240 / 0.04);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
+  --mcq-shadow-glow: 0 6px 28px -10px rgb(203 213 225 / 0.35);
 }
 
 /* ── Tailwind theme registration (utilities generated from tokens) ────────── */
