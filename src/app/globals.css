@@ -479,6 +479,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 /* Ambient atmosphere: three quiet glows + faint grain, fixed behind everything.
    Colors come from the active theme's --mcq-glow-* tokens. */
 body::before {

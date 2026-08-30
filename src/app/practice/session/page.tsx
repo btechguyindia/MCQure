@@ -9,7 +9,7 @@ function PracticeSession() {
   const sessionId = params.get("sessionId") ?? "";
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6">
+    <main className="mx-auto w-full max-w-3xl px-4 pb-28 pt-6 sm:pb-16">
       <PracticeRunner sessionId={sessionId} />
     </main>
   );

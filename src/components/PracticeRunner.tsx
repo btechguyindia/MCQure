@@ -309,7 +309,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
   return (
     <div className="flex flex-col gap-4">
       {/* Top bar */}
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="font-semibold">
           Question {currentIndex + 1} / {questions?.length}
         </span>
@@ -364,7 +364,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
                 >
                   {opt.label}
                 </span>
-                <span>{opt.text}</span>
+                <span className="min-w-0 flex-1">{opt.text}</span>
               </button>
             );
           })}
@@ -402,7 +402,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
             </span>
           </div>
 
-          <div className="sticky bottom-3 z-10 flex items-center gap-2 rounded-2xl glass p-2 shadow-soft">
+          <div className="sticky bottom-24 z-10 flex items-center gap-2 rounded-2xl glass p-2 shadow-soft sm:bottom-4 lg:bottom-3">
             <button
               type="button"
               onClick={toggleBookmark}

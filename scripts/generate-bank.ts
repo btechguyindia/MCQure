@@ -200,6 +200,20 @@ async function main() {
   const model = args.model ?? process.env.GEMINI_MODEL ?? undefined;
   const deadline = args.until ? new Date(args.until) : null;
 
+  // Optional subject scoping. Both are comma-separated substrings matched
+  // (case-insensitive) against each subject name.
+  //   --only "Programming,Operating Systems"     generate only matching subjects
+  //   --exclude "General Awareness,English"      generate everything except these
+  // Omitting both generates the whole exam (previous behaviour).
+  const only = (args.only ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const exclude = (args.exclude ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
   const exam = await prisma.exam.findFirst({ where: { active: true } });
   if (!exam) {
     console.error("[gen] no active exam found");
@@ -214,11 +228,18 @@ async function main() {
     },
   });
 
-  const subjects = await prisma.subject.findMany({
+  let subjects = await prisma.subject.findMany({
     where: { examId: exam.id },
     orderBy: { order: "asc" },
     include: { topics: { orderBy: { order: "asc" }, include: { subtopics: { orderBy: { order: "asc" } } } } },
   });
+
+  if (only.length > 0) {
+    subjects = subjects.filter((s) => only.some((f) => s.name.toLowerCase().includes(f)));
+  }
+  if (exclude.length > 0) {
+    subjects = subjects.filter((s) => !exclude.some((f) => s.name.toLowerCase().includes(f)));
+  }
 
   const leaves: LeafUnit[] = [];
   for (const subject of subjects) {

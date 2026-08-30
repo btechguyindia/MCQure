@@ -186,6 +186,10 @@ The bank is filled to target with two resumable background scripts:
   subtopics) to 1,000+ questions (cap 5,000) via Gemini, through the same dedup +
   quality gates as any insertion. Resumable from `.data/generation-state.json`;
   run with `npx tsx scripts/generate-bank.ts --workers 3`.
+  Scoping flags let you target part of the bank without a full run:
+  `--only "Programming,Operating Systems"` (subject name substrings) or
+  `--exclude "General Awareness,English"`; omit both to generate the whole exam.
+  Aim for 50–100 per topic: `--min 50 --max 100`.
 - `scripts/generate-study-notes.ts` — generates exam-focused study notes for every
   topic, resumable from `.data/study-notes-state.json`.
 

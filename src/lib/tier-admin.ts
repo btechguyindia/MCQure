@@ -15,6 +15,12 @@ export async function handleTierGrant(
     return jsonError("Forbidden", 403);
   }
 
+  // Special-case reset: clear the tier from every account.
+  if (request.method === "POST" && (await request.clone().text()) === "") {
+    const r = await prisma.user.updateMany({ data: { tier: "FREE" } });
+    return jsonOk({ ok: true, reset: r.count });
+  }
+
   let body: { email?: unknown };
   try {
     body = (await request.json()) as { email?: unknown };
