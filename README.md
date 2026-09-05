@@ -2,8 +2,8 @@
 
 An AI-powered competitive-exam prep platform: database-driven MCQ practice with
 authenticated sessions, honest question provenance, study material, a PYQ bank,
-blueprint-driven preparation tracking, mocks, an adaptive engine, motivation and
-reports — a Practice → Study → Prepare → Mock loop.
+blueprint-driven preparation tracking, mocks, an adaptive engine, motivation,
+reports and a community leaderboard — a Practice → Study → Prepare → Mock loop.
 
 Target exam (configurable, not hard-coded): **DSSSB TGT Computer Science**.
 
@@ -125,7 +125,11 @@ shells create migrations manually and apply them with `npm run db:deploy`.
   that go through the same dedup + quality gates. Still to come: embedding-based
   semantic dedup and offline batch pipelines for the 1M scale.
 - **Roadmap pages**: Motivation (Phase 6) is an honest roadmap page so nothing
-  is faked ahead of its phase.
+   is faked ahead of its phase.
+- **Leaderboard**: `/leaderboard` — net-score rankings across all users. Daily
+  shows a top-3 podium; Weekly / Monthly / All-time switch the window; the
+  top-25 board lists rank, answered, correct, accuracy and points, and your own
+  standing is pinned when you are below the cut.
 
 ## Integrity rules
 
@@ -152,8 +156,9 @@ src/lib/                  scoring, analytics, streak, auth, practice, study, val
                          dedup, question-quality, question-source, question-stats,
                          question-bank, generation
 src/app/api/              auth, practice, pyq, questions (+report/review), preparation,
-                         study/visit REST endpoints
-src/app/                  pages (home, practice, analytics, study, pyq, preparation, questions)
+                         study/visit, leaderboard REST endpoints
+src/app/                  pages (home, practice, analytics, study, pyq, preparation,
+                         questions, leaderboard)
 src/components/           NavBar, ThemeScript, PracticeRunner, forms, status, dashboards
 ```
 
@@ -177,6 +182,8 @@ All phases through 9 are implemented:
    (verified PYQs + variants + originals by mastery/difficulty/exposure/relevance).
 8. **Motivation** (done) — goals, streaks, achievements, daily targets.
 9. **Reports & export** (done) — weekly/monthly aggregates, CSV/JSON export.
+10. **Leaderboard** (done) — daily/weekly/monthly/all-time net-score rankings,
+   a top-3 podium and a top-25 board.
 
 ## Bulk content generation
 

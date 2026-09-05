@@ -41,6 +41,7 @@ const FOOTER_LINKS: Array<{ href: string; label: string }> = [
   { href: "/questions", label: "Question bank" },
   { href: "/pyq", label: "PYQ bank" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/reports", label: "Reports" },
 ];
 

@@ -246,3 +246,15 @@ export function TargetIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function LeaderboardIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M8 21h8m-4-5v5" />
+      <path d="M8 4h8a4 4 0 0 1 0 8H8a4 4 0 0 1 0-8Z" />
+      <path d="m7 6-2.5-1.5L2 7l3.5 4" />
+      <path d="m9 15.5 3-10" />
+      <path d="M17 6l2.5-1.5L22 7l-3.5 4" />
+    </Svg>
+  );
+}

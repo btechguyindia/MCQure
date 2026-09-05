@@ -23,6 +23,7 @@ import {
   ReportsIcon,
   StudyIcon,
   SunIcon,
+  LeaderboardIcon,
 } from "@/components/icons";
 import {
   APPEARANCES,
@@ -62,6 +63,7 @@ const MORE_LINKS: NavLink[] = [
   { href: "/questions", label: "Question bank", icon: <BankIcon /> },
   { href: "/analytics", label: "Analytics", icon: <AnalyticsIcon /> },
   { href: "/preparation", label: "Progress", icon: <ProgressIcon /> },
+  { href: "/leaderboard", label: "Leaderboard", icon: <LeaderboardIcon /> },
   { href: "/preparation/timetable", label: "Timetable", icon: <ClockIcon /> },
   { href: "/motivation", label: "Motivation", icon: <MotivationIcon /> },
   { href: "/reports", label: "Reports", icon: <ReportsIcon /> },
@@ -73,9 +75,12 @@ const MOBILE_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   { title: "Learn", links: [PRACTICE_LINK, MOCK_LINK, STUDY_LINK] },
   {
     title: "Banks",
-    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[6]],
+    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[7]],
   },
-  { title: "Insights", links: [...MORE_LINKS.slice(1, 6), MORE_LINKS[7]] },
+  {
+    title: "Insights",
+    links: [MORE_LINKS[1], MORE_LINKS[2], MORE_LINKS[3], MORE_LINKS[4], MORE_LINKS[5], MORE_LINKS[6], MORE_LINKS[8]],
+  },
 ];
 
 function isActive(pathname: string, href: string): boolean {
