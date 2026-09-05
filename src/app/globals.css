@@ -796,6 +796,31 @@ html.dark .input {
   background-color: rgb(255 255 255 / 0.02);
 }
 
+/* ── Dropdown selects ─────────────────────────────────────────────────────
+   Native <select> popups draw their option list with the browser default
+   background (white), so always style the options with a light, readable
+   combo regardless of theme. Rule is global so it also covers selects that
+   use Tailwind utility classes (e.g. the question-bank explorer). */
+select.input {
+  appearance: auto;
+  color: var(--mcq-fg);
+  background-color: var(--mcq-card);
+}
+select option,
+select optgroup {
+  color: #1f2937;
+  background-color: #ffffff;
+}
+html.dark select.input {
+  color: var(--mcq-fg);
+  background-color: var(--mcq-card-strong);
+}
+html.dark select option,
+html.dark select optgroup {
+  color: #e5e7eb;
+  background-color: #111827;
+}
+
 .field-error {
   border-radius: var(--radius-lg);
   background: var(--mcq-bad-soft);
