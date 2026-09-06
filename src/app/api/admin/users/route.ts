@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin, jsonOk, isNextResponse } from "@/lib/api";
+import { jsonOk, isNextResponse } from "@/lib/api";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
   const admin = await requireAdmin();

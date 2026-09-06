@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin, jsonOk, isNextResponse } from "@/lib/api";
+import { jsonOk, isNextResponse } from "@/lib/api";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
   const admin = await requireAdmin();
   if (isNextResponse(admin)) return admin;
 
-  const [subscriptions, byPlan, byStatus, byProvider, revenueByPlan] = await Promise.all([
+  const [subscriptions, byPlan, byStatus, byProvider, activeSubscriptionsByPlan] = await Promise.all([
     prisma.subscription.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -27,10 +28,10 @@ export async function GET() {
     prisma.subscription.groupBy({ by: ["plan"], _count: { id: true }, _sum: { amount: true } }),
     prisma.subscription.groupBy({ by: ["status"], _count: { id: true } }),
     prisma.subscription.groupBy({ by: ["provider"], _count: { id: true }, _sum: { amount: true } }),
-    prisma.subscription.aggregate({
+    prisma.subscription.groupBy({
+      by: ["plan"],
       _sum: { amount: true },
       _count: { id: true },
-      groupBy: ["plan"],
       where: { status: "ACTIVE" },
     }),
   ]);
@@ -58,7 +59,7 @@ export async function GET() {
         count: p._count.id,
         totalAmount: p._sum.amount ?? 0,
       })),
-      revenueByPlan: revenueByPlan.map((r) => ({
+      revenueByPlan: activeSubscriptionsByPlan.map((r) => ({
         plan: r.plan,
         activeCount: r._count.id,
         revenue: r._sum.amount ?? 0,

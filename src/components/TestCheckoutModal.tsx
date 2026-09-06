@@ -48,7 +48,7 @@ export function TestCheckoutModal({ plan, planName, cycle, currency, amount, onC
     // instead of crashing with "Unexpected end of JSON input".
     const readJson = async (res: Response) => {
       try {
-        return (await res.json()) as { ok?: boolean; message?: string };
+        return (await res.json()) as { ok?: boolean; message?: string; checkoutId?: string };
       } catch {
         return { ok: false, message: "The server returned an empty response — please try again." };
       }
