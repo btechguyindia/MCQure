@@ -118,7 +118,8 @@ export function AppearanceSettings() {
         <h2 id="custom-heading" className="section-title">Your two colors</h2>
         <p className="mt-1 text-sm text-muted-fg">
           Pick a primary and a secondary color — the whole app derives its palette
-          from them instantly.
+          from them instantly. Either <span className="font-semibold">Apply</span>{" "}
+          button persists both colors and switches the theme.
         </p>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <label className="flex flex-1 items-center gap-3 rounded-2xl border border-line bg-card p-4">
@@ -158,6 +159,14 @@ export function AppearanceSettings() {
               <span className="block text-sm font-bold tracking-tight">Secondary</span>
               <span className="block truncate font-mono text-xs text-muted-fg">{customSecondary.toUpperCase()}</span>
             </span>
+            <button
+              type="button"
+              onClick={commitCustom}
+              disabled={!ready}
+              className="btn btn-primary btn-sm ml-auto"
+            >
+              Apply
+            </button>
           </label>
         </div>
       </section>

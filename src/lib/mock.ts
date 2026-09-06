@@ -222,14 +222,26 @@ export async function listMockRuns(userId: string): Promise<{
     take: 100,
   });
 
+  const practiceIds = practiceSessions.map((s) => s.id);
+  const practiceAttempts =
+    practiceIds.length > 0
+      ? await prisma.attempt.findMany({
+          where: { sessionId: { in: practiceIds } },
+          select: { sessionId: true, isCorrect: true, score: true, responseTimeMs: true },
+        })
+      : [];
+  const attemptsBySession = new Map<string, typeof practiceAttempts>();
+  for (const a of practiceAttempts) {
+    const list = attemptsBySession.get(a.sessionId) ?? [];
+    list.push(a);
+    attemptsBySession.set(a.sessionId, list);
+  }
+
   let practiceAccuracySum = 0;
   let practiceN = 0;
   for (const s of practiceSessions) {
     if (s.questionCount === 0) continue;
-    const attempts = await prisma.attempt.findMany({
-      where: { sessionId: s.id },
-      select: { isCorrect: true, score: true, responseTimeMs: true },
-    });
+    const attempts = attemptsBySession.get(s.id) ?? [];
     if (attempts.length === 0) continue;
     const res = computeMockResults(attempts, s.questionCount, s.questionCount);
     practiceAccuracySum += res.accuracy;

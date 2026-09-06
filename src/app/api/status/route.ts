@@ -25,6 +25,16 @@ export async function GET() {
   const today = summarizeAttempts(todayAttempts, config);
   const streak = computeStreak(attempts.map((a) => a.createdAt));
 
+  const dailyTarget = (await prisma.userPreparation.findUnique({ where: { userId: user.id } }))
+    ?.dailyTarget ?? 25;
+  const localDayStart = (() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  })();
+  const topicVisitedToday = await prisma.studyVisit.count({
+    where: { userId: user.id, createdAt: { gte: localDayStart } },
+  });
+
   // Most important weak topic: lowest accuracy among topics with >= 3 attempts.
   const byTopic = new Map<string, { correct: number; total: number; name: string }>();
   for (const a of attempts) {
@@ -44,16 +54,13 @@ export async function GET() {
     }
   }
 
-  // Daily target: 25 questions/day until a Goal row is configured (Phase 7+).
-  const dailyTarget = 25;
-
   return NextResponse.json({
     ok: true,
     status: {
       attemptedToday: today.total,
       accuracyToday: today.accuracy,
       netScoreToday: today.netScore,
-      studyTopicsCompleted: 0,
+      studyTopicsCompleted: topicVisitedToday,
       currentStreak: streak.current,
       hasActivityToday: streak.hasActivityToday,
       dailyTarget,

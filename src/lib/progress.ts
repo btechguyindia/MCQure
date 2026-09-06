@@ -34,6 +34,7 @@ export interface TrackedAttemptLike {
   sourceType: QuestionSourceType;
   isMock: boolean; // attempt belongs to a mock session
   createdAt: Date;
+  questionId?: string | null; // distinct-question metrics (repeatedMistakes)
   group: AttemptGroup;
 }
 
@@ -81,7 +82,9 @@ export function aggregateGroup(
     const unattempted = list.filter((a) => a.isCorrect === null).length;
     const times = list.map((a) => a.responseTimeMs);
     const wrongIds = new Set(
-      list.filter((a) => a.isCorrect === false).map((a) => a.group.subtopicId ?? a.group.conceptId ?? a.group.topicId)
+      list
+        .filter((a) => a.isCorrect === false)
+        .map((a) => a.questionId ?? a.group.subtopicId ?? a.group.conceptId ?? a.group.topicId)
     );
 
     const pyqRows = list.filter((a) => a.sourceType === "PYQ" || a.sourceType === "PYQ_VARIANT");
@@ -139,6 +142,7 @@ export interface TopicCompletionRow {
   name: string;
   hasStudy: boolean;
   attempts: number;
+  answered?: number; // answered rows (accuracy is over answered, not attempts)
   accuracy: number | null;
 }
 
@@ -159,7 +163,12 @@ export function syllabusCoverage(
   config: MasteryConfig = MASTERY_DEFAULTS
 ): SyllabusCoverage {
   const states = topics.map((t) => {
-    const mastery = estimateMastery(t.attempts, t.attempts > 0 ? Math.round(((t.accuracy ?? 0) / 100) * t.attempts) : 0, config);
+    const answered = t.answered ?? t.attempts;
+    const correct =
+      answered > 0 && t.accuracy !== null
+        ? Math.round((t.accuracy / 100) * answered)
+        : 0;
+    const mastery = estimateMastery(answered, correct, config);
     return {
       topicId: t.topicId,
       name: t.name,

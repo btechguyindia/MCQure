@@ -34,6 +34,9 @@ export async function POST(request: Request) {
     where: { id: sessionId, userId: user.id },
   });
   if (!session) return jsonError("Session not found", 404);
+  if (session.status !== "IN_PROGRESS") {
+    return jsonError("This session is already completed", 409);
+  }
 
   const question = await prisma.question.findUnique({
     where: { id: questionId },
@@ -44,6 +47,11 @@ export async function POST(request: Request) {
     },
   });
   if (!question) return jsonError("Question not found", 404);
+
+  const sessionQuestions = (session.config as { questions?: Array<{ id: string }> } | null)?.questions;
+  if (sessionQuestions && sessionQuestions.length > 0 && !sessionQuestions.some((q) => q.id === questionId)) {
+    return jsonError("Question does not belong to this session", 400);
+  }
 
   const existing = await prisma.attempt.findUnique({
     where: { userId_questionId_sessionId: { userId: user.id, questionId, sessionId } },

@@ -156,6 +156,7 @@ export interface PrepReport {
 }
 
 function toTrackedAttempt(row: {
+  questionId: string;
   isCorrect: boolean | null;
   score: number;
   responseTimeMs: number;
@@ -171,6 +172,7 @@ function toTrackedAttempt(row: {
   };
 }): TrackedAttemptLike {
   return {
+    questionId: row.questionId,
     isCorrect: row.isCorrect,
     score: row.score,
     responseTimeMs: row.responseTimeMs,
@@ -512,6 +514,7 @@ export async function getPrepReport(userId: string): Promise<PrepReport> {
       name: t.name,
       hasStudy: t.lastVisitedDays !== null,
       attempts: t.stats.attempts,
+      answered: t.stats.answered,
       accuracy: t.stats.accuracy,
     }))
   );

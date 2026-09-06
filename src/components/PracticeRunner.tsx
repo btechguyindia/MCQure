@@ -99,7 +99,7 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     fetch(`/api/practice/session?sessionId=${encodeURIComponent(sessionId)}`)
       .then((r) => r.json())
-      .then((data) => {
+      .then(async (data) => {
         if (!data.ok) throw new Error(data.message ?? "Could not load session");
         if (data.session.status === "COMPLETED") {
           setSummary(data.summary);
@@ -111,8 +111,24 @@ export function PracticeRunner({ sessionId }: { sessionId: string }) {
         // Resume at the first unanswered question.
         const answeredIds = new Set(Object.keys(data.attempts ?? {}));
         const firstUnanswered = qs.findIndex((q) => !answeredIds.has(q.id));
-        const startIndex = firstUnanswered === -1 ? Math.max(qs.length - 1, 0) : firstUnanswered;
-        setCurrentIndex(startIndex);
+        if (firstUnanswered === -1) {
+          // Everything answered but the session was never completed (e.g. a
+          // reload after the last answer). Finish it so the user isn't stuck.
+          const res = await fetch("/api/practice/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+          });
+          const done = (await res.json()) as {
+            ok: boolean;
+            summary?: SessionSummary;
+            message?: string;
+          };
+          if (res.ok && done.ok && done.summary) setSummary(done.summary);
+          else setError(done.message ?? "Could not close this session");
+          return;
+        }
+        setCurrentIndex(firstUnanswered);
         questionStartRef.current = Date.now();
       })
       .catch((e) => setError(e.message ?? "Could not load session"));

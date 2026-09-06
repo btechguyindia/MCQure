@@ -4,12 +4,14 @@ import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
 import { questionReviewSchema } from "@/lib/validation";
 
 // Review endpoint for the quality pipeline: move a question to APPROVED,
-// QUARANTINED or REJECTED (optionally with a note). Building block for a
-// future admin/review role — every API route still guards on session.
+// QUARANTINED or REJECTED (optionally with a note). Restricted to gold-tier
+// accounts — a free user must never be able to approve junk or remove good
+// questions from everyone's practice pool.
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (isNextResponse(user)) return user;
   if (!user) return jsonError("Authentication required", 401);
+  if (user.tier !== "GOLD") return jsonError("Forbidden", 403);
 
   let body: unknown;
   try {
