@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { APPEARANCES, PICKABLE_THEMES, THEME_COLORS, useTheme } from "@/components/theme";
 import {
   CheckIcon,
@@ -56,8 +57,24 @@ function ColorCard({
 }
 
 export function AppearanceSettings() {
-  const { color, appearance, ready, setColor, setAppearance } = useTheme();
+  const { color, appearance, ready, setColor, setAppearance, setCustomColors } = useTheme();
   const activeTier = THEME_COLORS.find((t) => t.tierOnly && t.value === color);
+  const [customPrimary, setLocalPrimary] = useState("#0f9d8a");
+  const [customSecondary, setLocalSecondary] = useState("#0ea5a4");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Deferred so the saved color inputs hydrate without a cascading render.
+    Promise.resolve().then(() => {
+      const re = /^#[0-9a-f]{6}$/i;
+      const p = localStorage.getItem("mcqure-custom-primary");
+      const s = localStorage.getItem("mcqure-custom-secondary");
+      if (re.test(p ?? "")) setLocalPrimary(p as string);
+      if (re.test(s ?? "")) setLocalSecondary(s as string);
+    });
+  }, []);
+
+  const commitCustom = () => setCustomColors(customPrimary, customSecondary);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
@@ -67,7 +84,7 @@ export function AppearanceSettings() {
         <h1 className="mt-2 text-2xl font-bold tracking-tight">Appearance</h1>
         <p className="mt-1 text-sm text-muted-fg">
           Choose your visual experience — a color identity and an appearance
-          mode. Six combinations, one product.
+          mode. Four identities × light &amp; dark, one product.
         </p>
       </header>
 
@@ -94,6 +111,55 @@ export function AppearanceSettings() {
             identity is active — it comes with your account.
           </p>
         ) : null}
+      </section>
+
+      {/* Custom colors (color wheels) — shown/enabled with the Custom theme */}
+      <section aria-labelledby="custom-heading">
+        <h2 id="custom-heading" className="section-title">Your two colors</h2>
+        <p className="mt-1 text-sm text-muted-fg">
+          Pick a primary and a secondary color — the whole app derives its palette
+          from them instantly.
+        </p>
+        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+          <label className="flex flex-1 items-center gap-3 rounded-2xl border border-line bg-card p-4">
+            <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-line-strong">
+              <input
+                type="color"
+                value={customPrimary}
+                aria-label="Primary color"
+                onChange={(e) => setLocalPrimary(e.target.value)}
+                className="absolute -inset-2 h-[150%] w-[150%] cursor-pointer border-0 bg-transparent p-0"
+              />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold tracking-tight">Primary</span>
+              <span className="block truncate font-mono text-xs text-muted-fg">{customPrimary.toUpperCase()}</span>
+            </span>
+            <button
+              type="button"
+              onClick={commitCustom}
+              disabled={!ready}
+              className="btn btn-primary btn-sm ml-auto"
+            >
+              Apply
+            </button>
+          </label>
+          <label className="flex flex-1 items-center gap-3 rounded-2xl border border-line bg-card p-4">
+            <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-line-strong">
+              <input
+                type="color"
+                value={customSecondary}
+                aria-label="Secondary color"
+                onChange={(e) => setLocalSecondary(e.target.value)}
+                className="absolute -inset-2 h-[150%] w-[150%] cursor-pointer border-0 bg-transparent p-0"
+              />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold tracking-tight">Secondary</span>
+              <span className="block truncate font-mono text-xs text-muted-fg">{customSecondary.toUpperCase()}</span>
+            </span>
+          </label>
+        </div>
       </section>
 
       {/* Appearance */}

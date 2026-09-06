@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type ThemeColor = "teal" | "purple" | "blue-gold" | "gold" | "silver";
+export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "custom";
 export type AccountTier = "GOLD" | "SILVER";
 export type Appearance = "system" | "light" | "dark";
+
+/** The two colors the user picks for the custom theme (brand + accent). */
+const CUSTOM_PRIMARY_KEY = "mcqure-custom-primary";
+const CUSTOM_SECONDARY_KEY = "mcqure-custom-secondary";
+export const CUSTOM_DEFAULT_PRIMARY = "#0f9d8a";
+export const CUSTOM_DEFAULT_SECONDARY = "#0ea5a4";
 
 export const THEME_COLORS: Array<{
   value: ThemeColor;
@@ -32,6 +38,18 @@ export const THEME_COLORS: Array<{
     label: "Blue + Gold",
     description: "Academic · elite · achievement",
     swatch: ["#2563EB", "#3B82F6", "#C9961A"],
+  },
+  {
+    value: "claude",
+    label: "Claude",
+    description: "Warm · editorial · conversational",
+    swatch: ["#D97757", "#C05F3C", "#C9961A"],
+  },
+  {
+    value: "custom",
+    label: "Custom",
+    description: "Your two colors, your whole app",
+    swatch: ["#0f9d8a", "#0ea5a4", "#7C3AED"],
   },
   {
     value: "gold",
@@ -74,7 +92,37 @@ const APPEARANCE_KEY = "mcqure-appearance";
 const TIER_KEY = "mcqure-tier-theme";
 
 function isThemeColor(v: string | null): v is ThemeColor {
-  return v === "teal" || v === "purple" || v === "blue-gold" || v === "gold" || v === "silver";
+  return (
+    v === "teal" ||
+    v === "purple" ||
+    v === "blue-gold" ||
+    v === "claude" ||
+    v === "gold" ||
+    v === "silver" ||
+    v === "custom"
+  );
+}
+
+function isHex(v: string | null): v is string {
+  return typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v);
+}
+
+/** Read the saved custom colors (falling back to defaults). */
+function readCustomColors(): { primary: string; secondary: string } {
+  const p = localStorage.getItem(CUSTOM_PRIMARY_KEY);
+  const s = localStorage.getItem(CUSTOM_SECONDARY_KEY);
+  return {
+    primary: isHex(p) ? p : CUSTOM_DEFAULT_PRIMARY,
+    secondary: isHex(s) ? s : CUSTOM_DEFAULT_SECONDARY,
+  };
+}
+
+/** Inject the user's two colors onto :root so the custom theme can derive. */
+function applyCustomColors() {
+  const { primary, secondary } = readCustomColors();
+  const root = document.documentElement;
+  root.style.setProperty("--mcq-u-primary", primary);
+  root.style.setProperty("--mcq-u-secondary", secondary);
 }
 
 function isAppearance(v: string | null): v is Appearance {
@@ -94,6 +142,8 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
   if (persist && color !== "gold" && color !== "silver") {
     localStorage.setItem(COLOR_KEY, color);
   }
+  // Keep the custom palette in sync whenever the custom theme is active.
+  if (color === "custom") applyCustomColors();
 
   const dark =
     appearance === "dark" ||
@@ -214,5 +264,25 @@ export function useTheme() {
     [state.color]
   );
 
-  return { ...state, ready, setColor, setAppearance, setAccountTier };
+  /**
+   * Set the two custom theme colors (primary + secondary) and switch to the
+   * custom theme. Persists both hex values and re-applies so the whole app
+   * re-derives immediately.
+   */
+  const setCustomColors = useCallback(
+    (primary: string, secondary: string) => {
+      localStorage.setItem(CUSTOM_PRIMARY_KEY, primary);
+      localStorage.setItem(CUSTOM_SECONDARY_KEY, secondary);
+      const nextColor: ThemeColor = "custom";
+      applyTheme(nextColor, state.appearance);
+      setState((prev) => ({
+        ...prev,
+        color: nextColor,
+        resolvedDark: document.documentElement.classList.contains("dark"),
+      }));
+    },
+    [state.appearance]
+  );
+
+  return { ...state, ready, setColor, setAppearance, setAccountTier, setCustomColors };
 }

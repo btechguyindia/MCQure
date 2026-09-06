@@ -28,6 +28,7 @@ import {
 import {
   APPEARANCES,
   THEME_COLORS,
+  PICKABLE_THEMES,
   useTheme,
 } from "@/components/theme";
 
@@ -276,7 +277,7 @@ export function NavBar() {
                 className="panel rise-in absolute right-0 top-full z-20 mt-2 w-64 p-2"
               >
                 <p className="kicker px-2 pb-1.5">Color</p>
-                {THEME_COLORS.map((t) => (
+                {PICKABLE_THEMES.map((t) => (
                   <button
                     key={t.value}
                     type="button"

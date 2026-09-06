@@ -4,14 +4,18 @@
 
 /* ────────────────────────────────────────────────────────────────────────────
    MCQure design system — "Calm intelligence"
-   SIX visual modes = 3 color identities (teal · purple · blue-gold)
-                       × 2 appearances (light · dark)
+   EIGHT visual modes = 4 color identities (teal · purple · blue-gold · claude)
+                        × 2 appearances (light · dark)
+                        (+ 2 account-tier identities: gold · silver)
 
    Architecture: two independent settings drive one semantic token layer.
-     html[data-theme]  = "teal" | "purple" | "blue-gold"
+     html[data-theme]  = "teal" | "purple" | "blue-gold" | "claude"
+                                      | "gold" | "silver"
      html.dark         = appearance (toggled by ThemeScript / system)
 
    Components consume ONLY the semantic tokens below — never raw hues.
+   The "claude" identity additionally swaps the base font to Instrument Sans,
+   a close free analogue of Anthropic's proprietary Styrene face.
    ──────────────────────────────────────────────────────────────────────────── */
 
 /* ── Base fallback = 🌿 TEAL LIGHT (also the default identity) ────────────── */
@@ -276,6 +280,98 @@ html.dark[data-theme="blue-gold"] {
   --mcq-shadow-glow: 0 6px 28px -10px rgb(59 130 246 / 0.38);
 }
 
+/* ── 🟠 CLAUDE — warm editorial palette + Instrument Sans, inspired by
+   Anthropic's Claude. Calmer, flatter atmosphere and longer, neutral shadows. ─ */
+html[data-theme="claude"] {
+  --mcq-canvas: #f5f4f0;
+  --mcq-raised: rgb(255 255 255 / 0.72);
+  --mcq-card: #ffffff;
+  --mcq-card-strong: #f0efe9;
+
+  --mcq-fg: #292929;
+  --mcq-muted: #5c5b57;
+  --mcq-subtle: #8b8a86;
+
+  --mcq-line: rgb(41 41 41 / 0.08);
+  --mcq-line-strong: rgb(41 41 41 / 0.16);
+
+  --mcq-brand: #d97757;
+  --mcq-brand-strong: #c05f3c;
+  --mcq-brand-soft: #faede6;
+  --mcq-on-brand: #ffffff;
+
+  --mcq-accent: #e28f6b;
+  --mcq-accent-soft: #faeae2;
+
+  --mcq-gold: #c9961a;
+  --mcq-gold-soft: #faf0d7;
+
+  --mcq-silver: #667085;
+  --mcq-silver-soft: #eef0f4;
+
+  --mcq-ok: #15803d;
+  --mcq-ok-soft: #dcfce7;
+  --mcq-warn: #a16207;
+  --mcq-warn-soft: #fdf0c8;
+  --mcq-bad: #be123c;
+  --mcq-bad-soft: #ffe4e6;
+
+  --mcq-glow-1: rgb(217 119 87 / 0.08);
+  --mcq-glow-2: rgb(226 143 107 / 0.06);
+  --mcq-glow-3: rgb(201 150 26 / 0.035);
+  --mcq-atmo-opacity: 0.35;
+
+  --mcq-shadow-soft: 0 1px 2px rgb(41 41 41 / 0.04), 0 10px 28px -18px rgb(41 41 41 / 0.1);
+  --mcq-shadow-lift: 0 24px 48px -24px rgb(41 41 41 / 0.22);
+  --mcq-shadow-glow: 0 6px 24px -8px rgb(217 119 87 / 0.45);
+
+  color-scheme: light;
+}
+
+html.dark[data-theme="claude"] {
+  --mcq-canvas: #1a1a19;
+  --mcq-raised: rgb(38 38 36 / 0.72);
+  --mcq-card: #242422;
+  --mcq-card-strong: #2a2a28;
+
+  --mcq-fg: #f0efed;
+  --mcq-muted: #cbc9c4;
+  --mcq-subtle: #93928d;
+
+  --mcq-line: rgb(255 255 255 / 0.09);
+  --mcq-line-strong: rgb(255 255 255 / 0.18);
+
+  --mcq-brand: #d97757;
+  --mcq-brand-strong: #e08b6c;
+  --mcq-brand-soft: rgb(217 119 87 / 0.16);
+  --mcq-on-brand: #ffffff;
+
+  --mcq-accent: #e28f6b;
+  --mcq-accent-soft: rgb(226 143 107 / 0.15);
+
+  --mcq-gold: #eab308;
+  --mcq-gold-soft: rgb(234 179 8 / 0.13);
+
+  --mcq-silver: #aeb6c2;
+  --mcq-silver-soft: rgb(174 182 194 / 0.15);
+
+  --mcq-ok: #34d399;
+  --mcq-ok-soft: rgb(52 211 153 / 0.13);
+  --mcq-warn: #fbbf24;
+  --mcq-warn-soft: rgb(251 191 36 / 0.12);
+  --mcq-bad: #fb7185;
+  --mcq-bad-soft: rgb(251 113 133 / 0.13);
+
+  --mcq-glow-1: rgb(217 119 87 / 0.12);
+  --mcq-glow-2: rgb(226 143 107 / 0.08);
+  --mcq-glow-3: rgb(234 179 8 / 0.04);
+  --mcq-atmo-opacity: 0.35;
+
+  --mcq-shadow-soft: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
+  --mcq-shadow-glow: 0 6px 28px -10px rgb(217 119 87 / 0.38);
+}
+
 /* ── 👑 GOLD — exclusive to Gold-tier accounts ────────────────────────────── */
 html[data-theme="gold"] {
   --mcq-canvas: #fbf6ea;
@@ -406,6 +502,102 @@ html.dark[data-theme="silver"] {
   --mcq-shadow-glow: 0 6px 28px -10px rgb(203 213 225 / 0.35);
 }
 
+/* ── 🎨 CUSTOM — two user-picked colors drive the whole palette ─────────────
+   The user's two hex values are injected onto :root as --mcq-u-primary and
+   --mcq-u-secondary by applyTheme(); here we derive every semantic token from
+   them with color-mix so the entire app reskins from just two colors.
+   ─────────────────────────────────────────────────────────────────────────── */
+html[data-theme="custom"] {
+  /* Brand = primary pick, Accent = secondary pick */
+  --mcq-brand: var(--mcq-u-primary, #0f9d8a);
+  --mcq-brand-strong: color-mix(in srgb, black 22%, var(--mcq-u-primary, #0f9d8a));
+  --mcq-brand-soft: color-mix(in srgb, white 84%, var(--mcq-u-primary, #0f9d8a));
+  --mcq-on-brand: color-mix(in srgb, white 88%, var(--mcq-u-primary, #0f9d8a));
+
+  --mcq-accent: var(--mcq-u-secondary, #0ea5a4);
+  --mcq-accent-soft: color-mix(in srgb, white 86%, var(--mcq-u-secondary, #0ea5a4));
+
+  /* Surfaces: near-white, faintly tinted by the primary so the whole app feels coherent */
+  --mcq-canvas: color-mix(in srgb, white 94%, var(--mcq-u-primary, #0f9d8a));
+  --mcq-raised: rgb(255 255 255 / 0.75);
+  --mcq-card: #ffffff;
+  --mcq-card-strong: #ffffff;
+
+  /* Text: stable neutral (kept independent of user colors for legibility) */
+  --mcq-fg: #10201e;
+  --mcq-muted: #52615e;
+  --mcq-subtle: #7a8d89;
+
+  --mcq-line: rgb(15 35 32 / 0.08);
+  --mcq-line-strong: rgb(15 35 32 / 0.17);
+
+  --mcq-gold: #c9961a;
+  --mcq-gold-soft: #faf0d7;
+  --mcq-silver: #667085;
+  --mcq-silver-soft: #eef0f4;
+
+  --mcq-ok: #15803d;
+  --mcq-ok-soft: #dcfce7;
+  --mcq-warn: #a16207;
+  --mcq-warn-soft: #fdf0c8;
+  --mcq-bad: #be123c;
+  --mcq-bad-soft: #ffe4e6;
+
+  --mcq-glow-1: color-mix(in srgb, transparent 88%, var(--mcq-u-primary, #0f9d8a));
+  --mcq-glow-2: color-mix(in srgb, transparent 90%, var(--mcq-u-secondary, #0ea5a4));
+  --mcq-glow-3: rgb(201 150 26 / 0.06);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 2px rgb(16 32 30 / 0.04), 0 10px 28px -18px rgb(16 32 30 / 0.12);
+  --mcq-shadow-lift: 0 24px 48px -24px rgb(16 32 30 / 0.28);
+  --mcq-shadow-glow: 0 6px 24px -8px color-mix(in srgb, transparent 55%, var(--mcq-u-primary, #0f9d8a));
+
+  color-scheme: light;
+}
+
+html.dark[data-theme="custom"] {
+  --mcq-brand: color-mix(in srgb, white 18%, var(--mcq-u-primary, #14b8a6));
+  --mcq-brand-strong: color-mix(in srgb, white 34%, var(--mcq-u-primary, #14b8a6));
+  --mcq-brand-soft: color-mix(in srgb, transparent 84%, var(--mcq-u-primary, #14b8a6));
+  --mcq-on-brand: #08130f;
+
+  --mcq-accent: color-mix(in srgb, white 16%, var(--mcq-u-secondary, #0ea5a4));
+  --mcq-accent-soft: color-mix(in srgb, transparent 86%, var(--mcq-u-secondary, #0ea5a4));
+
+  --mcq-canvas: color-mix(in srgb, black 82%, var(--mcq-u-primary, #061614));
+  --mcq-raised: rgb(10 33 31 / 0.72);
+  --mcq-card: color-mix(in srgb, black 76%, var(--mcq-u-primary, #0a211f));
+  --mcq-card-strong: color-mix(in srgb, black 70%, var(--mcq-u-primary, #0e2927));
+
+  --mcq-fg: #f8fafc;
+  --mcq-muted: #c7d8d5;
+  --mcq-subtle: #8aa39e;
+
+  --mcq-line: rgb(255 255 255 / 0.08);
+  --mcq-line-strong: rgb(255 255 255 / 0.17);
+
+  --mcq-gold: #eab308;
+  --mcq-gold-soft: rgb(234 179 8 / 0.13);
+  --mcq-silver: #aeb6c2;
+  --mcq-silver-soft: rgb(174 182 194 / 0.15);
+
+  --mcq-ok: #34d399;
+  --mcq-ok-soft: rgb(52 211 153 / 0.13);
+  --mcq-warn: #fbbf24;
+  --mcq-warn-soft: rgb(251 191 36 / 0.13);
+  --mcq-bad: #fb7185;
+  --mcq-bad-soft: rgb(251 113 133 / 0.14);
+
+  --mcq-glow-1: color-mix(in srgb, transparent 88%, var(--mcq-u-primary, #14b8a6));
+  --mcq-glow-2: color-mix(in srgb, transparent 92%, var(--mcq-u-secondary, #0ea5a4));
+  --mcq-glow-3: rgb(234 179 8 / 0.08);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
+  --mcq-shadow-glow: 0 6px 28px -10px color-mix(in srgb, transparent 60%, var(--mcq-u-primary, #14b8a6));
+}
+
 /* ── Tailwind theme registration (utilities generated from tokens) ────────── */
 @theme inline {
   --font-sans: var(--font-geist-sans);
@@ -477,6 +669,13 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* The Claude identity swaps the base UI typeface to Instrument Sans so the
+   whole product reads like Anthropic's UI while every other identity keeps
+   Geist. */
+html[data-theme="claude"] body {
+  font-family: var(--font-instrument-sans), var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 html,
