@@ -32,26 +32,30 @@ export async function POST(request: Request) {
     return jsonError(err instanceof Error ? err.message : "Invalid checkout", 400);
   }
 
-  const checkoutId = `test-${randomUUID()}`;
+  try {
+    const checkoutId = `test-${randomUUID()}`;
 
-  await createPendingCheckout({
-    userId: user.id,
-    plan: checkout.plan,
-    cycle: checkout.cycle,
-    provider: "MANUAL",
-    providerRef: checkoutId,
-    amount: checkout.amountUnits,
-    currency: checkout.currency,
-  });
+    await createPendingCheckout({
+      userId: user.id,
+      plan: checkout.plan,
+      cycle: checkout.cycle,
+      provider: "MANUAL",
+      providerRef: checkoutId,
+      amount: checkout.amountUnits,
+      currency: checkout.currency,
+    });
 
-  return jsonOk({
-    testMode: true,
-    checkoutId,
-    plan: checkout.plan,
-    cycle: checkout.cycle,
-    currency: checkout.currency,
-    amountMinor: checkout.amountMinor,
-    amountUnits: checkout.amountUnits,
-    months: checkout.months,
-  });
+    return jsonOk({
+      testMode: true,
+      checkoutId,
+      plan: checkout.plan,
+      cycle: checkout.cycle,
+      currency: checkout.currency,
+      amountMinor: checkout.amountMinor,
+      amountUnits: checkout.amountUnits,
+      months: checkout.months,
+    });
+  } catch {
+    return jsonError("Could not create the test checkout — please retry", 500);
+  }
 }

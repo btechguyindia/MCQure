@@ -73,7 +73,6 @@ type ApiResult = {
   timetables?: TimetableDTO[];
   view?: TimetableViewDTO;
   message?: string;
-  details?: Record<string, string[]>;
 };
 
 export function TimetableManager({ initialTimetables, initialView }: Props) {
@@ -98,15 +97,7 @@ export function TimetableManager({ initialTimetables, initialView }: Props) {
 
   function applyResult(data: ApiResult): boolean {
     if (!data.ok || !data.timetables || !data.view) {
-      const details = data.details;
-      let why = data.message ?? "Something went wrong";
-      if (details) {
-        const reasons = Object.entries(details)
-          .map(([field, errs]) => `${field}: ${errs.join(", ")}`)
-          .join(" · ");
-        if (reasons) why = `${why} — ${reasons}`;
-      }
-      setMessage(why);
+      setMessage(data.message ?? "Something went wrong");
       return false;
     }
     setTimetables(data.timetables);

@@ -164,6 +164,7 @@ model User {
   name         String?
   passwordHash String
   tier         AccountTier @default(BASIC)
+  isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

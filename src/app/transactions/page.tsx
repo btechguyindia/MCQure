@@ -63,11 +63,6 @@ function providerLabel(provider: string, ref: string | null): string {
   return provider.charAt(0) + provider.slice(1).toLowerCase();
 }
 
-/** Fresh timestamp for one request render (wraps Date.now for lint purity). */
-function nowMs(): number {
-  return Date.now();
-}
-
 function StatusBadge({ status }: { status: Subscription["status"] }) {
   const map: Record<Subscription["status"], string> = {
     ACTIVE: "bg-ok-soft text-ok border-ok/30",
@@ -86,7 +81,6 @@ export default async function TransactionsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/transactions");
 
-  const now = nowMs();
   const history = await listUserSubscriptions(user.id);
 
   return (
@@ -119,10 +113,10 @@ export default async function TransactionsPage() {
         <ol className="flex flex-col gap-3">
           {history.map((sub) => {
             const action = actionFor(sub);
-            const stillActive = sub.status === "ACTIVE" && sub.currentPeriodEnd.getTime() > now;
+            const stillActive = sub.status === "ACTIVE" && sub.currentPeriodEnd.getTime() > Date.now();
             const daysLeft =
-              stillActive
-                ? Math.ceil(msUntilPeriodEnd(sub.currentPeriodEnd, new Date(now)) / 86_400_000)
+              stillActive && sub.currentPeriodEnd.getTime() > Date.now()
+                ? Math.ceil(msUntilPeriodEnd(sub.currentPeriodEnd) / 86_400_000)
                 : null;
             return (
               <li key={sub.id} className="card p-4 sm:p-5">

@@ -7,6 +7,7 @@ import {
   FEATURE_CATALOG,
   PLANS,
   PLAN_ORDER,
+  type PlanFeature,
   type PlanId,
 } from "@/lib/plans";
 import { CheckIcon, CloseIcon, LockIcon, SparklesIcon } from "@/components/icons";

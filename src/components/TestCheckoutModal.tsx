@@ -44,13 +44,23 @@ export function TestCheckoutModal({ plan, planName, cycle, currency, amount, onC
     setFailed(false);
     setStep("processing");
 
+    // Tolerate empty/non-JSON bodies from the server (cold starts, 5xx)
+    // instead of crashing with "Unexpected end of JSON input".
+    const readJson = async (res: Response) => {
+      try {
+        return (await res.json()) as { ok?: boolean; message?: string };
+      } catch {
+        return { ok: false, message: "The server returned an empty response — please try again." };
+      }
+    };
+
     try {
       const res = await fetch("/api/billing/test/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, cycle, currency }),
       });
-      const order = (await res.json()) as { ok: boolean; checkoutId?: string; message?: string };
+      const order = await readJson(res);
       if (!res.ok || !order.ok || !order.checkoutId) {
         throw new Error(order.message ?? "Could not create test checkout");
       }
@@ -75,7 +85,7 @@ export function TestCheckoutModal({ plan, planName, cycle, currency, amount, onC
           simulate,
         }),
       });
-      const v = (await verify.json()) as { ok: boolean; message?: string };
+      const v = await readJson(verify);
       if (!verify.ok || !v.ok) {
         throw new Error(v.message ?? "Test verification failed");
       }

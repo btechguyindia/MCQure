@@ -35,21 +35,25 @@ export async function POST(request: Request) {
 
   const checkout = resolveCheckout(parsed.data);
 
-  // Upgrade the PENDING row created by the test checkout, if present.
-  const pending = await prisma.subscription.findFirst({
-    where: { userId: user.id, provider: "MANUAL", providerRef: checkoutId, status: "PENDING" },
-  });
+  try {
+    // Upgrade the PENDING row created by the test checkout, if present.
+    const pending = await prisma.subscription.findFirst({
+      where: { userId: user.id, provider: "MANUAL", providerRef: checkoutId, status: "PENDING" },
+    });
 
-  const subscription = await activateSubscription({
-    userId: user.id,
-    plan: checkout.plan,
-    cycle: checkout.cycle,
-    provider: "MANUAL",
-    providerRef: checkoutId,
-    amount: checkout.amountUnits,
-    currency: checkout.currency,
-    pendingId: pending?.id,
-  });
+    const subscription = await activateSubscription({
+      userId: user.id,
+      plan: checkout.plan,
+      cycle: checkout.cycle,
+      provider: "MANUAL",
+      providerRef: checkoutId,
+      amount: checkout.amountUnits,
+      currency: checkout.currency,
+      pendingId: pending?.id,
+    });
 
-  return jsonOk({ activated: true, testMode: true, subscription });
+    return jsonOk({ activated: true, testMode: true, subscription });
+  } catch {
+    return jsonError("Could not complete the test payment — please retry", 500);
+  }
 }
