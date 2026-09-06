@@ -49,8 +49,14 @@ describe("periodRange", () => {
   });
 });
 
-function attempt(userId: string, score: number, correct: boolean | null, name = userId): Parameters<typeof aggregateLeaderboard>[0][number] {
-  return { userId, isCorrect: correct, score, name, email: `${userId}@x.test`, tier: "FREE" };
+function attempt(
+  userId: string,
+  score: number,
+  correct: boolean | null,
+  name = userId,
+  createdAt: Date = new Date(2026, 7, 9, 10, 0, 0)
+): Parameters<typeof aggregateLeaderboard>[0][number] {
+  return { userId, isCorrect: correct, score, name, email: `${userId}@x.test`, tier: "FREE", createdAt };
 }
 
 describe("aggregateLeaderboard", () => {
@@ -93,12 +99,40 @@ describe("aggregateLeaderboard", () => {
 
   it("falls back to email for anonymous users", () => {
     const rows = [
-      { userId: "a", isCorrect: true, score: 1, name: null, email: "player@x.test", tier: "FREE" },
+      { userId: "a", isCorrect: true, score: 1, name: null, email: "player@x.test", tier: "FREE", createdAt: new Date(2026, 7, 9) },
     ];
     expect(aggregateLeaderboard(rows)[0].name).toBe("player@x.test");
   });
 
   it("returns an empty list for no rows", () => {
     expect(aggregateLeaderboard([])).toEqual([]);
+  });
+});
+
+describe("aggregateLeaderboard streak", () => {
+  const now = new Date(2026, 7, 9, 15, 0, 0); // Sun Aug 09 2026
+
+  it("counts consecutive active days as a streak", () => {
+    const rows = [
+      attempt("a", 1, true, "a", new Date(2026, 7, 9, 9, 0, 0)),
+      attempt("a", 1, true, "a", new Date(2026, 7, 8, 9, 0, 0)),
+      attempt("a", 1, true, "a", new Date(2026, 7, 7, 9, 0, 0)),
+    ];
+    expect(aggregateLeaderboard(rows, now)[0].streak).toBe(3);
+  });
+
+  it("resets the streak when a day is skipped", () => {
+    const rows = [
+      attempt("a", 1, true, "a", new Date(2026, 7, 9, 9, 0, 0)),
+      attempt("a", 1, true, "a", new Date(2026, 7, 5, 9, 0, 0)),
+    ];
+    expect(aggregateLeaderboard(rows, now)[0].streak).toBe(1);
+  });
+
+  it("is zero when there is no activity today or yesterday", () => {
+    const rows = [
+      attempt("a", 1, true, "a", new Date(2026, 7, 5, 9, 0, 0)),
+    ];
+    expect(aggregateLeaderboard(rows, now)[0].streak).toBe(0);
   });
 });

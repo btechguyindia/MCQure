@@ -12,7 +12,9 @@ import {
   buildDailyPlan,
   completionState,
   estimateMastery,
+  learningPriority,
   overallMastery,
+  preparationHealth,
   revisionStatus,
   syllabusCoverage,
   trendOf,
@@ -23,6 +25,8 @@ import {
   type DailyPlan,
   type Trend,
   type WeaknessResult,
+  type LearningPriorityResult,
+  type HealthScoreResult,
 } from "./progress";
 import {
   MASTERY_DEFAULTS,
@@ -30,18 +34,22 @@ import {
   type CompletionState,
 } from "./mastery";
 
-export const MOCK_MODES = [
-  "sectional_mock",
-  "full_mock",
-  "topic_mock",
-  "subtopic_mock",
+// Mock sessions are created by src/lib/mock.ts with `mode: mock_${scope}`
+// (e.g. "mock_full", "mock_section", "mock_topic"). This is the single source
+// of truth for recognising them; module code that reads a session's `mode`
+// column must go through isMockMode so mocks are never misread as practice.
+export function isMockMode(mode: string): boolean {
+  return mode.startsWith("mock_");
+}
+
+// Modes that finalize into a MockRun row (scope-based mock sessions).
+export const MOCK_SESSION_MODES = [
+  "mock_full",
+  "mock_section",
+  "mock_topic",
 ] as const;
 
-export type MockMode = (typeof MOCK_MODES)[number];
-
-export function isMockMode(mode: string): boolean {
-  return (MOCK_MODES as readonly string[]).includes(mode);
-}
+export type MockMode = (typeof MOCK_SESSION_MODES)[number];
 
 export interface PersonalBests {
   highestMockScore: number | null;
@@ -100,6 +108,7 @@ export interface TopicReport {
   subtopics: SubtopicReport[];
   concepts: SubtopicReport[];
   weakness: WeaknessResult;
+  priority: LearningPriorityResult;
   trend: Trend;
 }
 
@@ -153,6 +162,15 @@ export interface PrepReport {
   dailyPlan: DailyPlan;
   trend: ReturnType<typeof trendByDay>;
   alignment: number;
+  health: HealthScoreResult;
+  learningPriorities: Array<{
+    topicId: string;
+    topicName: string;
+    subjectName: string;
+    score: number;
+    reliable: boolean;
+    reasons: string[];
+  }>;
 }
 
 function toTrackedAttempt(row: {
@@ -233,7 +251,7 @@ export async function getPrepReport(userId: string): Promise<PrepReport> {
         include: { exam: true },
       }),
       prisma.practiceSession.findMany({
-        where: { userId, mode: { in: [...MOCK_MODES] }, status: "COMPLETED" },
+        where: { userId, mode: { startsWith: "mock_" }, status: "COMPLETED" },
         select: { id: true, mode: true },
       }),
     ]);
@@ -451,6 +469,23 @@ export async function getPrepReport(userId: string): Promise<PrepReport> {
         examWeight: examW,
         revisionDue: revision.due,
       }),
+      priority: learningPriority({
+        attempts: stats.attempts,
+        accuracy: stats.accuracy,
+        mastery: m.mastery,
+        masteryReliable: m.reliable,
+        repeatedMistakes: stats.repeatedMistakes,
+        averageTimeMs: stats.averageTimeMs,
+        examWeight: examW,
+        revisionDue: revision.due,
+        daysSinceActivity: Math.min(
+          lastPracticed ?? Number.POSITIVE_INFINITY,
+          lastVisited ?? Number.POSITIVE_INFINITY
+        ) === Number.POSITIVE_INFINITY ? null : Math.min(
+          lastPracticed ?? Number.POSITIVE_INFINITY,
+          lastVisited ?? Number.POSITIVE_INFINITY
+        ),
+      }),
       trend: trendOf(topicAttempts),
     };
   });
@@ -569,6 +604,56 @@ export async function getPrepReport(userId: string): Promise<PrepReport> {
         )
       : 0;
 
+  // ── Preparation Health Score (single honest readiness number) ────────────
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+  const recent7 = attempts.filter((a) => a.createdAt.getTime() > now.getTime() - weekMs);
+  const recentAnswered = recent7.filter((a) => a.isCorrect !== null);
+  const recentAccuracy =
+    recentAnswered.length > 0
+      ? (recentAnswered.filter((a) => a.isCorrect === true).length / recentAnswered.length) * 100
+      : null;
+
+  // Consistency = fraction of the last 7 days with at least one answered attempt.
+  const consistencyDays = (() => {
+    const keys = new Set(recentAnswered.map((a) => dayKey(a.createdAt)));
+    let count = 0;
+    for (let i = 0; i < 7; i += 1) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      if (keys.has(dayKey(d))) count += 1;
+    }
+    return count / 7;
+  })();
+
+  // Revision health = fraction of non-existing revision items that are current.
+  const revisionCompletion =
+    topics.length === 0
+      ? 1
+      : topics.filter((t) => !t.revision.due).length / topics.length;
+
+  const health = preparationHealth({
+    coverage: { studiedPct: coverage.studiedPct, masteredPct: coverage.masteredPct },
+    mastery: overall.mastery,
+    recentAccuracy,
+    mockAccuracy: overall.mockAccuracy,
+    revisionCompletion,
+    consistency: consistencyDays,
+    mockAttempted: overall.completedMocks > 0,
+  });
+
+  // ── Learning priorities (ranked "study this next" list) ──────────────────
+  const learningPriorities = [...topics]
+    .filter((t) => t.priority.reliable)
+    .sort((a, b) => b.priority.score - a.priority.score)
+    .slice(0, 8)
+    .map((t) => ({
+      topicId: t.id,
+      topicName: t.name,
+      subjectName: t.subjectName,
+      score: t.priority.score,
+      reliable: t.priority.reliable,
+      reasons: t.priority.reasons,
+    }));
+
   return {
     exam: exam ? { id: exam.id, name: exam.name } : null,
     preparation: prep
@@ -592,6 +677,8 @@ export async function getPrepReport(userId: string): Promise<PrepReport> {
     dailyPlan,
     trend: trendByDay(attempts, 14, now),
     alignment,
+    health,
+    learningPriorities,
   };
 }
 

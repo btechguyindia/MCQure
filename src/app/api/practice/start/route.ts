@@ -3,6 +3,7 @@ import type { PracticeSessionStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { practiceStartSchema } from "@/lib/validation";
 import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
+import { dailyQuestionsRemaining } from "@/lib/entitlements";
 import {
   getActiveExam,
   getScoringConfig,
@@ -17,6 +18,17 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (isNextResponse(user)) return user;
   if (!user) return jsonError("Authentication required", 401);
+
+  // Social contract: Basic accounts get a daily question cap; paid plans are
+  // unlimited. The cap is enforced before any questions are selected so we
+  // never burn selection work for a request that will be rejected.
+  const remainingToday = await dailyQuestionsRemaining(user);
+  if (remainingToday === 0) {
+    return jsonError(
+      "You have used today's free question limit. Practise again tomorrow or upgrade for unlimited questions.",
+      403
+    );
+  }
 
   let body: unknown;
   try {

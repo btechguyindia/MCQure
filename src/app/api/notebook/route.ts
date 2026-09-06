@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
+import { requireFeature } from "@/lib/entitlements";
 import { notebookSchema } from "@/lib/validation";
 import { answerNotebook } from "@/lib/notebook";
 import { AiNotConfiguredError } from "@/lib/ai";
 import { recordStudyVisit } from "@/lib/study-visit";
 
-// Notebook: grounded LLM chat over a topic's study notes.
+// Notebook: grounded LLM chat over a topic's study notes. AI features are a
+// Premium Plus (and above) entitlement.
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (isNextResponse(user)) return user;
   if (!user) return jsonError("Authentication required", 401);
+  const allowed = await requireFeature(user, "ai_explanations");
+  if (isNextResponse(allowed)) return allowed;
 
   let body: unknown;
   try {

@@ -1,8 +1,11 @@
 // Phase: Leaderboard — competitive standings across all users, derived from
 // the permanent attempt history. Ranking is by net score (sum of attempt
 // score) within a period, with accuracy and answered count as tie-breakers.
+// Each entry also carries a "streak": consecutive active days inside the
+// period window, so rivals can see who is on fire.
 
 import { prisma } from "@/lib/db";
+import { computeStreak } from "@/lib/streak";
 
 export type LeaderboardPeriod = "daily" | "weekly" | "monthly" | "all_time";
 
@@ -39,6 +42,7 @@ export interface LeaderboardEntry {
   answered: number;
   correct: number;
   accuracy: number | null; // percentage, null when nothing answered
+  streak: number; // consecutive active days within the period window
 }
 
 export interface LeaderboardResult {
@@ -81,6 +85,7 @@ export interface AttemptLike {
   name: string | null;
   email: string;
   tier: string;
+  createdAt: Date | string;
 }
 
 interface UserAccumulator {
@@ -89,13 +94,14 @@ interface UserAccumulator {
   points: number;
   answered: number;
   correct: number;
+  dates: Date[];
 }
 
 /**
  * Aggregate attempt rows into a fully ranked leaderboard. Pure and testable.
  * Ranking uses standard competition ranking: identical points share a rank.
  */
-export function aggregateLeaderboard(rows: AttemptLike[]): LeaderboardEntry[] {
+export function aggregateLeaderboard(rows: AttemptLike[], now = new Date()): LeaderboardEntry[] {
   const byUser = new Map<string, UserAccumulator>();
 
   for (const row of rows) {
@@ -105,8 +111,10 @@ export function aggregateLeaderboard(rows: AttemptLike[]): LeaderboardEntry[] {
       points: 0,
       answered: 0,
       correct: 0,
+      dates: [],
     };
     acc.points += row.score;
+    acc.dates.push(new Date(row.createdAt));
     if (row.isCorrect !== null) {
       acc.answered += 1;
       if (row.isCorrect) acc.correct += 1;
@@ -123,6 +131,7 @@ export function aggregateLeaderboard(rows: AttemptLike[]): LeaderboardEntry[] {
       answered: acc.answered,
       correct: acc.correct,
       accuracy: acc.answered > 0 ? Math.round((100 * acc.correct) / acc.answered) : null,
+      streak: computeStreak(acc.dates, now).current,
     }))
     .sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
@@ -139,20 +148,30 @@ export function aggregateLeaderboard(rows: AttemptLike[]): LeaderboardEntry[] {
   });
 }
 
-/** Standings for the given period. O(1)-ish scan of attempts for the window. */
-export async function getLeaderboard(
-  userId: string,
-  period: LeaderboardPeriod,
-  limit = 25
-): Promise<LeaderboardResult> {
-  const { from, to } = periodRange(period);
+// The ranking query scans every attempt in the period window — the heaviest
+// query behind a frequently-visited page. Stale-while-revalidate style cache:
+// aggregates are recomputed at most once per TTL per period. Mirrors the
+// in-memory rate limiter: fine for a single-instance deployment.
+const RANKING_CACHE_TTL_MS = 10_000;
+const rankingCache = new Map<string, { at: number; ranked: LeaderboardEntry[] }>();
 
+/**
+ * The full ranked list for a period, hit through the TTL cache. Standings lag
+ * new answers by at most the TTL, which is invisible during a live session
+ * and far cheaper than scanning the whole attempt table on every view.
+ */
+async function getRanked(period: LeaderboardPeriod, now: Date): Promise<LeaderboardEntry[]> {
+  const hit = rankingCache.get(period);
+  if (hit && now.getTime() - hit.at < RANKING_CACHE_TTL_MS) return hit.ranked;
+
+  const { from, to } = periodRange(period, now);
   const rows = await prisma.attempt.findMany({
     where: { createdAt: from ? { gte: from, lte: to } : { lte: to } },
     select: {
       userId: true,
       isCorrect: true,
       score: true,
+      createdAt: true,
       user: { select: { name: true, email: true, tier: true } },
     },
   });
@@ -161,12 +180,25 @@ export async function getLeaderboard(
     userId: r.userId,
     isCorrect: r.isCorrect,
     score: r.score,
+    createdAt: r.createdAt,
     name: r.user.name,
     email: r.user.email,
     tier: r.user.tier,
   }));
 
-  const ranked = aggregateLeaderboard(normalized);
+  const ranked = aggregateLeaderboard(normalized, now);
+  rankingCache.set(period, { at: now.getTime(), ranked });
+  return ranked;
+}
+
+/** Standings for the given period. O(1)-ish scan of attempts for the window. */
+export async function getLeaderboard(
+  userId: string,
+  period: LeaderboardPeriod,
+  limit = 25
+): Promise<LeaderboardResult> {
+  const now = new Date();
+  const ranked = await getRanked(period, now);
   return {
     period,
     entries: ranked.slice(0, limit),

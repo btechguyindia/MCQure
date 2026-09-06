@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/api";
 import { getReport } from "@/lib/reports";
 import { ReportsIcon } from "@/components/icons";
+import { PlanGate } from "@/components/PlanGate";
 
 export const metadata: Metadata = { title: "Reports — MCQure" };
 
@@ -27,7 +28,12 @@ export default async function ReportsPage() {
   ];
 
   return (
-    <div className="stagger flex flex-col gap-6">
+    <PlanGate
+      required="reports_export"
+      title="Reports are a paid feature"
+      description="CSV/JSON export and the full reports dashboard are included with Premium Plus and Royal. Basic keeps the preparation health view."
+    >
+      <div className="stagger flex flex-col gap-6">
       <header>
         <p className="kicker">Progress reports</p>
         <h1 className="mt-2 flex items-center gap-2.5 text-2xl font-bold tracking-tight">
@@ -115,6 +121,7 @@ export default async function ReportsPage() {
         );
       })}
     </div>
+    </PlanGate>
   );
 }
 

@@ -107,7 +107,7 @@ export function AppearanceSettings() {
         </div>
         {ready && activeTier ? (
           <p className="mt-3 text-sm text-muted-fg">
-            The <span className={`font-semibold ${activeTier.tier === "GOLD" ? "text-gold" : "text-silver"}`}>{activeTier.label}</span>{" "}
+            The <span className={`font-semibold ${activeTier.tier === "PREMIUM_PLUS" ? "text-gold" : activeTier.tier === "PREMIUM" ? "text-silver" : "text-royal"}`}>{activeTier.label}</span>{" "}
             identity is active — it comes with your account.
           </p>
         ) : null}

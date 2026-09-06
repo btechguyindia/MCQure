@@ -1,10 +1,12 @@
-// Manage account tiers and demo/premium users.
+// Manage account plans and demo users.
 //
 // Usage:
-//   node scripts/set-tier.mjs <email> [--tier GOLD|SILVER|FREE] [--name "Name"] [--password "pw"]
+//   node scripts/set-tier.mjs <email> [--plan ROYAL|PREMIUM_PLUS|PREMIUM|BASIC] [--cycle MONTHLY|YEARLY] [--name "Name"] [--password "pw"]
 //
-// Creates the user if they don't exist (requires --password), otherwise
-// updates only the provided fields.
+// Legacy aliases (mapped automatically): GOLD -> ROYAL, SILVER -> PREMIUM, FREE -> BASIC.
+// For paid plans the script also writes a Subscription record so the
+// entitlements system recognises the plan. Creates the user if they don't exist
+// (requires --password).
 
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
@@ -16,7 +18,7 @@ const args = process.argv.slice(2);
 const email = args[0];
 
 if (!email || !email.includes("@")) {
-  console.error("Usage: node scripts/set-tier.mjs <email> [--tier GOLD|SILVER|FREE] [--name \"Name\"] [--password \"pw\"]");
+  console.error("Usage: node scripts/set-tier.mjs <email> [--plan ROYAL|PREMIUM|PREMIUM|BASIC] [--name \"Name\"] [--password \"pw\"]");
   process.exit(1);
 }
 
@@ -25,17 +27,23 @@ function flag(name) {
   return i >= 0 ? args[i + 1] : undefined;
 }
 
-const TIER = flag("--tier")?.toUpperCase();
+const PLAN_MAP = { FREE: "BASIC", SILVER: "PREMIUM", GOLD: "ROYAL" };
+let plan = (flag("--plan") ?? flag("--tier") ?? "BASIC")?.toUpperCase();
+if (PLAN_MAP[plan]) plan = PLAN_MAP[plan];
+const cycle = (flag("--cycle") ?? "MONTHLY").toUpperCase();
 const name = flag("--name");
 const password = flag("--password");
 
-if (TIER && !["FREE", "SILVER", "GOLD"].includes(TIER)) {
-  console.error("Invalid tier. Use FREE, SILVER or GOLD.");
+if (!["BASIC", "PREMIUM", "PREMIUM_PLUS", "ROYAL"].includes(plan)) {
+  console.error("Invalid plan. Use BASIC, PREMIUM, PREMIUM_PLUS or ROYAL.");
+  process.exit(1);
+}
+if (!["MONTHLY", "YEARLY"].includes(cycle)) {
+  console.error("Invalid cycle. Use MONTHLY or YEARLY.");
   process.exit(1);
 }
 
-const data = {};
-if (TIER) data.tier = TIER;
+const data = { tier: plan === "BASIC" ? "BASIC" : plan };
 if (name) data.name = name;
 
 const existing = await prisma.user.findUnique({ where: { email } });
@@ -54,7 +62,31 @@ const user = await prisma.user.upsert({
   create: { email, ...data },
 });
 
+// For paid plans, ensure a matching Subscription record exists so the
+// entitlements service recognises the plan (mock limits, feature gates etc.).
+if (plan !== "BASIC") {
+  await prisma.$transaction([
+    prisma.subscription.updateMany({
+      where: { userId: user.id, status: { in: ["ACTIVE", "PENDING"] } },
+      data: { status: "EXPIRED", cancelledAt: new Date() },
+    }),
+    prisma.subscription.create({
+      data: {
+        userId: user.id,
+        plan,
+        cycle,
+        status: "ACTIVE",
+        provider: "MANUAL",
+        providerRef: `script:${Date.now()}`,
+        amount: 0,
+        currency: "INR",
+        currentPeriodEnd: (() => { const d = new Date(); d.setMonth(d.getMonth() + (cycle === "YEARLY" ? 12 : 1)); return d; })(),
+      },
+    }),
+  ]);
+}
+
 console.log(
-  `OK ${user.email} tier=${user.tier} name=${user.name ?? "-"} (${existing ? "updated" : "created"})`
+  `OK ${user.email} plan=${plan} name=${user.name ?? "-"} (${existing ? "updated" : "created"})`
 );
 await prisma.$disconnect();

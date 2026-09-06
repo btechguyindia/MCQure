@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "custom";
-export type AccountTier = "GOLD" | "SILVER";
+export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "royal" | "custom";
+/** Account identity granted by a paid plan (maps to a ThemeColor). */
+export type AccountTier = "ROYAL" | "PREMIUM_PLUS" | "PREMIUM";
 export type Appearance = "system" | "light" | "dark";
 
 /** The two colors the user picks for the custom theme (brand + accent). */
@@ -54,26 +55,35 @@ export const THEME_COLORS: Array<{
   {
     value: "gold",
     label: "Gold",
-    description: "Exclusive to Gold accounts",
+    description: "Exclusive to Premium Plus accounts",
     swatch: ["#B8860B", "#EAB308", "#F5C542"],
     tierOnly: true,
-    tier: "GOLD",
+    tier: "PREMIUM_PLUS",
   },
   {
     value: "silver",
     label: "Silver",
-    description: "Exclusive to Silver accounts",
+    description: "Exclusive to Premium accounts",
     swatch: ["#475569", "#94A3B8", "#CBD5E1"],
     tierOnly: true,
-    tier: "SILVER",
+    tier: "PREMIUM",
+  },
+  {
+    value: "royal",
+    label: "Royal",
+    description: "Exclusive to Royal accounts",
+    swatch: ["#7C2D12", "#C2410C", "#EAB308"],
+    tierOnly: true,
+    tier: "ROYAL",
   },
 ];
 
 export const PICKABLE_THEMES = THEME_COLORS.filter((t) => !t.tierOnly);
 
 const TIER_THEME: Record<AccountTier, ThemeColor> = {
-  GOLD: "gold",
-  SILVER: "silver",
+  ROYAL: "royal",
+  PREMIUM_PLUS: "gold",
+  PREMIUM: "silver",
 };
 
 export const APPEARANCES: Array<{
@@ -99,6 +109,7 @@ function isThemeColor(v: string | null): v is ThemeColor {
     v === "claude" ||
     v === "gold" ||
     v === "silver" ||
+    v === "royal" ||
     v === "custom"
   );
 }
@@ -139,7 +150,7 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 
   root.setAttribute("data-theme", color);
   // Tier overrides are transient: they must not overwrite the personal pick.
-  if (persist && color !== "gold" && color !== "silver") {
+  if (persist && color !== "gold" && color !== "silver" && color !== "royal") {
     localStorage.setItem(COLOR_KEY, color);
   }
   // Keep the custom palette in sync whenever the custom theme is active.
@@ -156,7 +167,7 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 /** Resolve what data-theme should be: account tier override wins over choice. */
 function effectiveColor(): ThemeColor {
   const tier = localStorage.getItem(TIER_KEY);
-  if (tier === "gold" || tier === "silver") return tier;
+  if (tier === "gold" || tier === "silver" || tier === "royal") return tier;
   const saved = localStorage.getItem(COLOR_KEY);
   return isThemeColor(saved) ? saved : "teal";
 }

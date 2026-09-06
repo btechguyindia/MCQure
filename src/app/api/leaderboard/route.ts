@@ -18,5 +18,9 @@ export async function GET(request: Request) {
   const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 25;
 
   const data = await getLeaderboard(user.id, period, limit);
-  return NextResponse.json({ ok: true, ...data });
+  const res = NextResponse.json({ ok: true, ...data });
+  // Private (the payload contains the caller's standing) but short-lived, so
+  // repeat views reuse the server-side ranking cache instead of a fresh scan.
+  res.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
+  return res;
 }

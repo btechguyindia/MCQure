@@ -162,26 +162,33 @@ export async function completeMock(userId: string, sessionId: string) {
   const maxScore = Math.round(questionCount * (cfg.correctMarks ?? 1) * 100) / 100;
   const results = computeMockResults(attempts, questionCount, maxScore);
 
-  await prisma.practiceSession.update({
-    where: { id: sessionId },
-    data: { status: "COMPLETED", endedAt: new Date() },
-  });
-
   const scope = cfg.scope ?? "full";
-  const run = await prisma.mockRun.upsert({
-    where: { sessionId },
-    update: { ...results, label: cfg.label ?? "Mock" },
-    create: {
-      userId,
-      sessionId,
-      scope,
-      label: cfg.label ?? "Mock",
-      paperId: cfg.paperId ?? null,
-      sectionId: cfg.sectionId ?? null,
-      topicId: cfg.topicId ?? null,
-      ...results,
-    },
-  });
+
+  // Finalize atomically: marking the session COMPLETED and writing the MockRun
+  // must succeed or fail together, so a partial failure can never strand a
+  // completed session without its record (or vice-versa).
+  await prisma.$transaction([
+    prisma.practiceSession.update({
+      where: { id: sessionId },
+      data: { status: "COMPLETED", endedAt: new Date() },
+    }),
+    prisma.mockRun.upsert({
+      where: { sessionId },
+      update: { ...results, label: cfg.label ?? "Mock" },
+      create: {
+        userId,
+        sessionId,
+        scope,
+        label: cfg.label ?? "Mock",
+        paperId: cfg.paperId ?? null,
+        sectionId: cfg.sectionId ?? null,
+        topicId: cfg.topicId ?? null,
+        ...results,
+      },
+    }),
+  ]);
+
+  const run = await prisma.mockRun.findUniqueOrThrow({ where: { sessionId } });
 
   return { run, results };
 }

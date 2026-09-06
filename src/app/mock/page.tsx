@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/api";
 import { MockStudio } from "@/components/MockStudio";
 import { MockIcon } from "@/components/icons";
+import { PlanGate } from "@/components/PlanGate";
 
 export const metadata = { title: "Mock Tests — MCQure" };
 
@@ -25,7 +26,12 @@ export default async function MockPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <PlanGate
+      required="mock_tests"
+      title="Mock tests are a paid feature"
+      description="Simulate the real exam with blueprint-driven mock papers, tracked separately from casual practice, on the Premium and higher plans."
+    >
+      <div className="flex flex-col gap-6">
       <section className="card relative overflow-hidden p-5 sm:p-6">
         <div className="aurora" aria-hidden />
         <div className="relative">
@@ -53,6 +59,7 @@ export default async function MockPage() {
           subjects: sec.sectionSubjects.map((ss) => ss.subject.name),
         }))}
       />
-    </div>
+      </div>
+    </PlanGate>
   );
 }

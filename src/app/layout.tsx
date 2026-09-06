@@ -5,6 +5,8 @@ import "./globals.css";
 import { NavBar } from "@/components/NavBar";
 import { MobileNav } from "@/components/MobileNav";
 import { ThemeScript } from "@/components/ThemeScript";
+import { UpgradeProvider } from "@/components/upgrade-context";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,10 +70,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <NavBar />
-        <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-8 sm:px-6 lg:pb-20">
-          {children}
-        </main>
+        <UpgradeProvider>
+          <NavBar />
+          <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-8 sm:px-6 lg:pb-20">
+            {children}
+          </main>
+          <UpgradeModal />
+        </UpgradeProvider>
         <footer className="border-t border-line">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-10 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2.5 text-sm font-bold tracking-tight">

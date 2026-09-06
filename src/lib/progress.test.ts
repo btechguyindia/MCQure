@@ -4,6 +4,8 @@ import {
   aggregateGroup,
   alignmentScore,
   buildDailyPlan,
+  learningPriority,
+  preparationHealth,
   revisionStatus,
   syllabusCoverage,
   trendOf,
@@ -152,5 +154,95 @@ describe("buildDailyPlan", () => {
     const plan = buildDailyPlan([topic("a", 90, false), topic("b", 60, true)], 2);
     expect(plan.priorities[0].topicId).toBe("b");
     expect(plan.actions.length).toBe(2);
+  });
+});
+
+describe("learningPriority", () => {
+  const base = {
+    attempts: 20,
+    accuracy: 80,
+    mastery: null,
+    masteryReliable: false,
+    repeatedMistakes: 0,
+    averageTimeMs: 30000,
+    examWeight: 0.5,
+    revisionDue: false,
+    daysSinceActivity: 3,
+  };
+
+  it("ranks weak, high-weight, overdue topics above easy ones", () => {
+    const weak = learningPriority({ ...base, accuracy: 45, examWeight: 1, revisionDue: true, daysSinceActivity: 10 });
+    const strong = learningPriority({ ...base, accuracy: 90, examWeight: 0.25, revisionDue: false, daysSinceActivity: 1 });
+    expect(weak.score).toBeGreaterThan(strong.score);
+  });
+
+  it("is nudged up by days since last activity", () => {
+    const stale = learningPriority({ ...base, daysSinceActivity: 30 });
+    const fresh = learningPriority({ ...base, daysSinceActivity: 1 });
+    expect(stale.score).toBeGreaterThan(fresh.score);
+  });
+
+  it("is damped on tiny samples but reliable flag reflects evidence", () => {
+    const oneShot = learningPriority({ ...base, attempts: 1, accuracy: 0, masteryReliable: false });
+    expect(oneShot.reliable).toBe(false);
+    const credible = learningPriority({ ...base, attempts: 25, accuracy: 40, masteryReliable: false });
+    expect(credible.reliable).toBe(true);
+  });
+
+  it("surfaces reasons for the top pick", () => {
+    const r = learningPriority({ ...base, accuracy: 50, examWeight: 0.95, revisionDue: true });
+    expect(r.reasons).toContain("Revision overdue");
+    expect(r.reasons).toContain("High exam weight");
+    expect(r.score).toBeGreaterThan(0);
+  });
+});
+
+describe("preparationHealth", () => {
+  const solid = {
+    coverage: { studiedPct: 90, masteredPct: 80 },
+    mastery: 82,
+    recentAccuracy: 85,
+    mockAccuracy: 88,
+    revisionCompletion: 1,
+    consistency: 1,
+    mockAttempted: true,
+  };
+
+  it("rewards a well-prepared student with a high score", () => {
+    const h = preparationHealth(solid);
+    expect(h.score).toBeGreaterThan(80);
+    expect(h.reliable).toBe(true);
+  });
+
+  it("unlocks only with enough evidence", () => {
+    const empty = preparationHealth({
+      coverage: { studiedPct: 0, masteredPct: 0 },
+      mastery: 0,
+      recentAccuracy: null,
+      mockAccuracy: null,
+      revisionCompletion: 1,
+      consistency: 0,
+      mockAttempted: false,
+    });
+    expect(empty.reliable).toBe(false);
+  });
+
+  it("drags the score when no mock has been taken", () => {
+    const noMock = preparationHealth({ ...solid, mockAttempted: false, mockAccuracy: null });
+    const withMock = preparationHealth(solid);
+    expect(noMock.score).toBeLessThan(withMock.score);
+  });
+
+  it("gives an actionable next step on the weakest dimension", () => {
+    const h = preparationHealth({ ...solid, revisionCompletion: 0.2, mockAttempted: true });
+    expect(h.nextAction).toMatch(/revision/i);
+  });
+
+  it("breaks the score down transparently per dimension", () => {
+    const h = preparationHealth(solid);
+    expect(h.breakdown.map((b) => b.label)).toEqual(
+      expect.arrayContaining(["Coverage", "Concept mastery", "Recent accuracy", "Mock readiness", "Revision health", "Consistency"])
+    );
+    expect(h.dimensions.mockReadiness).toBe(88);
   });
 });

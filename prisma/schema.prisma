@@ -118,9 +118,37 @@ enum IngestionJobStatus {
 }
 
 enum AccountTier {
-  FREE
-  SILVER
-  GOLD
+  BASIC
+  PREMIUM
+  PREMIUM_PLUS
+  ROYAL
+}
+
+// How often a subscription is billed.
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// Which currency the user paid / will pay in.
+enum BillingCurrency {
+  INR
+  USD
+}
+
+// How the subscription was (or will be) fulfilled.
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  MANUAL
+}
+
+// Lifecycle of a subscription record.
+enum SubscriptionStatus {
+  ACTIVE // paid, current period in force
+  PENDING // checkout started, not confirmed yet
+  CANCELLED // stopped / refused renewal (plan may still hold until period end)
+  EXPIRED // period lapsed, no longer entitled
 }
 
 // Repeating cycle of a study timetable.
@@ -135,7 +163,7 @@ model User {
   email        String   @unique
   name         String?
   passwordHash String
-  tier         AccountTier @default(FREE)
+  tier         AccountTier @default(BASIC)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -150,6 +178,34 @@ model User {
   ingestionJobs     IngestionJob[]
   mockRuns          MockRun[]
   studyTimetables   StudyTimetable[]
+  subscriptions    Subscription[]
+}
+
+// A paid plan entitlement. One active row per user at a time; historical rows
+// are kept for the account page and support. `tier` mirrors the plan so
+// existing feature checks keep working without joins.
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            AccountTier
+  cycle           BillingCycle
+  status          SubscriptionStatus @default(ACTIVE)
+  provider        PaymentProvider
+  // Provider-side identifier (Razorpay order/subscription id, Stripe session
+  // or subscription id, or a manual note / admin action reference).
+  providerRef     String?
+  amount          Int                @default(0)
+  currency        BillingCurrency    @default(INR)
+  // Metadata snapshot at purchase time (label copy, feature honouring).
+  planSnapshot    Json?
+  currentPeriodEnd DateTime          @db.Timestamptz
+  cancelledAt     DateTime?          @db.Timestamptz
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@index([provider, providerRef])
 }
 
 model Exam {

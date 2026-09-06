@@ -287,6 +287,204 @@ export function weaknessScore(input: WeaknessInput, minSample = MASTERY_DEFAULTS
   return { score, reasons, insufficientData: false };
 }
 
+// ── Learning priority engine ────────────────────────────────────────────────
+//
+// Answers "study THIS next". Unlike raw weakness (which is just a 0-100
+// urgency), learning priority is a rankable action score that also boosts
+// topics the exam weights highly and that the student has simply neglected,
+// while damping apparent weaknesses from tiny samples. It never rewards
+// question-count volume on its own.
+
+export interface LearningPriorityInput {
+  attempts: number;
+  accuracy: number | null;
+  mastery: number | null;
+  masteryReliable: boolean;
+  repeatedMistakes: number;
+  averageTimeMs: number | null;
+  examWeight: number; // 0-1
+  revisionDue: boolean;
+  daysSinceActivity: number | null; // days since last practice/visit
+}
+
+export interface LearningPriorityResult {
+  /** 0-100, higher = study this next. */
+  score: number;
+  reliable: boolean;
+  reasons: string[];
+}
+
+export function learningPriority(
+  input: LearningPriorityInput,
+  minSample = MASTERY_DEFAULTS.minSample
+): LearningPriorityResult {
+  // 1. Weakness (accuracy deficit), damped by uncertainty on small samples.
+  //    A 0/1 should not read as "absolutely weakest" — we blend toward neutral.
+  const n = Math.min(input.attempts, minSample) / minSample; // 0..1 confidence scale
+  const accDeficit = input.accuracy == null ? 50 : 100 - input.accuracy;
+  const weaknessDamped = 0.35 * accDeficit + (1 - 0.35) * 50 * (1 - n);
+  // If mastery is reported (Bayesian-smoothed), prefer it for the deficit.
+  const deficit = input.mastery != null ? 100 - input.mastery : weaknessDamped;
+
+  // 2. Exam weight — high-weight topics get a real lift.
+  // 3. Revision overdue — strong urgency signal.
+  // 4. Recency decay — a topic untouched for a while climbs the queue.
+  const examW = (input.examWeight ?? 0.5) * 100; // 0..100
+  const revision = input.revisionDue ? 100 : 0;
+  const activity = input.daysSinceActivity == null
+    ? 10
+    : Math.min(100, input.daysSinceActivity * 8); // 8 pts/day, cap 100
+
+  const score = Math.round(
+    0.34 * deficit +
+      0.18 * examW +
+      0.18 * revision +
+      0.1 * Math.min(100, input.repeatedMistakes * 10) +
+      0.2 * activity
+  );
+
+  const reasons: string[] = [];
+  if (input.mastery != null && input.mastery < 60) {
+    reasons.push(`Mastery ${input.mastery.toFixed(0)}%`);
+  } else if (input.accuracy != null && input.accuracy < 60 && input.attempts >= minSample) {
+    reasons.push(`Accuracy ${input.accuracy.toFixed(0)}% over ${input.attempts} attempts`);
+  }
+  if (input.examWeight >= 0.9) reasons.push("High exam weight");
+  if (input.revisionDue) reasons.push("Revision overdue");
+  if (input.daysSinceActivity != null && input.daysSinceActivity >= 7) {
+    reasons.push(`Not touched for ${Math.round(input.daysSinceActivity)} days`);
+  }
+  if (input.repeatedMistakes >= 3) reasons.push(`${input.repeatedMistakes} repeated mistake(s)`);
+
+  return {
+    score,
+    reliable: input.masteryReliable || input.attempts >= minSample,
+    reasons,
+  };
+}
+
+// ── Preparation Health Score ─────────────────────────────────────────────────
+//
+// A single, honest 0-100 readiness number built from the meaningful dimensions
+// listed in the product spec: syllabus coverage, concept mastery, recent
+// accuracy, mock performance, revision health and consistency. Each dimension
+// is separately explained so the student knows WHAT to improve. Nothing here
+// is a black-box vanity number — every component is derived from measured data.
+
+export interface HealthScoreInput {
+  coverage: { studiedPct: number; masteredPct: number };
+  mastery: number | null;
+  recentAccuracy: number | null; // accuracy over the last 7 days of answered attempts
+  mockAccuracy: number | null;
+  revisionCompletion: number; // 0..1 fraction of due topics that are NOT overdue
+  consistency: number; // 0..1 active-day fraction over the last 7 days
+  mockAttempted: boolean; // has the student taken at least one mock
+}
+
+export interface HealthScoreResult {
+  score: number; // 0-100 overall
+  reliable: boolean;
+  dimensions: {
+    coverage: number;
+    mastery: number;
+    recentAccuracy: number;
+    mockReadiness: number;
+    revisionHealth: number;
+    consistency: number;
+  };
+  breakdown: {
+    label: string;
+    value: number;
+    weight: number;
+    explanation: string;
+  }[];
+  nextAction: string;
+}
+
+export function preparationHealth(input: HealthScoreInput): HealthScoreResult {
+  const coverage = Math.round((input.coverage.studiedPct + input.coverage.masteredPct) / 2);
+  const mastery = Math.round((input.mastery ?? 0) * (input.mastery == null ? 0 : 1));
+  const recentAccuracy = input.recentAccuracy == null ? 0 : Math.round(input.recentAccuracy);
+  const mockReadiness = input.mockAttempted
+    ? input.mockAccuracy == null
+      ? 50
+      : Math.round(input.mockAccuracy)
+    : 0;
+  const revisionHealth = Math.round(input.revisionCompletion * 100);
+  const consistency = Math.round(input.consistency * 100);
+
+  const dims = {
+    coverage,
+    mastery,
+    recentAccuracy,
+    mockReadiness,
+    revisionHealth,
+    consistency,
+  };
+
+  const weights: Record<keyof typeof dims, number> = {
+    coverage: 0.18,
+    mastery: 0.22,
+    recentAccuracy: 0.18,
+    mockReadiness: 0.16,
+    revisionHealth: 0.14,
+    consistency: 0.12,
+  };
+
+  const score = Math.round(
+    Object.entries(dims).reduce((sum, [k, v]) => sum + v * weights[k as keyof typeof dims], 0)
+  );
+
+  // Feature dimension considered only when the student has enough data.
+  const hasEnough =
+    (input.mastery != null && input.recentAccuracy != null) ||
+    input.mockAttempted;
+
+  const breakdown: HealthScoreResult["breakdown"] = [
+    { label: "Coverage", value: coverage, weight: weights.coverage, explanation: `${input.coverage.studiedPct.toFixed(0)}% of syllabus opened, ${input.coverage.masteredPct.toFixed(0)}% mastered` },
+    { label: "Concept mastery", value: mastery, weight: weights.mastery, explanation: input.mastery == null ? "Answer more to build a reliable mastery signal" : `Bayesian-smoothed mastery ${mastery}%` },
+    { label: "Recent accuracy", value: recentAccuracy, weight: weights.recentAccuracy, explanation: input.recentAccuracy == null ? "No answers in the last 7 days" : `Accuracy over the last 7 days: ${recentAccuracy}%` },
+    { label: "Mock readiness", value: mockReadiness, weight: weights.mockReadiness, explanation: input.mockAttempted ? (input.mockAccuracy == null ? "Take a mock to calibrate this" : `Average mock accuracy ${mockReadiness}%`) : "You haven't taken a mock yet — this drags the score" },
+    { label: "Revision health", value: revisionHealth, weight: weights.revisionHealth, explanation: `${Math.round(input.revisionCompletion * 100)}% of your revision queue is up to date` },
+    { label: "Consistency", value: consistency, weight: weights.consistency, explanation: `Active on ${Math.round(input.consistency * 100)}% of the last 7 days` },
+  ];
+
+  // Pick the single most impactful next step.
+  let nextAction = "Keep practising consistently and taking mocks to build evidence.";
+  const sorted = [...breakdown].sort((a, b) => a.value - b.value);
+  const weakest = sorted[0];
+  if (weakest && weakest.value < 70) {
+    switch (weakest.label) {
+      case "Coverage":
+        nextAction = "Open study material for your untouched topics to raise coverage.";
+        break;
+      case "Concept mastery":
+        nextAction = "Revise weak topics and re-test them to lift mastery.";
+        break;
+      case "Recent accuracy":
+        nextAction = "Practise regularly to improve recent accuracy.";
+        break;
+      case "Mock readiness":
+        nextAction = "Take a mock to calibrate your exam readiness.";
+        break;
+      case "Revision health":
+        nextAction = "Clear your overdue revision queue.";
+        break;
+      case "Consistency":
+        nextAction = "Show up daily to build your consistency score.";
+        break;
+    }
+  }
+
+  return {
+    score,
+    reliable: hasEnough,
+    dimensions: dims,
+    breakdown,
+    nextAction,
+  };
+}
+
 // ── Revision engine ─────────────────────────────────────────────────────────
 
 export interface RevisionInput {

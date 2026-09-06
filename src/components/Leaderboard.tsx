@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LeaderboardIcon } from "@/components/icons";
+import { CrownIcon, FlameIcon, LeaderboardIcon, TargetIcon } from "@/components/icons";
 import type {
   LeaderboardEntry,
   LeaderboardPeriod,
@@ -39,6 +39,38 @@ function formatPoints(points: number): string {
 
 function initialOf(name: string): string {
   return name.trim().charAt(0).toUpperCase() || "?";
+}
+
+/** Eased count-up used to land each player's points with a small flourish. */
+function useCountUp(target: number, duration = 650): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min((t - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setValue(target);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
+function AnimatedPoints({ value, className = "" }: { value: number; className?: string }) {
+  const display = useCountUp(Math.round(value));
+  return <span className={className}>{formatPoints(display)}</span>;
+}
+
+/** Metallic pill for paid tiers; BASIC players get no chip. */
+function tierChip(tier: string): string | null {
+  if (tier === "ROYAL") return "tier-royal";
+  if (tier === "PREMIUM_PLUS") return "tier-gold";
+  if (tier === "PREMIUM") return "tier-silver";
+  return null;
 }
 
 export function Leaderboard({ userId }: { userId: string }) {
@@ -123,8 +155,13 @@ export function Leaderboard({ userId }: { userId: string }) {
         </div>
       ) : (
         <>
+          {/* Your standing — crown, podium, or the gap you need to close */}
+          {data.me ? (
+            <MeBanner me={data.me} entries={data.entries} isInTop={isInTop} period={period} />
+          ) : null}
+
           {/* Podium */}
-          <Podium top3={top3} />
+          <Podium top3={top3} userId={userId} />
 
           {/* Top 25 */}
           <section aria-label="Top 25" className="card p-4 sm:p-5">
@@ -168,18 +205,92 @@ export function Leaderboard({ userId }: { userId: string }) {
   );
 }
 
-function Podium({ top3 }: { top3: LeaderboardEntry[] }) {
+function MeBanner({
+  me,
+  entries,
+  isInTop,
+  period,
+}: {
+  me: LeaderboardEntry;
+  entries: LeaderboardEntry[];
+  isInTop: boolean;
+  period: LeaderboardPeriod;
+}) {
+  if (me.rank === 1) {
+    return (
+      <div className="card flex items-center gap-3 p-4 ring-1 ring-gold/40">
+        <CrownIcon className="crown-live h-7 w-7 shrink-0 text-gold" />
+        <div>
+          <p className="text-sm font-bold text-ink">
+            You&apos;re #1 in the {periodLabel(period)} standings.
+          </p>
+          <p className="mt-0.5 text-xs text-muted-fg">Hold the top spot — everyone else is chasing you.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (me.rank <= 3) {
+    return (
+      <div className="card flex items-center gap-3 p-4">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-black text-brand">
+          {me.rank}
+        </span>
+        <div>
+          <p className="text-sm font-bold text-ink">You&apos;re on the podium at #{me.rank}.</p>
+          <p className="mt-0.5 text-xs text-muted-fg">One more push and the crown is within reach.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const cut = isInTop ? entries[2] : entries[entries.length - 1];
+  const goal = isInTop ? "points from the podium" : entries.length === 25 ? "points from the top 25" : "points from the next player";
+  if (!cut) return null;
+  const gap = cut.points - me.points;
+  if (gap <= 0) return null;
+  const pct = Math.max(0, Math.min(1, me.points / cut.points));
+
+  return (
+    <div className="card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-black text-brand">
+            {me.rank}
+          </span>
+          <div>
+            <p className="text-sm font-bold text-ink">
+              You&apos;re #{me.rank} — {Math.ceil(gap)} {goal}.
+            </p>
+            <p className="mt-0.5 text-xs text-muted-fg">A few more correct answers could move you up.</p>
+          </div>
+        </div>
+        <TargetIcon className="h-5 w-5 shrink-0 text-accent" />
+      </div>
+      <div className="progress mt-3">
+        <div className="progress-bar" style={{ width: `${Math.round(pct * 100)}%` }} />
+      </div>
+      <p className="mt-1.5 text-[0.7rem] font-medium tabular-nums text-subtle-fg">
+        {Math.round(pct * 100)}% of the way there
+      </p>
+    </div>
+  );
+}
+
+function Podium({ top3, userId }: { top3: LeaderboardEntry[]; userId: string }) {
   const [second, first, third] = [top3[1], top3[0], top3[2]];
 
   return (
     <section aria-label="Podium" className="stagger">
-      <div className="grid grid-cols-1 items-end gap-3 sm:mx-auto sm:grid-cols-3 sm:max-w-2xl sm:gap-4">
+    <div className="grid grid-cols-1 items-end gap-3 sm:mx-auto sm:grid-cols-3 sm:max-w-2xl sm:gap-4">
         {second ? (
-          <PodiumCard entry={second} medal={2} className="sm:order-1 sm:pb-2" />
+          <PodiumCard entry={second} medal={2} isMe={second.userId === userId} className="sm:order-1 sm:pb-2" />
         ) : null}
-        {first ? <PodiumCard entry={first} medal={1} className="sm:order-2" /> : null}
+        {first ? (
+          <PodiumCard entry={first} medal={1} isMe={first.userId === userId} className="sm:order-2" />
+        ) : null}
         {third ? (
-          <PodiumCard entry={third} medal={3} className="sm:order-3 sm:pb-4" />
+          <PodiumCard entry={third} medal={3} isMe={third.userId === userId} className="sm:order-3 sm:pb-4" />
         ) : null}
       </div>
     </section>
@@ -189,10 +300,12 @@ function Podium({ top3 }: { top3: LeaderboardEntry[] }) {
 function PodiumCard({
   entry,
   medal,
+  isMe = false,
   className = "",
 }: {
   entry: LeaderboardEntry;
   medal: 1 | 2 | 3;
+  isMe?: boolean;
   className?: string;
 }) {
   const style = MEDAL_STYLES[medal];
@@ -201,22 +314,36 @@ function PodiumCard({
     2: "pt-5 pb-4",
     3: "pt-4 pb-3",
   }[medal];
+  const chip = tierChip(entry.tier);
   return (
     <div
       className={`card-hover flex flex-col items-center gap-2.5 rounded-2xl border-2 p-4 shadow-soft ring-offset-2 ${heights} ${style?.ring} ${className}`}
     >
+      {medal === 1 ? (
+        <CrownIcon className="crown-live h-7 w-7 text-gold" aria-label="Current leader" />
+      ) : null}
       <span
         className={`flex h-10 w-10 items-center justify-center rounded-full font-black shadow-soft ${style?.badge}`}
         aria-label={`Rank ${medal}`}
       >
         {medal}
       </span>
-      <div className="flex flex-col items-center gap-0.5 text-center">
+      <div className="flex flex-col items-center gap-1 text-center">
         <span className="max-w-full truncate text-sm font-bold text-ink">{entry.name}</span>
-        <span className="stat-num text-lg text-brand">{formatPoints(entry.points)}</span>
+        <div className="flex min-h-4 flex-wrap items-center justify-center gap-1.5">
+          {entry.streak > 1 ? (
+            <span className="inline-flex items-center gap-0.5 text-[0.65rem] font-bold tabular-nums text-warn">
+              <FlameIcon className="h-3.5 w-3.5" />
+              {entry.streak}-day
+            </span>
+          ) : null}
+          {chip ? <span className={`badge text-[0.6rem] ${chip}`}>{entry.tier}</span> : null}
+        </div>
+        <AnimatedPoints value={entry.points} className="stat-num text-lg text-brand" />
         <span className={`inline-flex rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${style?.label}`}>
           {entry.accuracy == null ? "—" : `${entry.accuracy}% accuracy`}
         </span>
+        {isMe ? <span className="badge badge-brand">You</span> : null}
       </div>
     </div>
   );
@@ -258,6 +385,20 @@ function RankRow({
         {isMe ? (
           <span className="badge badge-brand hidden sm:inline-flex">You</span>
         ) : null}
+        {tierChip(entry.tier) ? (
+          <span className={`badge hidden text-[0.6rem] lg:inline-flex ${tierChip(entry.tier)}`}>
+            {entry.tier}
+          </span>
+        ) : null}
+        {entry.streak > 1 ? (
+          <span
+            className="hidden items-center gap-0.5 text-[0.7rem] font-bold tabular-nums text-warn sm:inline-flex"
+            title="Active-day streak"
+          >
+            <FlameIcon className="h-3.5 w-3.5" />
+            {entry.streak}
+          </span>
+        ) : null}
       </div>
 
       <span className="stat-num hidden text-right text-sm tabular-nums text-muted-fg sm:block">
@@ -269,9 +410,7 @@ function RankRow({
       <span className="stat-num hidden text-right text-sm tabular-nums text-muted-fg md:block">
         {entry.accuracy == null ? "—" : `${entry.accuracy}%`}
       </span>
-      <span className="stat-num text-right text-sm font-bold tabular-nums text-brand">
-        {formatPoints(entry.points)}
-      </span>
+      <AnimatedPoints value={entry.points} className="stat-num text-right text-sm font-bold tabular-nums text-brand" />
     </div>
   );
 }

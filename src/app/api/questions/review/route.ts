@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, isNextResponse, jsonError } from "@/lib/api";
+import { requireFeature } from "@/lib/entitlements";
 import { questionReviewSchema } from "@/lib/validation";
 
 // Review endpoint for the quality pipeline: move a question to APPROVED,
-// QUARANTINED or REJECTED (optionally with a note). Restricted to gold-tier
-// accounts — a free user must never be able to approve junk or remove good
-// questions from everyone's practice pool.
+// QUARANTINED or REJECTED (optionally with a note). Restricted to
+// Premium Plus / Royal accounts — a Basic user must never be able to approve
+// junk or remove good questions from everyone's practice pool.
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (isNextResponse(user)) return user;
   if (!user) return jsonError("Authentication required", 401);
-  if (user.tier !== "GOLD") return jsonError("Forbidden", 403);
+  const allowed = await requireFeature(user, "moderation");
+  if (isNextResponse(allowed)) return allowed;
 
   let body: unknown;
   try {

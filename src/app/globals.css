@@ -52,6 +52,7 @@
   /* Tiers */
   --mcq-silver: #667085;
   --mcq-silver-soft: #eef0f4;
+  --mcq-royal: #c2410c;
 
   /* Semantic */
   --mcq-ok: #15803d;
@@ -437,6 +438,71 @@ html.dark[data-theme="gold"] {
   --mcq-shadow-glow: 0 6px 28px -10px rgb(234 179 8 / 0.4);
 }
 
+/* ── 👑 ROYAL — exclusive to Royal-tier accounts ──────────────────────────── */
+html[data-theme="royal"] {
+  --mcq-canvas: #fbf5f2;
+  --mcq-raised: rgb(255 250 246 / 0.72);
+  --mcq-card: #fffbf8;
+  --mcq-card-strong: #fbf0e8;
+
+  --mcq-fg: #2a130c;
+  --mcq-muted: #5f4033;
+  --mcq-subtle: #8f6f5f;
+
+  --mcq-line: rgb(120 40 15 / 0.1);
+  --mcq-line-strong: rgb(120 40 15 / 0.19);
+
+  --mcq-brand: #c2410c;
+  --mcq-brand-strong: #9a3412;
+  --mcq-brand-soft: #fde7d9;
+  --mcq-on-brand: #fff7f2;
+
+  --mcq-accent: #eab308;
+  --mcq-accent-soft: #fdf3d0;
+
+  --mcq-glow-1: rgb(194 65 12 / 0.12);
+  --mcq-glow-2: rgb(234 179 8 / 0.09);
+  --mcq-glow-3: rgb(124 45 18 / 0.05);
+  --mcq-atmo-opacity: 0.55;
+
+  --mcq-shadow-soft: 0 1px 2px rgb(90 30 10 / 0.05), 0 10px 28px -18px rgb(90 30 10 / 0.14);
+  --mcq-shadow-lift: 0 24px 48px -24px rgb(90 30 10 / 0.3);
+  --mcq-shadow-glow: 0 6px 24px -8px rgb(194 65 12 / 0.5);
+
+  color-scheme: light;
+}
+
+html.dark[data-theme="royal"] {
+  --mcq-canvas: #100d0b;
+  --mcq-raised: rgb(26 18 14 / 0.72);
+  --mcq-card: #191310;
+  --mcq-card-strong: #221a16;
+
+  --mcq-fg: #faf4f1;
+  --mcq-muted: #d8c3ba;
+  --mcq-subtle: #a68f85;
+
+  --mcq-line: rgb(255 220 200 / 0.08);
+  --mcq-line-strong: rgb(255 220 200 / 0.17);
+
+  --mcq-brand: #fb923c;
+  --mcq-brand-strong: #fdba74;
+  --mcq-brand-soft: rgb(251 146 60 / 0.14);
+  --mcq-on-brand: #1a0b02;
+
+  --mcq-accent: #eab308;
+  --mcq-accent-soft: rgb(234 179 8 / 0.14);
+
+  --mcq-glow-1: rgb(251 146 60 / 0.12);
+  --mcq-glow-2: rgb(234 179 8 / 0.08);
+  --mcq-glow-3: rgb(253 186 116 / 0.05);
+  --mcq-atmo-opacity: 0.6;
+
+  --mcq-shadow-soft: 0 1px 0 rgb(255 220 200 / 0.03) inset, 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --mcq-shadow-lift: 0 30px 60px -28px rgb(0 0 0 / 0.8);
+  --mcq-shadow-glow: 0 6px 28px -10px rgb(251 146 60 / 0.4);
+}
+
 /* ── 🥈 SILVER — exclusive to Silver-tier accounts ────────────────────────── */
 html[data-theme="silver"] {
   --mcq-canvas: #f5f6f8;
@@ -641,6 +707,7 @@ html.dark[data-theme="custom"] {
   --color-gold-soft: var(--mcq-gold-soft);
   --color-silver: var(--mcq-silver);
   --color-silver-soft: var(--mcq-silver-soft);
+  --color-royal: var(--mcq-royal);
 
   /* Semantic */
   --color-ok: var(--mcq-ok);
@@ -915,6 +982,8 @@ body::after {
 }
 
 .btn-primary {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--mcq-brand), color-mix(in oklab, var(--mcq-brand), var(--mcq-accent) 28%));
   color: var(--mcq-on-brand);
   box-shadow: var(--mcq-shadow-glow);
@@ -923,6 +992,19 @@ body::after {
 .btn-primary:hover:not(:disabled) {
   filter: brightness(1.08);
   box-shadow: var(--mcq-shadow-glow), 0 0 0 1px var(--mcq-line-strong);
+}
+/* Sweeping light on primary buttons — a quiet "press me" hint. */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.22) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform 650ms var(--ease-out-quiet);
+}
+.btn-primary:hover:not(:disabled)::after {
+  transform: translateX(130%);
 }
 
 .btn-secondary {
@@ -1078,6 +1160,14 @@ html.dark select optgroup {
     inset 0 -2px 4px rgb(45 48 54 / 28%),
     0 1px 8px rgb(120 126 136 / 40%);
 }
+.tier-royal {
+  background: linear-gradient(135deg, #7c2d12 0%, #c2410c 40%, #ea7b3c 70%, #f5c542 100%);
+  color: #fff7f2;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 190 140 / 55%),
+    inset 0 -2px 4px rgb(70 20 5 / 40%),
+    0 1px 8px rgb(194 65 12 / 45%);
+}
 .badge-silver {
   background: var(--mcq-silver-soft);
   color: var(--mcq-silver);
@@ -1222,6 +1312,23 @@ html.dark select optgroup {
 .rise-in {
   animation: rise-in 360ms var(--ease-out-quiet) both;
 }
+
+/* Slow gold glow on the #1 crown — signals live leadership without blinking. */
+@keyframes crown-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgb(234 179 8 / 0.45));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgb(234 179 8 / 0.7));
+  }
+}
+.crown-live {
+  animation: crown-pulse 2.6s ease-in-out infinite;
+  will-change: transform;
+}
 .stagger > * {
   animation: rise-in 420ms var(--ease-out-quiet) both;
 }
@@ -1242,7 +1349,8 @@ html.dark select optgroup {
   .rise-in,
   .stagger > *,
   .aurora::before,
-  .aurora::after {
+  .aurora::after,
+  .crown-live {
     animation: none !important;
   }
   .skeleton::after {

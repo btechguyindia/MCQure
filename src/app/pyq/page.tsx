@@ -6,6 +6,7 @@ import { listPyqs, listPyqYears } from "@/lib/pyq";
 import { PyqSubmitForm } from "@/components/PyqSubmitForm";
 import { PyqList } from "@/components/PyqList";
 import { PyqIcon } from "@/components/icons";
+import { PlanGate } from "@/components/PlanGate";
 
 export const metadata = { title: "PYQ Bank — MCQure" };
 
@@ -25,7 +26,12 @@ export default async function PyqPage({ searchParams }: { searchParams: Promise<
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <PlanGate
+      required="pyq_bank"
+      title="The PYQ bank is a paid feature"
+      description="Genuine previous-year questions with full provenance are included with the Premium and higher plans. Your Basic account can still practise with the original question bank."
+    >
+      <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="kicker">
@@ -62,5 +68,6 @@ export default async function PyqPage({ searchParams }: { searchParams: Promise<
 
       <PyqList pyqs={pyqs} years={years} selectedYear={selectedYear} total={pyqs.length} />
     </div>
+    </PlanGate>
   );
 }

@@ -12,6 +12,7 @@ import {
   CloseIcon,
   CogIcon,
   ClockIcon,
+  HistoryIcon,
   MenuIcon,
   MockIcon,
   MonitorIcon,
@@ -21,6 +22,7 @@ import {
   ProgressIcon,
   PyqIcon,
   ReportsIcon,
+  SparklesIcon,
   StudyIcon,
   SunIcon,
   LeaderboardIcon,
@@ -38,9 +40,34 @@ interface MeResponse {
     id: string;
     email: string;
     name: string | null;
-    tier?: "FREE" | "SILVER" | "GOLD";
+    plan?: "BASIC" | "PREMIUM" | "PREMIUM_PLUS" | "ROYAL";
   } | null;
   message?: string;
+}
+
+function PlanChip({ plan }: { plan: NonNullable<MeResponse["user"]>["plan"] }) {
+  if (!plan || plan === "BASIC") {
+    return (
+      <Link
+        href="/pricing"
+        className="inline-flex items-center gap-1 rounded-full border border-line bg-canvas px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted-fg transition-colors hover:border-brand hover:text-brand"
+        title="Your plan — upgrade for more"
+      >
+        Free
+      </Link>
+    );
+  }
+  const label = plan === "PREMIUM_PLUS" ? "Premium+" : plan === "PREMIUM" ? "Premium" : "Royal";
+  return (
+    <Link
+      href="/pricing"
+      className="inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand-soft px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-brand transition-colors hover:bg-brand hover:text-on-brand"
+      title={`Your plan: ${label} — manage`}
+    >
+      {plan === "ROYAL" ? <span aria-hidden>👑</span> : null}
+      {label}
+    </Link>
+  );
 }
 
 interface NavLink {
@@ -69,6 +96,8 @@ const MORE_LINKS: NavLink[] = [
   { href: "/motivation", label: "Motivation", icon: <MotivationIcon /> },
   { href: "/reports", label: "Reports", icon: <ReportsIcon /> },
   { href: "/bookmarks", label: "Saved", icon: <BookmarkIcon /> },
+  { href: "/transactions", label: "Transactions", icon: <HistoryIcon /> },
+  { href: "/pricing", label: "Plans & pricing", icon: <SparklesIcon /> },
   { href: "/settings", label: "Settings", icon: <CogIcon /> },
 ];
 
@@ -80,7 +109,7 @@ const MOBILE_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   },
   {
     title: "Insights",
-    links: [MORE_LINKS[1], MORE_LINKS[2], MORE_LINKS[3], MORE_LINKS[4], MORE_LINKS[5], MORE_LINKS[6], MORE_LINKS[8]],
+    links: [MORE_LINKS[1], MORE_LINKS[2], MORE_LINKS[3], MORE_LINKS[4], MORE_LINKS[5], MORE_LINKS[6], MORE_LINKS[8], MORE_LINKS[9], MORE_LINKS[10]],
   },
 ];
 
@@ -108,9 +137,12 @@ export function NavBar() {
       .then((data) => {
         const me = data.ok ? data.user ?? null : null;
         setUser(me);
-        // Account-exclusive theme: tier unlocks its identity, anything else
-        // (logged out or FREE) clears any stale override.
-        setAccountTier(me?.tier === "GOLD" || me?.tier === "SILVER" ? me.tier : null);
+        // Account-exclusive theme: a paid plan unlocks its identity, anything
+        // else (logged out or BASIC) clears any stale override.
+        const plan = me?.plan;
+        setAccountTier(
+          plan === "ROYAL" || plan === "PREMIUM_PLUS" || plan === "PREMIUM" ? plan : null
+        );
       })
       .catch(() => setUser(null))
       .finally(() => setLoaded(true));
@@ -363,6 +395,7 @@ export function NavBar() {
           <div className="hidden items-center gap-2 lg:flex">
             {loaded && user ? (
               <>
+                {user.plan ? <PlanChip plan={user.plan} /> : null}
                 <span
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand"
                   title={user.name ?? user.email}
@@ -412,6 +445,7 @@ export function NavBar() {
             <div className="col-span-2 border-t border-line pt-3 sm:col-span-3">
               {loaded && user ? (
                 <div className="flex items-center gap-3">
+                  {user.plan ? <PlanChip plan={user.plan} /> : null}
                   <span
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-bold text-on-brand"
                   >

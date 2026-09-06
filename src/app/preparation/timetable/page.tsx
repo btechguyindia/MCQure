@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/api";
 import { getTimetableView, listTimetables, parseSlots } from "@/lib/timetable";
 import { ProgressIcon } from "@/components/icons";
 import { TimetableManager } from "@/components/TimetableManager";
+import { PlanGate } from "@/components/PlanGate";
 
 export const metadata: Metadata = { title: "Study timetable — MCQure" };
 
@@ -24,7 +25,12 @@ export default async function TimetablePage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <PlanGate
+      required="study_timetable"
+      title="The study timetable is a paid feature"
+      description="Plan your week with typed JSON schedules on the Premium and higher plans, including an active view of today's blocks and your question target."
+    >
+      <div className="flex flex-col gap-6">
       <header>
         <nav className="flex items-center gap-1.5">
           <Link href="/preparation" className="chip transition-colors hover:border-brand hover:text-brand">
@@ -45,5 +51,6 @@ export default async function TimetablePage() {
 
       <TimetableManager initialTimetables={timetables} initialView={view} />
     </div>
+    </PlanGate>
   );
 }

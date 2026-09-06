@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CheckIcon, FlagIcon } from "@/components/icons";
+import { CheckIcon, FlagIcon, TargetIcon } from "@/components/icons";
 import type { PrepReport } from "@/lib/tracking";
 
 interface Props {
@@ -27,7 +27,7 @@ const TOOLTIP_STYLE = {
 } as const;
 
 export function PreparationDashboard({ report }: Props) {
-  const { overall, coverage, subjects, strengths, weaknesses, revisionDue, dailyPlan, trend, alignment } =
+  const { overall, coverage, subjects, strengths, weaknesses, revisionDue, dailyPlan, trend, alignment, health, learningPriorities } =
     report;
 
   const mastery = overall.mastery;
@@ -85,6 +85,92 @@ export function PreparationDashboard({ report }: Props) {
           sub={`target ${report.preparation?.dailyTarget ?? 25}/day`}
         />
       </section>
+
+      {/* Preparation Health Score */}
+      <section className="card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="section-title flex items-center gap-2">
+            <CheckIcon className="h-4 w-4 text-ok" />
+            Preparation Health
+          </h2>
+          <span className="stat-num text-2xl text-gradient">
+            {health.score}
+            <span className="text-sm text-muted-fg"> / 100</span>
+          </span>
+        </div>
+        {health.reliable ? (
+          <>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {health.breakdown.map((d) => (
+                <div key={d.label} className="rounded-xl border border-line bg-card p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{d.label}</span>
+                    <span className="stat-num">{d.value}</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-canvas">
+                    <div
+                      className="h-full rounded-full bg-brand transition-all"
+                      style={{ width: `${Math.max(0, Math.min(100, d.value))}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-muted-fg">{d.explanation}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-sm font-medium text-muted-fg">
+              Next: <span className="text-ink">{health.nextAction}</span>
+            </p>
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-muted-fg">
+            Answer questions and take at least one mock to unlock an evidence-based health score.
+          </p>
+        )}
+      </section>
+
+      {/* Learning priorities: study this next */}
+      {learningPriorities.length > 0 ? (
+        <section className="card p-5">
+          <h2 className="section-title flex items-center gap-2">
+            <TargetIcon className="h-4 w-4 text-brand" />
+            Study this next
+          </h2>
+          <p className="mt-1 text-xs text-subtle-fg">
+            Ranked by learning priority: mastery gap, exam weight, revision urgency and neglect.
+          </p>
+          <ol className="mt-3 flex flex-col gap-2">
+            {learningPriorities.map((p, i) => (
+              <li key={p.topicId} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-on-brand">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`/preparation/topic/${p.topicId}`}
+                      className="font-semibold text-ink hover:underline"
+                    >
+                      {p.topicName}
+                    </Link>
+                    <span className="stat-num text-sm">{p.score}/100</span>
+                  </div>
+                  <span className="text-xs text-subtle-fg">{p.subjectName}</span>
+                  {p.reasons.length > 0 ? (
+                    <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-fg">
+                      {p.reasons.map((r) => (
+                        <li key={r} className="inline-flex items-center gap-1">
+                          <span aria-hidden className="h-1 w-1 rounded-full bg-brand" />
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       {/* Today's priority + revision queue */}
       <section className="grid gap-4 lg:grid-cols-2">

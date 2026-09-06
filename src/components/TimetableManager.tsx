@@ -73,6 +73,7 @@ type ApiResult = {
   timetables?: TimetableDTO[];
   view?: TimetableViewDTO;
   message?: string;
+  details?: Record<string, string[]>;
 };
 
 export function TimetableManager({ initialTimetables, initialView }: Props) {
@@ -97,7 +98,15 @@ export function TimetableManager({ initialTimetables, initialView }: Props) {
 
   function applyResult(data: ApiResult): boolean {
     if (!data.ok || !data.timetables || !data.view) {
-      setMessage(data.message ?? "Something went wrong");
+      const details = data.details;
+      let why = data.message ?? "Something went wrong";
+      if (details) {
+        const reasons = Object.entries(details)
+          .map(([field, errs]) => `${field}: ${errs.join(", ")}`)
+          .join(" · ");
+        if (reasons) why = `${why} — ${reasons}`;
+      }
+      setMessage(why);
       return false;
     }
     setTimetables(data.timetables);
@@ -160,7 +169,14 @@ export function TimetableManager({ initialTimetables, initialView }: Props) {
       return;
     }
     const payload = {
-      name: name.trim(),
+      // Fall back to a JSON-provided name, then to the first activity, so a
+      // schedule-only JSON still creates cleanly.
+      name:
+        name.trim() ||
+        (typeof (plan as Record<string, unknown>).name === "string"
+          ? ((plan as Record<string, unknown>).name as string).trim()
+          : "") ||
+        "Study schedule",
       ...(typeof (plan as Record<string, unknown>).cycle === "string"
         ? { cycle: (plan as Record<string, unknown>).cycle }
         : {}),

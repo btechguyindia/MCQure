@@ -258,3 +258,39 @@ export function LeaderboardIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function CrownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M11.562 3.266a.5.5 0 0 1 .876 0l2.952 5.604a1 1 0 0 0 1.516.294l4.279-3.664a.5.5 0 0 1 .798.52l-2.834 10.246a1 1 0 0 1-.956.734H5.808a1 1 0 0 1-.957-.734L2.017 6.169a.5.5 0 0 1 .798-.52l4.28 3.665a1 1 0 0 0 1.515-.294Z" />
+      <path d="M5 21h14" />
+    </Svg>
+  );
+}
+
+export function FlameIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />
+    </Svg>
+  );
+}
+
+export function LockIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7.5a4 4 0 0 1 8 0V11" />
+    </Svg>
+  );
+}
+
+export function HistoryIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v4h4" />
+      <path d="M12 7v5l3 2" />
+    </Svg>
+  );
+}
