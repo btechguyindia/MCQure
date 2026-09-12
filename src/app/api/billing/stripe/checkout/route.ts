@@ -2,7 +2,14 @@ import Stripe from "stripe";
 import { getCurrentUser, isNextResponse, jsonError, jsonOk } from "@/lib/api";
 import { createPendingCheckout } from "@/lib/billing";
 import { checkoutSchema } from "@/lib/validation";
-import { appBaseUrl, isStripeConfigured, resolveCheckout, STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY } from "@/lib/payments";
+import {
+  appBaseUrl,
+  isStripeConfigured,
+  keysMatchMode,
+  resolveCheckout,
+  STRIPE_PUBLISHABLE_KEY,
+  STRIPE_SECRET_KEY,
+} from "@/lib/payments";
 
 // Stripe Checkout. Creates a hosted one-time payment session for the chosen
 // term; the webhook activates the plan only after payment succeeds.
@@ -16,6 +23,14 @@ export async function POST(request: Request) {
   if (!isStripeConfigured()) {
     return jsonError(
       "Stripe is not configured. Set STRIPE_SECRET_KEY in .env to enable paid plans.",
+      503
+    );
+  }
+
+  // Production must run live credentials — never sandbox/test keys.
+  if (!keysMatchMode()) {
+    return jsonError(
+      "Stripe is configured with test credentials. Live keys (sk_live_*) are required in this environment.",
       503
     );
   }

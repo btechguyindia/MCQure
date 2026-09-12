@@ -289,8 +289,51 @@ export function HistoryIcon(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v4h4" />
+      <path d="M3 4v5h5" />
       <path d="M12 7v5l3 2" />
+    </Svg>
+  );
+}
+  export function PlayIcon(props: IconProps) {
+  return (
+    <Svg {...props} fill="currentColor">
+      <path d="M6 4l14 8-14 8V4Z" stroke="none" />
+    </Svg>
+  );
+}
+
+export function MailIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m4 7 8 6 8-6" />
+    </Svg>
+  );
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+      <path d="M22 2 11 13" />
+    </Svg>
+  );
+}
+
+export function HelpIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 1 1 3.7 2.2c-.7.4-1.2 1-1.2 1.8" />
+      <path d="M12 17h.01" />
+    </Svg>
+  );
+}
+
+export function BoltIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
     </Svg>
   );
 }

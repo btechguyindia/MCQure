@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "royal" | "custom";
+export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "royal" | "custom" | "neo";
 /** Account identity granted by a paid plan (maps to a ThemeColor). */
 export type AccountTier = "ROYAL" | "PREMIUM_PLUS" | "PREMIUM";
 export type Appearance = "system" | "light" | "dark";
@@ -21,6 +21,8 @@ export const THEME_COLORS: Array<{
   /** Hidden from pickers; unlocked automatically by the matching account tier. */
   tierOnly?: true;
   tier?: AccountTier;
+  /** Hidden from pickers; only reachable through the Go switch. */
+  hidden?: true;
 }> = [
   {
     value: "teal",
@@ -76,9 +78,16 @@ export const THEME_COLORS: Array<{
     tierOnly: true,
     tier: "ROYAL",
   },
+  {
+    value: "neo",
+    label: "Go · NEO",
+    description: "Next-gen dynamic interface — unlocked by the Go switch",
+    swatch: ["#06B6D4", "#6366F1", "#F59E0B"],
+    hidden: true,
+  },
 ];
 
-export const PICKABLE_THEMES = THEME_COLORS.filter((t) => !t.tierOnly);
+export const PICKABLE_THEMES = THEME_COLORS.filter((t) => !t.tierOnly && !t.hidden);
 
 const TIER_THEME: Record<AccountTier, ThemeColor> = {
   ROYAL: "royal",
@@ -98,8 +107,20 @@ export const APPEARANCES: Array<{
 
 const COLOR_KEY = "mcqure-theme-color";
 const APPEARANCE_KEY = "mcqure-appearance";
-// Account-driven override; when present it wins over the personal choice.
+/** Account-driven override; when present it wins over the personal choice. */
 const TIER_KEY = "mcqure-tier-theme";
+/** Go mode master flag — "on" persistently arms the NEO identity. */
+export const GO_KEY = "mcqure-go";
+/** Fired by the Go switch; the GoReactor runs the sequence. */
+export const GO_EVENT = "mcqure:go";
+/** Fired by the GoReactor when a run finishes (success or revert). */
+export const GO_DONE_EVENT = "mcqure:go:done";
+
+/** True when the Go/NEO mode has been permanently armed. */
+export function goIsOn(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(GO_KEY) === "on";
+}
 
 function isThemeColor(v: string | null): v is ThemeColor {
   return (
@@ -110,7 +131,8 @@ function isThemeColor(v: string | null): v is ThemeColor {
     v === "gold" ||
     v === "silver" ||
     v === "royal" ||
-    v === "custom"
+    v === "custom" ||
+    v === "neo"
   );
 }
 
@@ -140,6 +162,13 @@ function isAppearance(v: string | null): v is Appearance {
   return v === "system" || v === "light" || v === "dark";
 }
 
+/** The current appearance preference, falling back to "system". */
+export function currentAppearance(): Appearance {
+  if (typeof window === "undefined") return "system";
+  const a = localStorage.getItem(APPEARANCE_KEY);
+  return isAppearance(a) ? a : "system";
+}
+
 /** Apply a theme combination to the document (+ optionally persist it). */
 export function applyTheme(color: ThemeColor, appearance: Appearance, persist = true) {
   const root = document.documentElement;
@@ -150,7 +179,7 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 
   root.setAttribute("data-theme", color);
   // Tier overrides are transient: they must not overwrite the personal pick.
-  if (persist && color !== "gold" && color !== "silver" && color !== "royal") {
+  if (persist && color !== "gold" && color !== "silver" && color !== "royal" && color !== "neo") {
     localStorage.setItem(COLOR_KEY, color);
   }
   // Keep the custom palette in sync whenever the custom theme is active.
@@ -165,7 +194,9 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 }
 
 /** Resolve what data-theme should be: account tier override wins over choice. */
-function effectiveColor(): ThemeColor {
+export function effectiveColor(): ThemeColor {
+  // Go/NEO is the top-level personal override while armed.
+  if (goIsOn()) return "neo";
   const tier = localStorage.getItem(TIER_KEY);
   if (tier === "gold" || tier === "silver" || tier === "royal") return tier;
   const saved = localStorage.getItem(COLOR_KEY);
@@ -296,4 +327,50 @@ export function useTheme() {
   );
 
   return { ...state, ready, setColor, setAppearance, setAccountTier, setCustomColors };
+}
+
+/**
+ * Reactive Go-switch state (NEO mode). `on` is optimistic while the reactor
+ * runs its sequence; `busy` is true from the moment the switch is armed until
+ * the reactor finishes. Toggling dispatches GO_EVENT and lets GoReactor own
+ * localStorage + the actual theme swap.
+ */
+export function useGoMode() {
+  const [on, setOn] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    // Deferred so the effect never calls setState synchronously.
+    Promise.resolve().then(() => setOn(goIsOn()));
+    const onEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ on?: boolean }>).detail;
+      if (typeof detail?.on === "boolean") {
+        setOn(detail.on);
+        setBusy(detail.on ? true : false);
+      }
+    };
+    const doneEvent = () => {
+      setBusy(false);
+      setOn(goIsOn());
+    };
+    window.addEventListener(GO_EVENT, onEvent);
+    window.addEventListener(GO_DONE_EVENT, doneEvent);
+    return () => {
+      window.removeEventListener(GO_EVENT, onEvent);
+      window.removeEventListener(GO_DONE_EVENT, doneEvent);
+    };
+  }, []);
+
+  const toggle = useCallback(() => {
+    const next = !goIsOn();
+    if (next) {
+      setBusy(true);
+      setOn(true);
+    } else {
+      setOn(false);
+    }
+    window.dispatchEvent(new CustomEvent(GO_EVENT, { detail: { on: next } }));
+  }, []);
+
+  return { on, busy, toggle };
 }

@@ -15,10 +15,12 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/analytics") ||
     pathname.startsWith("/study") ||
     pathname.startsWith("/pyq") ||
+    pathname.startsWith("/sources") ||
     pathname.startsWith("/preparation") ||
     pathname.startsWith("/questions") ||
     pathname.startsWith("/mock") ||
     pathname.startsWith("/motivation") ||
+    pathname.startsWith("/mindset") ||
     pathname.startsWith("/reports") ||
     pathname.startsWith("/bookmarks") ||
     pathname.startsWith("/admin");
@@ -41,5 +43,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/practice/:path*", "/analytics", "/study/:path*", "/pyq", "/preparation/:path*", "/questions", "/bookmarks", "/mock", "/motivation", "/reports", "/admin/:path*", "/login", "/register"],
+  matcher: ["/practice/:path*", "/analytics", "/study/:path*", "/pyq", "/sources", "/preparation/:path*", "/questions", "/bookmarks", "/mock", "/motivation", "/mindset", "/reports", "/admin/:path*", "/login", "/register"],
 };

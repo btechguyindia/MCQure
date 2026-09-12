@@ -2,7 +2,13 @@ import Razorpay from "razorpay";
 import { getCurrentUser, isNextResponse, jsonError, jsonOk } from "@/lib/api";
 import { createPendingCheckout } from "@/lib/billing";
 import { checkoutSchema } from "@/lib/validation";
-import { isRazorpayConfigured, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, resolveCheckout } from "@/lib/payments";
+import {
+  isRazorpayConfigured,
+  keysMatchMode,
+  RAZORPAY_KEY_ID,
+  RAZORPAY_KEY_SECRET,
+  resolveCheckout,
+} from "@/lib/payments";
 
 // Razorpay order creation. The client opens the Razorpay checkout modal with
 // the returned order_id and pays; the verify endpoint confirms the payment.
@@ -15,6 +21,14 @@ export async function POST(request: Request) {
   if (!isRazorpayConfigured()) {
     return jsonError(
       "Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env to enable paid plans.",
+      503
+    );
+  }
+
+  // Production must run live credentials — never sandbox/test keys.
+  if (!keysMatchMode()) {
+    return jsonError(
+      "Razorpay is configured with test credentials. Live keys (rzp_live_*) are required in this environment.",
       503
     );
   }

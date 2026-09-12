@@ -17,12 +17,17 @@ import {
   type PlanFeature,
   type PlanId,
 } from "@/lib/plans";
-import { CheckIcon, SparklesIcon } from "@/components/icons";
+import { CheckIcon, HelpIcon, MailIcon, SparklesIcon } from "@/components/icons";
 import { TestCheckoutModal } from "@/components/TestCheckoutModal";
+import { InquiryModal } from "@/components/InquiryModal";
 
 interface Props {
   currentPlan: PlanId | null;
   providers: { razorpay: boolean; stripe: boolean };
+  /** Logged-in user for inquiry prefilling (null when signed out). */
+  user: { name: string; email: string } | null;
+  /** When false, the simulated test checkout is hidden (production only). */
+  testMode: boolean;
 }
 
 interface CheckoutResponse {
@@ -100,13 +105,14 @@ const FEATURE_GROUPS: { heading: string; features: PlanFeature[] }[] = [
   },
 ];
 
-export function PricingCards({ currentPlan, providers }: Props) {
+export function PricingCards({ currentPlan, providers, user, testMode }: Props) {
   const router = useRouter();
   const [cycle, setCycle] = useState<BillingCycle>("MONTHLY");
   const [currency, setCurrency] = useState<Currency>("INR");
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [testFor, setTestFor] = useState<PlanId | null>(null);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
 
   const anyProvider = providers.razorpay || providers.stripe;
 
@@ -217,6 +223,14 @@ export function PricingCards({ currentPlan, providers }: Props) {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setInquiryOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-card px-3 py-2 text-xs font-semibold text-muted-fg transition-colors hover:text-ink"
+        >
+          <HelpIcon className="h-3.5 w-3.5" />
+          Raise an inquiry
+        </button>
       </div>
 
       {error ? (
@@ -246,15 +260,19 @@ export function PricingCards({ currentPlan, providers }: Props) {
                 featured ? "!border-brand ring-2 ring-brand/20" : ""
               } ${isCurrent ? "!border-ok/50" : ""}`}
             >
-              {featured ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-on-brand">
-                  Most popular
-                </span>
-              ) : null}
-              {isCurrent ? (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ok px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-on-brand">
-                  Your plan
-                </span>
+              {(featured || isCurrent) ? (
+                <div className="absolute -top-3 left-1/2 flex -translate-x-1/2 gap-1.5 whitespace-nowrap">
+                  {isCurrent ? (
+                    <span className="rounded-full bg-ok px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-on-brand">
+                      Your plan
+                    </span>
+                  ) : null}
+                  {featured ? (
+                    <span className="rounded-full bg-brand px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-on-brand">
+                      Most popular
+                    </span>
+                  ) : null}
+                </div>
               ) : null}
 
               {/* Plan header */}
@@ -350,14 +368,24 @@ export function PricingCards({ currentPlan, providers }: Props) {
                     {currentPlan ? "Start practising" : "Get started free"}
                   </Link>
                 ) : isCurrent ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="btn btn-ghost w-full opacity-70"
-                    aria-disabled="true"
-                  >
-                    Your current plan
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      disabled
+                      className="btn btn-ghost w-full opacity-70"
+                      aria-disabled="true"
+                    >
+                      Your current plan
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInquiryOpen(true)}
+                      className="btn btn-secondary w-full text-xs"
+                    >
+                      <MailIcon className="h-3.5 w-3.5" />
+                      Feedback · Raise an inquiry
+                    </button>
+                  </div>
                 ) : anyProvider ? (
                   <div className="flex flex-col gap-2">
                     {providers.razorpay ? (
@@ -394,38 +422,53 @@ export function PricingCards({ currentPlan, providers }: Props) {
                         )}
                       </button>
                     ) : null}
-                    <button
-                      type="button"
-                      disabled={busy === planId}
-                      onClick={() => {
-                        setError(null);
-                        setTestFor(planId);
-                      }}
-                      className="btn btn-ghost w-full text-[0.7rem]"
-                    >
-                      <SparklesIcon className="h-3.5 w-3.5 text-brand" />
-                      Try the test checkout
-                    </button>
+                    {testMode ? (
+                      <button
+                        type="button"
+                        disabled={busy === planId}
+                        onClick={() => {
+                          setError(null);
+                          setTestFor(planId);
+                        }}
+                        className="btn btn-ghost w-full text-[0.7rem]"
+                      >
+                        <SparklesIcon className="h-3.5 w-3.5 text-brand" />
+                        Try the test checkout
+                      </button>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
+                    {testMode ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setError(null);
+                            setTestFor(planId);
+                          }}
+                          className="btn btn-primary w-full"
+                        >
+                          <SparklesIcon className="h-4 w-4" />
+                          Try the test checkout
+                        </button>
+                        <p className="text-center text-[0.65rem] text-subtle-fg">
+                          Payment providers are not configured yet — this plays a simulated gateway.
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-center text-xs text-muted-fg">
+                        Online payments are not configured yet — contact us to upgrade.
+                      </p>
+                    )}
                     <button
                       type="button"
-                      onClick={() => {
-                        setError(null);
-                        setTestFor(planId);
-                      }}
-                      className="btn btn-primary w-full"
+                      onClick={() => setInquiryOpen(true)}
+                      className="btn btn-secondary w-full text-xs"
                     >
-                      <SparklesIcon className="h-4 w-4" />
-                      Try the test checkout
-                    </button>
-                    <Link href="/settings" className="btn btn-secondary w-full text-xs">
+                      <MailIcon className="h-3.5 w-3.5" />
                       Contact admin to upgrade
-                    </Link>
-                    <p className="text-center text-[0.65rem] text-subtle-fg">
-                      Payment providers are not configured yet — this plays a simulated gateway.
-                    </p>
+                    </button>
                   </div>
                 )}
               </div>
@@ -442,6 +485,14 @@ export function PricingCards({ currentPlan, providers }: Props) {
           currency={currency}
           amount={PLANS[testFor].prices[cycle][currency]}
           onClose={() => setTestFor(null)}
+        />
+      ) : null}
+
+      {inquiryOpen ? (
+        <InquiryModal
+          user={user}
+          plan={currentPlan}
+          onClose={() => setInquiryOpen(false)}
         />
       ) : null}
     </div>

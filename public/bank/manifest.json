@@ -1,0 +1,225 @@
+{
+  "v": 1,
+  "schema": 1,
+  "exam": "dsssb-tgt-cs",
+  "generatedAt": "2026-09-06T14:12:19.783Z",
+  "total": 80,
+  "topics": [
+    {
+      "subject": "Computer Architecture",
+      "topic": "Computer Organization",
+      "path": "computer-architecture/computer-organization.json",
+      "count": 3
+    },
+    {
+      "subject": "Computer Architecture",
+      "topic": "Memory & Storage",
+      "path": "computer-architecture/memory-storage.json",
+      "count": 2
+    },
+    {
+      "subject": "Computer Basics and P.C. Software",
+      "topic": "Computer Basics",
+      "path": "computer-basics-and-p-c-software/computer-basics.json",
+      "count": 2
+    },
+    {
+      "subject": "Computer Networks, TCP/IP & Network Security",
+      "topic": "Application Layer Protocols",
+      "path": "computer-networks-tcp-ip-network-security/application-layer-protocols.json",
+      "count": 2
+    },
+    {
+      "subject": "Computer Networks, TCP/IP & Network Security",
+      "topic": "Network Fundamentals",
+      "path": "computer-networks-tcp-ip-network-security/network-fundamentals.json",
+      "count": 2
+    },
+    {
+      "subject": "Computer Networks, TCP/IP & Network Security",
+      "topic": "Network Layer",
+      "path": "computer-networks-tcp-ip-network-security/network-layer.json",
+      "count": 3
+    },
+    {
+      "subject": "Computer Networks, TCP/IP & Network Security",
+      "topic": "OSI & TCP/IP Models",
+      "path": "computer-networks-tcp-ip-network-security/osi-tcp-ip-models.json",
+      "count": 2
+    },
+    {
+      "subject": "Computer Networks, TCP/IP & Network Security",
+      "topic": "Transport Layer",
+      "path": "computer-networks-tcp-ip-network-security/transport-layer.json",
+      "count": 2
+    },
+    {
+      "subject": "Database Management Systems",
+      "topic": "Normalization",
+      "path": "database-management-systems/normalization.json",
+      "count": 3
+    },
+    {
+      "subject": "Database Management Systems",
+      "topic": "Relational Model & Keys",
+      "path": "database-management-systems/relational-model-keys.json",
+      "count": 2
+    },
+    {
+      "subject": "Database Management Systems",
+      "topic": "SQL",
+      "path": "database-management-systems/sql.json",
+      "count": 4
+    },
+    {
+      "subject": "Database Management Systems",
+      "topic": "Transactions & Concurrency",
+      "path": "database-management-systems/transactions-concurrency.json",
+      "count": 1
+    },
+    {
+      "subject": "Digital Electronics / Boolean Logic",
+      "topic": "Boolean Algebra & Logic Gates",
+      "path": "digital-electronics-boolean-logic/boolean-algebra-logic-gates.json",
+      "count": 3
+    },
+    {
+      "subject": "Digital Electronics / Boolean Logic",
+      "topic": "Number Systems & Codes",
+      "path": "digital-electronics-boolean-logic/number-systems-codes.json",
+      "count": 2
+    },
+    {
+      "subject": "Java Programming and Website Design",
+      "topic": "HTML & CSS",
+      "path": "java-programming-and-website-design/html-css.json",
+      "count": 5
+    },
+    {
+      "subject": "Java Programming and Website Design",
+      "topic": "JavaScript",
+      "path": "java-programming-and-website-design/javascript.json",
+      "count": 1
+    },
+    {
+      "subject": "Java Programming and Website Design",
+      "topic": "Web Protocols",
+      "path": "java-programming-and-website-design/web-protocols.json",
+      "count": 2
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "CPU Scheduling",
+      "path": "operating-systems-linux/cpu-scheduling.json",
+      "count": 4
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "Deadlocks",
+      "path": "operating-systems-linux/deadlocks.json",
+      "count": 2
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "Memory Management",
+      "path": "operating-systems-linux/memory-management.json",
+      "count": 2
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "OS Fundamentals",
+      "path": "operating-systems-linux/os-fundamentals.json",
+      "count": 1
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "Process Management",
+      "path": "operating-systems-linux/process-management.json",
+      "count": 1
+    },
+    {
+      "subject": "Operating Systems & Linux",
+      "topic": "Process Synchronization",
+      "path": "operating-systems-linux/process-synchronization.json",
+      "count": 1
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Arrays & Pointers",
+      "path": "programming-with-c-data-structures-using-c-c-programming/arrays-pointers.json",
+      "count": 2
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "C Fundamentals",
+      "path": "programming-with-c-data-structures-using-c-c-programming/c-fundamentals.json",
+      "count": 3
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Control Structures",
+      "path": "programming-with-c-data-structures-using-c-c-programming/control-structures.json",
+      "count": 1
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Functions & Recursion",
+      "path": "programming-with-c-data-structures-using-c-c-programming/functions-recursion.json",
+      "count": 1
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Hashing",
+      "path": "programming-with-c-data-structures-using-c-c-programming/hashing.json",
+      "count": 1
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "OOP Concepts (C++)",
+      "path": "programming-with-c-data-structures-using-c-c-programming/oop-concepts-c.json",
+      "count": 3
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Searching Algorithms",
+      "path": "programming-with-c-data-structures-using-c-c-programming/searching-algorithms.json",
+      "count": 1
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Sorting Algorithms",
+      "path": "programming-with-c-data-structures-using-c-c-programming/sorting-algorithms.json",
+      "count": 3
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Stacks & Queues",
+      "path": "programming-with-c-data-structures-using-c-c-programming/stacks-queues.json",
+      "count": 4
+    },
+    {
+      "subject": "Programming with C, Data Structures using C, C++ Programming",
+      "topic": "Trees",
+      "path": "programming-with-c-data-structures-using-c-c-programming/trees.json",
+      "count": 3
+    },
+    {
+      "subject": "Software Engineering",
+      "topic": "SDLC & Models",
+      "path": "software-engineering/sdlc-models.json",
+      "count": 3
+    },
+    {
+      "subject": "Software Engineering",
+      "topic": "Software Design",
+      "path": "software-engineering/software-design.json",
+      "count": 1
+    },
+    {
+      "subject": "Software Engineering",
+      "topic": "Software Testing",
+      "path": "software-engineering/software-testing.json",
+      "count": 2
+    }
+  ]
+}

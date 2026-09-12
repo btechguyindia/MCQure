@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { APPEARANCES, PICKABLE_THEMES, THEME_COLORS, useTheme } from "@/components/theme";
+import { GoModeControl } from "@/components/GoModeControl";
 import {
   CheckIcon,
   MonitorIcon,
@@ -87,6 +88,20 @@ export function AppearanceSettings() {
           mode. Four identities × light &amp; dark, one product.
         </p>
       </header>
+
+      {/* Go (NEO mode) */}
+      <section aria-labelledby="go-heading">
+        <h2 id="go-heading" className="section-title">
+          Go
+        </h2>
+        <p className="mt-1 text-sm text-muted-fg">
+          Toggle the next-gen dynamic interface. A high-tech animation plays once the
+          first time you enable it, then the entire app reskins to the NEO identity.
+        </p>
+        <div className="mt-3">
+          <GoModeControl />
+        </div>
+      </section>
 
       {/* Color identity */}
       <section aria-labelledby="color-heading">

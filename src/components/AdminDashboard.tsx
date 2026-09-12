@@ -25,6 +25,7 @@ import {
   TargetIcon,
   XIcon,
 } from "@/components/icons";
+import { SqlConsole } from "@/components/SqlConsole";
 
 type Tab = "overview" | "users" | "questions" | "activity" | "mocks" | "subscriptions" | "engagement" | "ingestion";
 
@@ -123,6 +124,7 @@ interface SubscriptionsData {
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("overview");
+  const [view, setView] = useState<"dashboard" | "sql">("dashboard");
   const [stats, setStats] = useState<StatsData["stats"] | null>(null);
   const [users, setUsers] = useState<UsersData["users"]>([]);
   const [questions, setQuestions] = useState<QuestionsData["questions"] | null>(null);
@@ -186,47 +188,81 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Tab bar */}
-      <div className="flex flex-wrap gap-1 rounded-2xl border border-line bg-card p-1">
-        {TABS.map((t) => (
+      {/* Dashboard / SQL Console toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-1 rounded-2xl border border-line bg-card p-1">
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
-              tab === t.key
+            type="button"
+            onClick={() => setView("dashboard")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-semibold transition-colors ${
+              view === "dashboard"
                 ? "bg-brand text-on-brand shadow-glow"
                 : "text-muted-fg hover:bg-brand-soft hover:text-fg"
             }`}
           >
-            {t.label}
+            Dashboard
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={() => setView("sql")}
+            className={`rounded-xl px-4 py-1.5 text-xs font-semibold transition-colors ${
+              view === "sql"
+                ? "bg-brand text-on-brand shadow-glow"
+                : "text-muted-fg hover:bg-brand-soft hover:text-fg"
+            }`}
+          >
+            SQL Console
+          </button>
+        </div>
       </div>
 
-      {loading && !stats && !users.length && !questions && !subs ? (
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {Array.from({ length: 8 }, (_, i) => (
-              <div key={i} className="card p-4">
-                <div className="skeleton mx-auto h-7 w-14" />
-                <div className="skeleton mx-auto mt-2 h-2.5 w-20" />
-              </div>
+      {view === "dashboard" && (
+        <>
+          {/* Tab bar */}
+          <div className="flex flex-wrap gap-1 rounded-2xl border border-line bg-card p-1">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  tab === t.key
+                    ? "bg-brand text-on-brand shadow-glow"
+                    : "text-muted-fg hover:bg-brand-soft hover:text-fg"
+                }`}
+              >
+                {t.label}
+              </button>
             ))}
           </div>
-          <div className="card p-5"><div className="skeleton h-56" /></div>
-        </div>
-      ) : (
-        <>
-          {tab === "overview" && stats && <OverviewTab stats={stats} />}
-          {tab === "users" && <UsersTab users={users} />}
-          {tab === "questions" && questions && <QuestionsTab questions={questions} />}
-          {tab === "activity" && stats && <ActivityTab stats={stats} />}
-          {tab === "mocks" && stats && <MocksTab stats={stats} />}
-          {tab === "subscriptions" && subs && <SubscriptionsTab data={subs} />}
-          {tab === "engagement" && questions && <EngagementTab questions={questions} />}
-          {tab === "ingestion" && <IngestionTab jobs={jobs} />}
+
+          {loading && !stats && !users.length && !questions && !subs ? (
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div key={i} className="card p-4">
+                    <div className="skeleton mx-auto h-7 w-14" />
+                    <div className="skeleton mx-auto mt-2 h-2.5 w-20" />
+                  </div>
+                ))}
+              </div>
+              <div className="card p-5"><div className="skeleton h-56" /></div>
+            </div>
+          ) : (
+            <>
+              {tab === "overview" && stats && <OverviewTab stats={stats} />}
+              {tab === "users" && <UsersTab users={users} />}
+              {tab === "questions" && questions && <QuestionsTab questions={questions} />}
+              {tab === "activity" && stats && <ActivityTab stats={stats} />}
+              {tab === "mocks" && stats && <MocksTab stats={stats} />}
+              {tab === "subscriptions" && subs && <SubscriptionsTab data={subs} />}
+              {tab === "engagement" && questions && <EngagementTab questions={questions} />}
+              {tab === "ingestion" && <IngestionTab jobs={jobs} />}
+            </>
+          )}
         </>
       )}
+
+      {view === "sql" && <SqlConsole />}
     </div>
   );
 }
@@ -271,33 +307,34 @@ function OverviewTab({ stats }: { stats: StatsData["stats"] }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <section className="card p-5">
             <h2 className="section-title">User tier distribution</h2>
-            <div className="mt-4 h-56">
+            <div className="mt-2 h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={tierPie} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                  <Pie data={tierPie} cx="50%" cy="50%" outerRadius={80} dataKey="value">
                     {tierPie.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Tooltip content={<PieTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            <PieLegend data={tierPie} />
           </section>
           <section className="card p-5">
             <h2 className="section-title">Question difficulty breakdown</h2>
-            <div className="mt-4 h-56">
+            <div className="mt-2 h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={stats.questions.byDifficulty.map((d) => ({ name: d.difficulty, value: d.count }))}
                     cx="50%" cy="50%" outerRadius={80} dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
                   >
                     {stats.questions.byDifficulty.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Tooltip content={<PieTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            <PieLegend data={stats.questions.byDifficulty.map((d) => ({ name: d.difficulty, value: d.count }))} />
           </section>
         </div>
       )}
@@ -648,6 +685,25 @@ function IngestionTab({ jobs }: { jobs: QuestionsData["ingestionJobs"] }) {
 
 // ── Shared sub-components ────────────────────────────────────────────────────
 
+// Custom tooltip for pie charts. On hover, shows the slice name, count and
+// share as a single, readable card instead of colliding on the slices.
+function PieTooltip(props: { active?: boolean; payload?: Array<{ name?: string; value?: number; payload?: { name?: string; value?: number } }> }) {
+  const { active, payload } = props;
+  if (!active || !payload || payload.length === 0) return null;
+  const entry = payload[0];
+  const name = entry.name ?? entry.payload?.name ?? "—";
+  const value = entry.value ?? entry.payload?.value ?? 0;
+  const total = payload.reduce((sum, p) => sum + (p.value ?? p.payload?.value ?? 0), 0);
+  return (
+    <div style={TOOLTIP_STYLE} className="px-3 py-2">
+      <p className="text-xs font-semibold" style={{ color: "var(--mcq-fg)" }}>{name}</p>
+      <p className="mt-0.5 text-xs tabular-nums" style={{ color: "var(--mcq-muted)" }}>
+        {value.toLocaleString()} · <span className="font-semibold" style={{ color: "var(--mcq-brand)" }}>{total > 0 ? `${Math.round((value / total) * 100)}%` : "—"}</span>
+      </p>
+    </div>
+  );
+}
+
 function KpiCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="card card-hover p-4 text-center">
@@ -661,19 +717,40 @@ function KpiCard({ label, value, sub }: { label: string; value: string; sub?: st
 function PieCard({ title, data }: { title: string; data: Array<{ name: string; value: number }> }) {
   if (data.length === 0) return null;
   return (
-    <section className="card p-5">
+    <section className="card p-5 flex flex-col">
       <h2 className="section-title mb-2">{title}</h2>
-      <div className="h-48">
+      <div className="h-44 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" outerRadius={65} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+            <Pie data={data} cx="50%" cy="50%" outerRadius={62} dataKey="value">
               {data.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
             </Pie>
-            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Tooltip content={<PieTooltip />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
+      <PieLegend data={data} />
     </section>
+  );
+}
+
+function PieLegend({ data }: { data: Array<{ name: string; value: number }> }) {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <ul className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1">
+      {data.map((d, i) => (
+        <li key={d.name} className="flex items-center gap-1.5 text-xs text-muted-fg">
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
+          />
+          <span className="font-medium">{d.name}</span>
+          <span className="tabular-nums text-subtle-fg">
+            {d.value} · {total > 0 ? `${Math.round((d.value / total) * 100)}%` : "0%"}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

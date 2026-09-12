@@ -253,3 +253,30 @@ export const checkoutSchema = z.object({
   currency: z.enum(["INR", "USD"]).default("INR"),
 });
 
+// ── Support inquiries ─────────────────────────────────────────────────────────
+
+export const INQUIRY_SUBJECTS = [
+  "Pricing / Current Plan UI Issue",
+  "Billing & Payments",
+  "Plan upgrade or downgrade",
+  "Account or login help",
+  "Feature request",
+  "Something else",
+] as const;
+
+export const inquirySchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(80, "Name is too long"),
+  email: z.string().trim().email("Enter a valid email address").max(160),
+  subject: z
+    .string()
+    .trim()
+    .min(1, "Subject is required")
+    .max(120, "Subject is too long"),
+  message: z
+    .string()
+    .trim()
+    .min(5, "Please write a short message")
+    .max(4000, "Message is too long (4000 characters max)"),
+  plan: z.string().trim().min(1).max(40).optional(),
+});
+

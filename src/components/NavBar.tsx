@@ -33,6 +33,8 @@ import {
   PICKABLE_THEMES,
   useTheme,
 } from "@/components/theme";
+import { GoModeControl } from "@/components/GoModeControl";
+import { BoltIcon } from "@/components/icons";
 
 interface MeResponse {
   ok: boolean;
@@ -89,11 +91,13 @@ const PRIMARY_LINKS: NavLink[] = [
 
 const MORE_LINKS: NavLink[] = [
   { href: "/questions", label: "Question bank", icon: <BankIcon /> },
+  { href: "/sources", label: "Sources", icon: <BookmarkIcon /> },
   { href: "/analytics", label: "Analytics", icon: <AnalyticsIcon /> },
   { href: "/preparation", label: "Progress", icon: <ProgressIcon /> },
   { href: "/leaderboard", label: "Leaderboard", icon: <LeaderboardIcon /> },
   { href: "/preparation/timetable", label: "Timetable", icon: <ClockIcon /> },
   { href: "/motivation", label: "Motivation", icon: <MotivationIcon /> },
+  { href: "/mindset", label: "Mindset", icon: <SparklesIcon /> },
   { href: "/reports", label: "Reports", icon: <ReportsIcon /> },
   { href: "/bookmarks", label: "Saved", icon: <BookmarkIcon /> },
   { href: "/transactions", label: "Transactions", icon: <HistoryIcon /> },
@@ -105,11 +109,11 @@ const MOBILE_GROUPS: Array<{ title: string; links: NavLink[] }> = [
   { title: "Learn", links: [PRACTICE_LINK, MOCK_LINK, STUDY_LINK] },
   {
     title: "Banks",
-    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[7]],
+    links: [MORE_LINKS[0], PRIMARY_LINKS[3], MORE_LINKS[9]],
   },
   {
     title: "Insights",
-    links: [MORE_LINKS[1], MORE_LINKS[2], MORE_LINKS[3], MORE_LINKS[4], MORE_LINKS[5], MORE_LINKS[6], MORE_LINKS[8], MORE_LINKS[9], MORE_LINKS[10]],
+    links: [MORE_LINKS[1], MORE_LINKS[2], MORE_LINKS[3], MORE_LINKS[4], MORE_LINKS[5], MORE_LINKS[6], MORE_LINKS[7], MORE_LINKS[8], MORE_LINKS[10], MORE_LINKS[11], MORE_LINKS[12]],
   },
 ];
 
@@ -367,6 +371,15 @@ export function NavBar() {
                       {a.label}
                     </button>
                   ))}
+                </div>
+
+                <div className="my-1.5 h-px bg-line" />
+
+                <p className="kicker px-2 pb-1.5">Go</p>
+                <div className="flex items-center gap-2.5 px-2 py-1.5">
+                  <BoltIcon className="h-4 w-4 text-muted-fg" />
+                  <span className="min-w-0 flex-1 text-sm font-semibold text-muted-fg">Go</span>
+                  <GoModeControl compact />
                 </div>
 
                 <Link

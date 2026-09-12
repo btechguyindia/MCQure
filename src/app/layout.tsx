@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { ThemeScript } from "@/components/ThemeScript";
 import { UpgradeProvider } from "@/components/upgrade-context";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { GoReactor } from "@/components/GoReactor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <UpgradeModal />
         </UpgradeProvider>
+        <div className="neo-ambient" aria-hidden />
         <footer className="border-t border-line">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-10 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2.5 text-sm font-bold tracking-tight">
@@ -107,6 +109,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </footer>
         <div aria-hidden className="h-16 lg:hidden" />
         <MobileNav />
+        <GoReactor />
       </body>
     </html>
   );

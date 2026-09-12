@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PricingCards } from "@/components/PricingCards";
 import { getCurrentUser } from "@/lib/api";
 import { getCurrentSubscription, isActive } from "@/lib/billing";
-import { isRazorpayConfigured, isStripeConfigured } from "@/lib/payments";
+import { isRazorpayConfigured, isStripeConfigured, testCheckoutEnabled } from "@/lib/payments";
 import type { PlanId } from "@/lib/plans";
 
 export const metadata: Metadata = { title: "Pricing — MCQure" };
@@ -31,6 +31,8 @@ export default async function PricingPage() {
       <PricingCards
         currentPlan={user ? currentPlan : null}
         providers={{ razorpay: isRazorpayConfigured(), stripe: isStripeConfigured() }}
+        user={user ? { name: user.name ?? "", email: user.email } : null}
+        testMode={testCheckoutEnabled()}
       />
 
       <footer className="mx-auto max-w-2xl text-center text-xs text-subtle-fg">

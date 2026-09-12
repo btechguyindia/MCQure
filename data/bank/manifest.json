@@ -2,9 +2,111 @@
   "v": 1,
   "schema": 1,
   "exam": "dsssb-tgt-cs",
-  "generatedAt": "2026-09-06T14:12:19.783Z",
-  "total": 80,
+  "generatedAt": "2026-09-12T15:34:06.482Z",
+  "total": 4364,
   "topics": [
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Average",
+      "path": "arithmetical-numerical-ability/average.json",
+      "count": 52
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Data Interpretation",
+      "path": "arithmetical-numerical-ability/data-interpretation.json",
+      "count": 300
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Decimals & Fractions",
+      "path": "arithmetical-numerical-ability/decimals-fractions.json",
+      "count": 57
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Divisibility Rules",
+      "path": "arithmetical-numerical-ability/divisibility-rules.json",
+      "count": 12
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "HCF & LCM",
+      "path": "arithmetical-numerical-ability/hcf-lcm.json",
+      "count": 50
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Mensuration",
+      "path": "arithmetical-numerical-ability/mensuration.json",
+      "count": 69
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Number Systems",
+      "path": "arithmetical-numerical-ability/number-systems.json",
+      "count": 58
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Partnership",
+      "path": "arithmetical-numerical-ability/partnership.json",
+      "count": 55
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Percentage",
+      "path": "arithmetical-numerical-ability/percentage.json",
+      "count": 50
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Powers & Roots",
+      "path": "arithmetical-numerical-ability/powers-roots.json",
+      "count": 52
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Profit, Loss & Discount",
+      "path": "arithmetical-numerical-ability/profit-loss-discount.json",
+      "count": 56
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Ratio & Proportion",
+      "path": "arithmetical-numerical-ability/ratio-proportion.json",
+      "count": 55
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Simple & Compound Interest",
+      "path": "arithmetical-numerical-ability/simple-compound-interest.json",
+      "count": 57
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Simplification & BODMAS",
+      "path": "arithmetical-numerical-ability/simplification-bodmas.json",
+      "count": 59
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Time & Distance",
+      "path": "arithmetical-numerical-ability/time-distance.json",
+      "count": 59
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Time & Work",
+      "path": "arithmetical-numerical-ability/time-work.json",
+      "count": 58
+    },
+    {
+      "subject": "Arithmetical & Numerical Ability",
+      "topic": "Variation",
+      "path": "arithmetical-numerical-ability/variation.json",
+      "count": 60
+    },
     {
       "subject": "Computer Architecture",
       "topic": "Computer Organization",
@@ -88,6 +190,336 @@
       "topic": "Number Systems & Codes",
       "path": "digital-electronics-boolean-logic/number-systems-codes.json",
       "count": 2
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Articles, Prepositions & Conjunctions",
+      "path": "english-language-comprehension/articles-prepositions-conjunctions.json",
+      "count": 59
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Collocations",
+      "path": "english-language-comprehension/collocations.json",
+      "count": 60
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Correct Usage",
+      "path": "english-language-comprehension/correct-usage.json",
+      "count": 59
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Error Spotting",
+      "path": "english-language-comprehension/error-spotting.json",
+      "count": 58
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Fill in the Blanks",
+      "path": "english-language-comprehension/fill-in-the-blanks.json",
+      "count": 60
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Grammar",
+      "path": "english-language-comprehension/grammar.json",
+      "count": 57
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Idioms & Phrases",
+      "path": "english-language-comprehension/idioms-phrases.json",
+      "count": 58
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "One-Word Substitution",
+      "path": "english-language-comprehension/one-word-substitution.json",
+      "count": 55
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Proverbs",
+      "path": "english-language-comprehension/proverbs.json",
+      "count": 59
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Reading Comprehension",
+      "path": "english-language-comprehension/reading-comprehension.json",
+      "count": 72
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Sentence Improvement",
+      "path": "english-language-comprehension/sentence-improvement.json",
+      "count": 60
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Sentence Structure",
+      "path": "english-language-comprehension/sentence-structure.json",
+      "count": 60
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Spelling",
+      "path": "english-language-comprehension/spelling.json",
+      "count": 34
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Synonyms & Antonyms",
+      "path": "english-language-comprehension/synonyms-antonyms.json",
+      "count": 57
+    },
+    {
+      "subject": "English Language & Comprehension",
+      "topic": "Vocabulary",
+      "path": "english-language-comprehension/vocabulary.json",
+      "count": 60
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Art & Culture",
+      "path": "general-awareness/art-culture.json",
+      "count": 58
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Current Events",
+      "path": "general-awareness/current-events.json",
+      "count": 56
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Economics",
+      "path": "general-awareness/economics.json",
+      "count": 53
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Environment & Its Application to Society",
+      "path": "general-awareness/environment-its-application-to-society.json",
+      "count": 58
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Geography",
+      "path": "general-awareness/geography.json",
+      "count": 55
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "History",
+      "path": "general-awareness/history.json",
+      "count": 54
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "National & International Organizations",
+      "path": "general-awareness/national-international-organizations.json",
+      "count": 57
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Polity & Constitution",
+      "path": "general-awareness/polity-constitution.json",
+      "count": 57
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Science & Scientific Research",
+      "path": "general-awareness/science-scientific-research.json",
+      "count": 59
+    },
+    {
+      "subject": "General Awareness",
+      "topic": "Sports",
+      "path": "general-awareness/sports.json",
+      "count": 52
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Alphabet Test",
+      "path": "general-intelligence-reasoning/alphabet-test.json",
+      "count": 24
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Analogy",
+      "path": "general-intelligence-reasoning/analogy.json",
+      "count": 58
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Analytical Reasoning",
+      "path": "general-intelligence-reasoning/analytical-reasoning.json",
+      "count": 53
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Arithmetical Reasoning",
+      "path": "general-intelligence-reasoning/arithmetical-reasoning.json",
+      "count": 55
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Assertion & Reason",
+      "path": "general-intelligence-reasoning/assertion-reason.json",
+      "count": 59
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Blood Relations",
+      "path": "general-intelligence-reasoning/blood-relations.json",
+      "count": 50
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Cause & Effect",
+      "path": "general-intelligence-reasoning/cause-effect.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Classification",
+      "path": "general-intelligence-reasoning/classification.json",
+      "count": 59
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Coding-Decoding",
+      "path": "general-intelligence-reasoning/coding-decoding.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Cubes & Dice",
+      "path": "general-intelligence-reasoning/cubes-dice.json",
+      "count": 59
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Deriving Conclusions",
+      "path": "general-intelligence-reasoning/deriving-conclusions.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Direction Sense Test",
+      "path": "general-intelligence-reasoning/direction-sense-test.json",
+      "count": 57
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Eligibility Test",
+      "path": "general-intelligence-reasoning/eligibility-test.json",
+      "count": 55
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Embedded Figures",
+      "path": "general-intelligence-reasoning/embedded-figures.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Figure Series",
+      "path": "general-intelligence-reasoning/figure-series.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Inserting the Missing Character",
+      "path": "general-intelligence-reasoning/inserting-the-missing-character.json",
+      "count": 59
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Logical Venn Diagrams",
+      "path": "general-intelligence-reasoning/logical-venn-diagrams.json",
+      "count": 24
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Mathematical Operations",
+      "path": "general-intelligence-reasoning/mathematical-operations.json",
+      "count": 57
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Mirror Images",
+      "path": "general-intelligence-reasoning/mirror-images.json",
+      "count": 58
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Paper Folding & Cutting",
+      "path": "general-intelligence-reasoning/paper-folding-cutting.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Punch Lines",
+      "path": "general-intelligence-reasoning/punch-lines.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Ranking & Time Sequence",
+      "path": "general-intelligence-reasoning/ranking-time-sequence.json",
+      "count": 58
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Series (Alphabet, Number, Letter)",
+      "path": "general-intelligence-reasoning/series-alphabet-number-letter.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Sitting Arrangements",
+      "path": "general-intelligence-reasoning/sitting-arrangements.json",
+      "count": 120
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Situation Reaction Test",
+      "path": "general-intelligence-reasoning/situation-reaction-test.json",
+      "count": 60
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Statement & Arguments",
+      "path": "general-intelligence-reasoning/statement-arguments.json",
+      "count": 54
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Statement & Assumptions",
+      "path": "general-intelligence-reasoning/statement-assumptions.json",
+      "count": 54
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Statement & Conclusions",
+      "path": "general-intelligence-reasoning/statement-conclusions.json",
+      "count": 58
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Statement & Courses of Action",
+      "path": "general-intelligence-reasoning/statement-courses-of-action.json",
+      "count": 30
+    },
+    {
+      "subject": "General Intelligence & Reasoning",
+      "topic": "Syllogism",
+      "path": "general-intelligence-reasoning/syllogism.json",
+      "count": 57
     },
     {
       "subject": "Java Programming and Website Design",

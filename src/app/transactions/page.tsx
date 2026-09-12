@@ -309,10 +309,10 @@ export default async function TransactionsPage() {
                   <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {(
                       [
-                        ["Daily questions", limits.dailyQuestions, "unlimited"],
-                        ["Mock tests / month", limits.mocksPerMonth, "unlimited"],
-                        ["Bookmarks", limits.bookmarks, "unlimited"],
-                        ["Active timetables", limits.activeTimetables, "unlimited"],
+                        ["Daily questions", limits.dailyQuestions],
+                        ["Mock tests / month", limits.mocksPerMonth],
+                        ["Bookmarks", limits.bookmarks],
+                        ["Active timetables", limits.activeTimetables],
                       ] as const
                     ).map(([label, value]) => (
                       <div key={label} className="rounded-xl border border-line bg-card-strong p-3 text-center">

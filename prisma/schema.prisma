@@ -158,6 +158,13 @@ enum ScheduleCycle {
   MONTHLY
 }
 
+// Where a support inquiry sits in the admin workflow.
+enum InquiryStatus {
+  OPEN
+  REPLIED
+  RESOLVED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -180,6 +187,7 @@ model User {
   mockRuns          MockRun[]
   studyTimetables   StudyTimetable[]
   subscriptions    Subscription[]
+  inquiries        Inquiry[]
 }
 
 // A paid plan entitlement. One active row per user at a time; historical rows
@@ -207,6 +215,26 @@ model Subscription {
 
   @@index([userId, status])
   @@index([provider, providerRef])
+}
+
+// A support / billing inquiry raised from the pricing page ("Raise an
+// inquiry"). Always persisted so support has a record; an email is also
+// dispatched to the configured admin address when SMTP is set up.
+model Inquiry {
+  id        String        @id @default(cuid())
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  email     String
+  subject   String
+  // Plan the user was on (or was asking about) when they raised the inquiry.
+  plan      String?
+  message   String
+  status    InquiryStatus @default(OPEN)
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Exam {

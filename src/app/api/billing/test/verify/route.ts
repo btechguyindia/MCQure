@@ -1,13 +1,18 @@
 import { getCurrentUser, isNextResponse, jsonError, jsonOk } from "@/lib/api";
 import { checkoutSchema } from "@/lib/validation";
-import { resolveCheckout } from "@/lib/payments";
+import { resolveCheckout, testCheckoutEnabled } from "@/lib/payments";
 import { activateSubscription } from "@/lib/billing";
 import { prisma } from "@/lib/db";
 
 // Local test fulfilment: turns a simulated checkout into a real subscription
 // record tagged provider=MANUAL (ref "test:<checkoutId>") when the user picks
 // "simulate successful payment". Choosing failure just errors — no grant.
+// Disabled outside test mode.
 export async function POST(request: Request) {
+  if (!testCheckoutEnabled()) {
+    return jsonError("The test checkout is disabled in this environment", 403);
+  }
+
   const user = await getCurrentUser();
   if (isNextResponse(user)) return user;
   if (!user) return jsonError("Authentication required", 401);

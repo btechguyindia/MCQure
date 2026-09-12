@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Scratch/experiment files that must not gate lint or CI.
+    "tmp/**",
+    "*.tmp.*",
+    ".verify-rig/**",
   ]),
 ]);
 
