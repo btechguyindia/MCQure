@@ -2,8 +2,8 @@
   "v": 1,
   "schema": 1,
   "exam": "dsssb-tgt-cs",
-  "generatedAt": "2026-09-12T15:38:23.077Z",
-  "total": 4634,
+  "generatedAt": "2026-09-12T15:52:47.874Z",
+  "total": 5621,
   "topics": [
     {
       "subject": "Arithmetical & Numerical Ability",
@@ -108,6 +108,42 @@
       "count": 60
     },
     {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Business Communication Principles",
+      "path": "business-communication-business-organization-management-writing/business-communication-principles.json",
+      "count": 59
+    },
+    {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Business Organization Structures",
+      "path": "business-communication-business-organization-management-writing/business-organization-structures.json",
+      "count": 57
+    },
+    {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Business Writing Skills",
+      "path": "business-communication-business-organization-management-writing/business-writing-skills.json",
+      "count": 12
+    },
+    {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Management Concepts",
+      "path": "business-communication-business-organization-management-writing/management-concepts.json",
+      "count": 56
+    },
+    {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Office Correspondence",
+      "path": "business-communication-business-organization-management-writing/office-correspondence.json",
+      "count": 60
+    },
+    {
+      "subject": "Business Communication, Business Organization & Management, Writing",
+      "topic": "Report Writing",
+      "path": "business-communication-business-organization-management-writing/report-writing.json",
+      "count": 60
+    },
+    {
       "subject": "Computer Architecture",
       "topic": "Computer Organization",
       "path": "computer-architecture/computer-organization.json",
@@ -123,7 +159,7 @@
       "subject": "Computer Basics and P.C. Software",
       "topic": "Computer Basics",
       "path": "computer-basics-and-p-c-software/computer-basics.json",
-      "count": 2
+      "count": 62
     },
     {
       "subject": "Computer Networks, TCP/IP & Network Security",
@@ -529,9 +565,33 @@
     },
     {
       "subject": "Hindi Language & Comprehension",
+      "topic": "Comprehension (गद्यांश)",
+      "path": "hindi-language-comprehension/comprehension-गद-य-श.json",
+      "count": 58
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
+      "topic": "Correct Usage (शुद्ध प्रयोग)",
+      "path": "hindi-language-comprehension/correct-usage-श-द-ध-प-रय-ग.json",
+      "count": 54
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
       "topic": "Grammar (व्याकरण)",
       "path": "hindi-language-comprehension/grammar-व-य-करण.json",
-      "count": 31
+      "count": 51
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
+      "topic": "Sentence Structure (वाक्य संरचना)",
+      "path": "hindi-language-comprehension/sentence-structure-व-क-य-स-रचन.json",
+      "count": 59
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
+      "topic": "Synonyms & Antonyms (पर्यायवाची व विलोम)",
+      "path": "hindi-language-comprehension/synonyms-antonyms-पर-य-यव-च-व-व-ल-म.json",
+      "count": 58
     },
     {
       "subject": "Hindi Language & Comprehension",
@@ -556,6 +616,48 @@
       "topic": "Web Protocols",
       "path": "java-programming-and-website-design/web-protocols.json",
       "count": 2
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Algebra",
+      "path": "mathematics/algebra.json",
+      "count": 54
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Calculus",
+      "path": "mathematics/calculus.json",
+      "count": 43
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Coordinate Geometry",
+      "path": "mathematics/coordinate-geometry.json",
+      "count": 54
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Differential Equations",
+      "path": "mathematics/differential-equations.json",
+      "count": 53
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Matrices & Determinants",
+      "path": "mathematics/matrices-determinants.json",
+      "count": 57
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Numerical Methods",
+      "path": "mathematics/numerical-methods.json",
+      "count": 59
+    },
+    {
+      "subject": "Mathematics",
+      "topic": "Trigonometry",
+      "path": "mathematics/trigonometry.json",
+      "count": 54
     },
     {
       "subject": "Operating Systems & Linux",

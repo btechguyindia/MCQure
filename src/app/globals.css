@@ -1558,6 +1558,97 @@ html.dark select optgroup {
   cursor: progress;
 }
 
+/* Retro 8-bit neon arcade button — the "fun" way to arm Go mode. Hard edges,
+   chunky double outline, scanlines and a hard-steps press. When armed it
+   shifts to signal amber and pulses like a machine waking up. */
+.go8 {
+  --go8-c: var(--mcq-brand);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono), monospace;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.25rem;
+  color: var(--go8-c);
+  background: color-mix(in oklab, var(--go8-c) 7%, #04070b);
+  border: 2px solid var(--go8-c);
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-font-smoothing: none;
+  text-shadow: 0 0 6px var(--go8-c);
+  box-shadow:
+    0 0 0 2px #04070b,
+    0 0 0 4px var(--go8-c),
+    0 0 18px color-mix(in oklab, var(--go8-c) 55%, transparent),
+    inset 0 0 14px color-mix(in oklab, var(--go8-c) 30%, transparent);
+  transition:
+    transform 90ms steps(2),
+    filter 150ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    text-shadow 200ms ease,
+    box-shadow 200ms ease;
+}
+.go8::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(255 255 255 / 0.05) 0 1px,
+    transparent 1px 3px
+  );
+}
+.go8:hover:not(:disabled) {
+  filter: brightness(1.25);
+}
+.go8:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 0 0 2px #04070b,
+    0 0 0 4px var(--go8-c),
+    0 0 10px color-mix(in oklab, var(--go8-c) 40%, transparent);
+}
+.go8.go-busy {
+  filter: saturate(0.45) brightness(0.9);
+  cursor: progress;
+}
+.go8-sm {
+  font-size: 0.7rem;
+  padding: 0.35rem 0.7rem;
+  letter-spacing: 0.12em;
+}
+.go8-on {
+  --go8-c: #fbbf24;
+  animation: go8-pulse 1.4s steps(2) infinite;
+}
+@keyframes go8-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 0 0 2px #04070b,
+      0 0 0 4px #fbbf24,
+      0 0 20px rgb(251 191 36 / 0.55),
+      inset 0 0 14px rgb(251 191 36 / 0.4);
+  }
+  50% {
+    filter: brightness(1.25);
+    box-shadow:
+      0 0 0 2px #04070b,
+      0 0 0 4px #fde68a,
+      0 0 32px rgb(251 191 36 / 0.75),
+      inset 0 0 18px rgb(251 191 36 / 0.55);
+  }
+}
+
 .goz {
   position: fixed;
   inset: 0;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { APPEARANCES, PICKABLE_THEMES, THEME_COLORS, useTheme } from "@/components/theme";
 import { GoModeControl } from "@/components/GoModeControl";
+import { Go8Button } from "@/components/Go8Button";
 import {
   CheckIcon,
   MonitorIcon,
@@ -100,6 +101,10 @@ export function AppearanceSettings() {
         </p>
         <div className="mt-3">
           <GoModeControl />
+        </div>
+        <div className="mt-5 flex flex-col items-center gap-2">
+          <Go8Button className="w-48 py-3 text-lg" />
+          <p className="text-xs text-subtle-fg">…or hit the arcade button. It does the same thing.</p>
         </div>
       </section>
 

@@ -33,7 +33,7 @@ import {
   PICKABLE_THEMES,
   useTheme,
 } from "@/components/theme";
-import { GoModeControl } from "@/components/GoModeControl";
+import { Go8Button } from "@/components/Go8Button";
 import { BoltIcon } from "@/components/icons";
 
 interface MeResponse {
@@ -379,7 +379,7 @@ export function NavBar() {
                 <div className="flex items-center gap-2.5 px-2 py-1.5">
                   <BoltIcon className="h-4 w-4 text-muted-fg" />
                   <span className="min-w-0 flex-1 text-sm font-semibold text-muted-fg">Go</span>
-                  <GoModeControl compact />
+                  <Go8Button size="sm" />
                 </div>
 
                 <Link
