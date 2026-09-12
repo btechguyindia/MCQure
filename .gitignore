@@ -45,6 +45,10 @@ next-env.d.ts
 # local embedded postgres data
 /.data/
 
+# scratch / experiment files
+/tmp/
+*.tmp.*
+
 dev.log
 .vercel
 .env.local

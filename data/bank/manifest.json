@@ -2,8 +2,8 @@
   "v": 1,
   "schema": 1,
   "exam": "dsssb-tgt-cs",
-  "generatedAt": "2026-09-12T15:34:06.482Z",
-  "total": 4364,
+  "generatedAt": "2026-09-12T15:38:23.077Z",
+  "total": 4634,
   "topics": [
     {
       "subject": "Arithmetical & Numerical Ability",
@@ -241,6 +241,12 @@
     },
     {
       "subject": "English Language & Comprehension",
+      "topic": "Para Jumbles",
+      "path": "english-language-comprehension/para-jumbles.json",
+      "count": 60
+    },
+    {
+      "subject": "English Language & Comprehension",
       "topic": "Proverbs",
       "path": "english-language-comprehension/proverbs.json",
       "count": 59
@@ -249,7 +255,7 @@
       "subject": "English Language & Comprehension",
       "topic": "Reading Comprehension",
       "path": "english-language-comprehension/reading-comprehension.json",
-      "count": 72
+      "count": 192
     },
     {
       "subject": "English Language & Comprehension",
@@ -520,6 +526,18 @@
       "topic": "Syllogism",
       "path": "general-intelligence-reasoning/syllogism.json",
       "count": 57
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
+      "topic": "Grammar (व्याकरण)",
+      "path": "hindi-language-comprehension/grammar-व-य-करण.json",
+      "count": 31
+    },
+    {
+      "subject": "Hindi Language & Comprehension",
+      "topic": "Vocabulary (शब्दावली)",
+      "path": "hindi-language-comprehension/vocabulary-शब-द-वल.json",
+      "count": 59
     },
     {
       "subject": "Java Programming and Website Design",
