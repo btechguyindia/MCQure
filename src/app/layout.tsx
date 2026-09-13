@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono, Instrument_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Sans, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { NavBar } from "@/components/NavBar";
 import { MobileNav } from "@/components/MobileNav";
@@ -23,6 +23,13 @@ const geistMono = Geist_Mono({
 const instrumentSans = Instrument_Sans({
   variable: "--font-instrument-sans",
   subsets: ["latin"],
+});
+
+// Retro arcade typeface — used only by the Neon City (GO arcade) identity.
+const pressStart2P = Press_Start_2P({
+  variable: "--font-arcade",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -59,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable} ${pressStart2P.variable} antialiased`}
     >
       <head>
         <ThemeScript />
@@ -79,6 +86,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <UpgradeModal />
         </UpgradeProvider>
         <div className="neo-ambient" aria-hidden />
+        <div className="arcade-ambient" aria-hidden>
+          <div className="a-stars" />
+          <div className="a-horizon" />
+          <div className="a-skyline" />
+          <div className="a-floor" />
+        </div>
         <footer className="border-t border-line">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 py-10 sm:flex-row sm:justify-between">
             <div className="flex items-center gap-2.5 text-sm font-bold tracking-tight">

@@ -7,10 +7,11 @@ export function ThemeScript() {
     <script
       dangerouslySetInnerHTML={{
         __html: `(function(){try{
+var g8=localStorage.getItem('mcqure-go8');
 var g=localStorage.getItem('mcqure-go');
 var t=localStorage.getItem('mcqure-tier-theme');
-var c=g==='on'?'neo':((t==='royal'||t==='gold'||t==='silver')?t:localStorage.getItem('mcqure-theme-color'));
-if(c!=='teal'&&c!=='purple'&&c!=='blue-gold'&&c!=='claude'&&c!=='gold'&&c!=='silver'&&c!=='royal'&&c!=='custom'&&c!=='neo')c='teal';
+var c=g8==='on'?'city':(g==='on'?'neo':((t==='royal'||t==='gold'||t==='silver')?t:localStorage.getItem('mcqure-theme-color')));
+if(c!=='teal'&&c!=='purple'&&c!=='blue-gold'&&c!=='claude'&&c!=='gold'&&c!=='silver'&&c!=='royal'&&c!=='custom'&&c!=='neo'&&c!=='city')c='teal';
 document.documentElement.setAttribute('data-theme',c);
 if(c==='custom'){
 var r=/^#[0-9a-f]{6}$/i;

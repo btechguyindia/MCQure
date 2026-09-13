@@ -90,21 +90,25 @@ export function AppearanceSettings() {
         </p>
       </header>
 
-      {/* Go (NEO mode) */}
+      {/* Go (NEO + Neon City) */}
       <section aria-labelledby="go-heading">
         <h2 id="go-heading" className="section-title">
           Go
         </h2>
         <p className="mt-1 text-sm text-muted-fg">
-          Toggle the next-gen dynamic interface. A high-tech animation plays once the
-          first time you enable it, then the entire app reskins to the NEO identity.
+          Two ways in — each plays a short cinematic the first time you enable it,
+          then stays remembered on this device. The <b>Go</b> switch arms the NEO
+          identity; the arcade <b>GO</b> button re-skins the whole site as the
+          8-bit Neon City. Arming one disarms the other.
         </p>
         <div className="mt-3">
           <GoModeControl />
         </div>
         <div className="mt-5 flex flex-col items-center gap-2">
           <Go8Button className="w-48 py-3 text-lg" />
-          <p className="text-xs text-subtle-fg">…or hit the arcade button. It does the same thing.</p>
+          <p className="text-xs text-subtle-fg">
+            Arcade button = Neon City. Pixel corners, CRT scanlines, synthwave skyline.
+          </p>
         </div>
       </section>
 

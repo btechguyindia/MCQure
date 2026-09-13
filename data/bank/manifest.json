@@ -2,8 +2,8 @@
   "v": 1,
   "schema": 1,
   "exam": "dsssb-tgt-cs",
-  "generatedAt": "2026-09-12T15:52:47.874Z",
-  "total": 5621,
+  "generatedAt": "2026-09-13T02:05:44.377Z",
+  "total": 5633,
   "topics": [
     {
       "subject": "Arithmetical & Numerical Ability",
@@ -160,6 +160,24 @@
       "topic": "Computer Basics",
       "path": "computer-basics-and-p-c-software/computer-basics.json",
       "count": 62
+    },
+    {
+      "subject": "Computer Basics and P.C. Software",
+      "topic": "Hardware Components",
+      "path": "computer-basics-and-p-c-software/hardware-components.json",
+      "count": 12
+    },
+    {
+      "subject": "Computer Basics and P.C. Software",
+      "topic": "MS Office",
+      "path": "computer-basics-and-p-c-software/ms-office.json",
+      "count": 0
+    },
+    {
+      "subject": "Computer Basics and P.C. Software",
+      "topic": "Software Concepts",
+      "path": "computer-basics-and-p-c-software/software-concepts.json",
+      "count": 0
     },
     {
       "subject": "Computer Networks, TCP/IP & Network Security",

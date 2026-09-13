@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "royal" | "custom" | "neo";
+export type ThemeColor = "teal" | "purple" | "blue-gold" | "claude" | "gold" | "silver" | "royal" | "custom" | "neo" | "city";
 /** Account identity granted by a paid plan (maps to a ThemeColor). */
 export type AccountTier = "ROYAL" | "PREMIUM_PLUS" | "PREMIUM";
 export type Appearance = "system" | "light" | "dark";
@@ -85,6 +85,13 @@ export const THEME_COLORS: Array<{
     swatch: ["#06B6D4", "#6366F1", "#F59E0B"],
     hidden: true,
   },
+  {
+    value: "city",
+    label: "Neon City",
+    description: "Retro 8-bit neon city — unlocked by the GO arcade button",
+    swatch: ["#D946EF", "#7C3AED", "#F59E0B"],
+    hidden: true,
+  },
 ];
 
 export const PICKABLE_THEMES = THEME_COLORS.filter((t) => !t.tierOnly && !t.hidden);
@@ -113,6 +120,10 @@ const TIER_KEY = "mcqure-tier-theme";
 export const GO_KEY = "mcqure-go";
 /** Fired by the Go switch; the GoReactor runs the sequence. */
 export const GO_EVENT = "mcqure:go";
+/** Neon City master flag — "on" persistently arms the 8-bit identity. */
+export const GO8_KEY = "mcqure-go8";
+/** Fired by the GO arcade button; the GoReactor runs the sequence. */
+export const GO8_EVENT = "mcqure:go8";
 /** Fired by the GoReactor when a run finishes (success or revert). */
 export const GO_DONE_EVENT = "mcqure:go:done";
 
@@ -120,6 +131,12 @@ export const GO_DONE_EVENT = "mcqure:go:done";
 export function goIsOn(): boolean {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(GO_KEY) === "on";
+}
+
+/** True when the Neon City (GO arcade) identity has been permanently armed. */
+export function go8IsOn(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(GO8_KEY) === "on";
 }
 
 function isThemeColor(v: string | null): v is ThemeColor {
@@ -132,7 +149,8 @@ function isThemeColor(v: string | null): v is ThemeColor {
     v === "silver" ||
     v === "royal" ||
     v === "custom" ||
-    v === "neo"
+    v === "neo" ||
+    v === "city"
   );
 }
 
@@ -179,7 +197,7 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 
   root.setAttribute("data-theme", color);
   // Tier overrides are transient: they must not overwrite the personal pick.
-  if (persist && color !== "gold" && color !== "silver" && color !== "royal" && color !== "neo") {
+  if (persist && color !== "gold" && color !== "silver" && color !== "royal" && color !== "neo" && color !== "city") {
     localStorage.setItem(COLOR_KEY, color);
   }
   // Keep the custom palette in sync whenever the custom theme is active.
@@ -195,6 +213,8 @@ export function applyTheme(color: ThemeColor, appearance: Appearance, persist = 
 
 /** Resolve what data-theme should be: account tier override wins over choice. */
 export function effectiveColor(): ThemeColor {
+  // Neon City (arcade GO) beats Go/NEO; both are top-level personal overrides.
+  if (go8IsOn()) return "city";
   // Go/NEO is the top-level personal override while armed.
   if (goIsOn()) return "neo";
   const tier = localStorage.getItem(TIER_KEY);
@@ -370,6 +390,50 @@ export function useGoMode() {
       setOn(false);
     }
     window.dispatchEvent(new CustomEvent(GO_EVENT, { detail: { on: next } }));
+  }, []);
+
+  return { on, busy, toggle };
+}
+
+/**
+ * Reactive GO arcade-button state (Neon City / 8-bit identity). Mirrors
+ * useGoMode but keyed to mcqure-go8; the reactor owns localStorage.
+ */
+export function useGo8Mode() {
+  const [on, setOn] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    // Deferred so the effect never calls setState synchronously.
+    Promise.resolve().then(() => setOn(go8IsOn()));
+    const onEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ on?: boolean }>).detail;
+      if (typeof detail?.on === "boolean") {
+        setOn(detail.on);
+        setBusy(detail.on ? true : false);
+      }
+    };
+    const doneEvent = () => {
+      setBusy(false);
+      setOn(go8IsOn());
+    };
+    window.addEventListener(GO8_EVENT, onEvent);
+    window.addEventListener(GO_DONE_EVENT, doneEvent);
+    return () => {
+      window.removeEventListener(GO8_EVENT, onEvent);
+      window.removeEventListener(GO_DONE_EVENT, doneEvent);
+    };
+  }, []);
+
+  const toggle = useCallback(() => {
+    const next = !go8IsOn();
+    if (next) {
+      setBusy(true);
+      setOn(true);
+    } else {
+      setOn(false);
+    }
+    window.dispatchEvent(new CustomEvent(GO8_EVENT, { detail: { on: next } }));
   }, []);
 
   return { on, busy, toggle };

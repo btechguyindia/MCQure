@@ -5,18 +5,23 @@ import {
   GO_EVENT,
   GO_DONE_EVENT,
   GO_KEY,
+  GO8_EVENT,
+  GO8_KEY,
   applyTheme,
   currentAppearance,
   effectiveColor,
 } from "@/components/theme";
 
 type Phase = "boot" | "gate" | "charge" | "flash" | null;
+type Mode = "neo" | "city";
 
 export function GoReactor() {
   const [phase, setPhase] = useState<Phase>(null);
   const [pct, setPct] = useState(0);
+  const [copy, setCopy] = useState<Mode>("neo");
   const timers = useRef<number[]>([]);
   const frames = useRef<number[]>([]);
+  const modeRef = useRef<Mode>("neo");
 
   function clearAll() {
     timers.current.forEach(clearTimeout);
@@ -25,9 +30,21 @@ export function GoReactor() {
     frames.current = [];
   }
 
+  /** Persist the armed identity and clear the sibling mode so only one wins. */
+  function persistMode() {
+    if (modeRef.current === "city") {
+      localStorage.setItem(GO8_KEY, "on");
+      localStorage.removeItem(GO_KEY);
+    } else {
+      localStorage.setItem(GO_KEY, "on");
+      localStorage.removeItem(GO8_KEY);
+    }
+  }
+
   function finish() {
     setPhase("flash");
-    applyTheme("neo", currentAppearance());
+    applyTheme(modeRef.current, currentAppearance());
+    persistMode();
     timers.current.push(
       window.setTimeout(() => {
         setPhase(null);
@@ -41,7 +58,8 @@ export function GoReactor() {
     clearAll();
     setPct(100);
     setPhase("flash");
-    applyTheme("neo", currentAppearance());
+    applyTheme(modeRef.current, currentAppearance());
+    persistMode();
     timers.current.push(
       window.setTimeout(() => {
         setPhase(null);
@@ -55,17 +73,20 @@ export function GoReactor() {
     const onEvent = (e: Event) => {
       const detail = (e as CustomEvent<{ on?: boolean }>).detail;
       if (typeof detail?.on !== "boolean") return;
+      const mode: Mode = e.type === GO8_EVENT ? "city" : "neo";
 
       clearAll();
 
       if (detail.on === false) {
         setPhase(null);
-        localStorage.removeItem(GO_KEY);
+        localStorage.removeItem(mode === "city" ? GO8_KEY : GO_KEY);
         applyTheme(effectiveColor(), currentAppearance());
         window.dispatchEvent(new CustomEvent(GO_DONE_EVENT));
         return;
       }
 
+      modeRef.current = mode;
+      setCopy(mode);
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const R = reduce ? 0.42 : 1;
 
@@ -98,14 +119,18 @@ export function GoReactor() {
     };
 
     window.addEventListener(GO_EVENT, onEvent);
+    window.addEventListener(GO8_EVENT, onEvent);
     return () => {
       window.removeEventListener(GO_EVENT, onEvent);
+      window.removeEventListener(GO8_EVENT, onEvent);
       clearAll();
       document.body.style.overflow = "";
     };
   }, []);
 
   if (!phase) return null;
+
+  const isCity = copy === "city";
 
   return (
     <div
@@ -126,44 +151,69 @@ export function GoReactor() {
         </div>
 
         <div className="goz-log">
-          <i>
-            <b>{"// "}</b>access-controller<b>.exe</b>
-          </i>
-          <i>
-            escalation attempt <em>detected</em>
-          </i>
-          <i>
-            runtime profile <em>escalating</em>
-          </i>
-          <i>
-            <b>NEO</b> environment compiling<b>...</b>
-          </i>
+          {isCity ? (
+            <>
+              <i>
+                <b>{"// "}</b>arcade-district<b>.exe</b>
+              </i>
+              <i>
+                neon sector <em>detected</em>
+              </i>
+              <i>
+                jpg quality <em>degrading</em> to 8-bit
+              </i>
+              <i>
+                <b>CITY</b> environment compiling<b>...</b>
+              </i>
+            </>
+          ) : (
+            <>
+              <i>
+                <b>{"// "}</b>access-controller<b>.exe</b>
+              </i>
+              <i>
+                escalation attempt <em>detected</em>
+              </i>
+              <i>
+                runtime profile <em>escalating</em>
+              </i>
+              <i>
+                <b>NEO</b> environment compiling<b>...</b>
+              </i>
+            </>
+          )}
         </div>
       </div>
 
       {/* Stage 2 — glitch phrase reveal */}
       <div className="goz-gate">
-        <p className="goz-gate-sub">{"// "}running deep token override</p>
-        <p
-          className="goz-phrase"
-          data-text="You are still not ready for this"
-        >
-          You are still not ready for this
+        <p className="goz-gate-sub">
+          {"// "}
+          {isCity ? "inserting coin into mainframe" : "running deep token override"}
         </p>
+        {isCity ? (
+          <p className="goz-phrase" data-text="Welcome to Neon City">
+            Welcome to Neon City
+          </p>
+        ) : (
+          <p className="goz-phrase" data-text="You are still not ready for this">
+            You are still not ready for this
+          </p>
+        )}
         <p className="goz-gate-sub">press anywhere to skip</p>
       </div>
 
       {/* Stage 3 — progress bar + percentage → flash + apply */}
       <div className="goz-charge">
         <div className="goz-charge-label">
-          <span>Compiling new design language</span>
+          <span>{isCity ? "Rendering 8-bit skyline" : "Compiling new design language"}</span>
           <b>{pct}%</b>
         </div>
         <div className="goz-track">
           <i style={{ width: `${pct}%` }} />
         </div>
         <p className="goz-charge-note">
-          <b>NEO</b> identity will apply at 100%
+          <b>{isCity ? "CITY" : "NEO"}</b> identity will apply at 100%
         </p>
       </div>
 
